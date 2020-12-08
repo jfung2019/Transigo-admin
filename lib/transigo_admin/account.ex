@@ -5,6 +5,19 @@ defmodule TransigoAdmin.Account do
   alias TransigoAdmin.Repo
   alias TransigoAdmin.Account.{User, Exporter}
 
+  def create_user(attrs \\ %{}) do
+    %User{}
+    |> User.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def get_user!(id), do: Repo.get!(User, id)
+
+  def find_user(email) do
+    from(u in User, where: u.email == ^email)
+    |> Repo.one()
+  end
+
   def list_awaiting_signature_exporter() do
     from(e in Exporter, where: e.hs_signing_status != "all signed")
     |> Repo.all()

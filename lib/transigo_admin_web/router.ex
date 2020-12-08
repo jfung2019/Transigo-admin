@@ -10,6 +10,10 @@ defmodule TransigoAdminWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :admin_authenticated do
+    plug TransigoAdminWeb.Auth
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -18,8 +22,15 @@ defmodule TransigoAdminWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
-    live "/awaiting_exporter", TransigoSignatureLive.Index, :index
-    resources "/signing", HellosignController, only: [:index]
+
+    scope "/admin" do
+      resources "/sessions", SessionController, only: [:new, :create, :delete]
+
+      scope "/" do
+        live "/awaiting_exporter", TransigoSignatureLive.Index, :index
+        resources "/signing", HellosignController, only: [:index]
+      end
+    end
   end
 
   # Other scopes may use custom stacks.
