@@ -14,6 +14,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateUserTable do
       add :mobile, :string, null: false
       add :role, :string, null: false
       add :company, :string, null: false
+      add :password_hash, :text, null: false
       add :last_login, :naive_datetime, null: true
 
       timestamps()

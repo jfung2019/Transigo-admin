@@ -18,6 +18,8 @@ defmodule TransigoAdminWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
+    live "/awaiting_exporter", TransigoSignatureLive.Index, :index
+    resources "/signing", HellosignController, only: [:index]
   end
 
   # Other scopes may use custom stacks.

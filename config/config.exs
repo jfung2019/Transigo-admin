@@ -16,7 +16,9 @@ config :transigo_admin, TransigoAdmin.Repo,
   pool_size: 10
 
 config :transigo_admin,
-  ecto_repos: [TransigoAdmin.Repo]
+  ecto_repos: [TransigoAdmin.Repo],
+  hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
+  hs_api_key: System.get_env("TRANSIGO_HS_API_KEY")
 
 # Configures the endpoint
 config :transigo_admin, TransigoAdminWeb.Endpoint,
