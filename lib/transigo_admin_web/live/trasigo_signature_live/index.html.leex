@@ -2,12 +2,14 @@
 
 <table>
     <tr>
+        <th>Exporter UID</th>
         <th>Business Name</th>
         <th>HelloSign signature request id</th>
         <th>Signature Status</th>
     </tr>
     <%= for exporter <- @exporters do %>
     <tr>
+        <td><%= exporter.exporter_transigoUID %></td>
         <td><%= exporter.business_name %></td>
         <td><a href="<%= Routes.hellosign_path(@socket, :index, exporter_id: exporter.id) %>" target="_blank">
             <%= exporter.hellosign_signature_request_id %>
