@@ -1,5 +1,6 @@
 defmodule TransigoAdminWeb.Router do
   use TransigoAdminWeb, :router
+  use Kaffy.Routes, scope: "/admin", pipe_through: [:admin_authenticated]
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -22,15 +23,8 @@ defmodule TransigoAdminWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
-
-    scope "/admin" do
-      resources "/sessions", SessionController, only: [:new, :create, :delete]
-
-      scope "/" do
-        live "/awaiting_exporter", TransigoSignatureLive.Index, :index
-        resources "/signing", HellosignController, only: [:index]
-      end
-    end
+    resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
+    resources "/signing", HellosignController, only: [:index]
   end
 
   # Other scopes may use custom stacks.

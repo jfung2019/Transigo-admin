@@ -20,6 +20,31 @@ config :transigo_admin,
   hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
   hs_api_key: System.get_env("TRANSIGO_HS_API_KEY")
 
+config :kaffy,
+  otp_app: :transigo_admin,
+  user_title: "Transigo Admin",
+  hide_dashboard: false,
+  home_page: [kaffy: :dashboard],
+  ecto_repo: TransigoAdmin.Repo,
+  router: TransigoAdmin.Router,
+  resources: [
+    account: [
+      name: "Account",
+      resources: [
+        exporter_signature: [
+          schema: TransigoAdmin.Account.Exporter,
+          admin: TransigoAdmin.Account.ExporterSignatureAdmin
+        ]
+      ]
+    ]
+  ]
+
+config :transigo_admin, TransigoAdmin.Account.Guardian,
+  issuer: "transigo_admin",
+  secret_key: "qKYyE2p3xQGqjO5Bs4LxPu7xr9IV4qCYLM9oXrzuTvnGOaCZm4YIl2O8CBPQeTnR",
+  ttl: {52, :weeks},
+  max_age: {78, :weeks}
+
 # Configures the endpoint
 config :transigo_admin, TransigoAdminWeb.Endpoint,
   url: [host: "localhost"],

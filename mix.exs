@@ -48,7 +48,9 @@ defmodule TransigoAdmin.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:argon2_elixir, "~> 2.3"},
-      {:httpoison, "~> 1.7"}
+      {:httpoison, "~> 1.7"},
+      {:kaffy, "~> 0.9.0"},
+      {:guardian, "~> 2.0"}
     ]
   end
 

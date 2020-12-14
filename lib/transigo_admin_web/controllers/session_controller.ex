@@ -11,7 +11,7 @@ defmodule TransigoAdminWeb.SessionController do
       {:ok, user} ->
         conn
         |> Auth.login(user)
-        |> redirect(to: Routes.transigo_signature_index_path(conn, :index))
+        |> redirect(to: Routes.kaffy_home_path(conn, :index))
 
       {:error, :unauthorized} ->
         conn
