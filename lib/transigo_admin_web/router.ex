@@ -12,6 +12,7 @@ defmodule TransigoAdminWeb.Router do
   end
 
   pipeline :admin_authenticated do
+    plug TransigoAdminWeb.Guardian.AuthPipeline
     plug TransigoAdminWeb.Auth
   end
 

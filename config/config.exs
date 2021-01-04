@@ -26,18 +26,8 @@ config :kaffy,
   hide_dashboard: false,
   home_page: [kaffy: :dashboard],
   ecto_repo: TransigoAdmin.Repo,
-  router: TransigoAdmin.Router,
-  resources: [
-    account: [
-      name: "Account",
-      resources: [
-        exporter_signature: [
-          schema: TransigoAdmin.Account.Exporter,
-          admin: TransigoAdmin.Account.ExporterSignatureAdmin
-        ]
-      ]
-    ]
-  ]
+  router: TransigoAdminWeb.Router,
+  resources: &TransigoAdmin.KaffyConfig.create_resources/1
 
 config :transigo_admin, TransigoAdmin.Account.Guardian,
   issuer: "transigo_admin",
