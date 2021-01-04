@@ -5,7 +5,7 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 config :transigo_admin, TransigoAdmin.Repo,
   adapter: Ecto.Adapters.Postgres,
