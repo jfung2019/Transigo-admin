@@ -1,0 +1,19 @@
+stages:
+  - build
+
+build:
+  stage: build
+  environment: production
+  only:
+    - master
+  image: docker:19.03
+  variables:
+    CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH/admin/prod:$CI_COMMIT_SHORT_SHA∂
+  services:
+    - docker:19.03-dind
+  before_script:
+    - docker info
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+  script:
+    - docker build --tag $CONTAINER_IMAGE .
+    - docker push $CONTAINER_IMAGE
