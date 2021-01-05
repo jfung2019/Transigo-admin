@@ -21,4 +21,4 @@ RUN chown -R default /opt/app/
 
 USER default
 
-CMD ["/opt/app/bin/transigo_admin", "foreground"]
+CMD ["/opt/app/bin/transigo_admin", "start"]
