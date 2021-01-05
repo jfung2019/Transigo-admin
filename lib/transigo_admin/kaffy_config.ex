@@ -20,6 +20,14 @@ defmodule TransigoAdmin.KaffyConfig do
           quota: [
             schema: TransigoAdmin.Credit.Quota,
             admin: TransigoAdmin.Credit.QuotaAdmin
+          ],
+          transaction: [
+            schema: TransigoAdmin.Credit.Transaction,
+            admin: TransigoAdmin.Credit.TransactionAdmin
+          ],
+          offer: [
+            schema: TransigoAdmin.Credit.Offer,
+            admin: TransigoAdmin.Credit.OfferAdmin
           ]
         ]
       ]
