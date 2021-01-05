@@ -6,7 +6,6 @@ import Config
 
 config :transigo_admin, TransigoAdmin.Repo,
   # ssl: true,
-  url: System.get_env("TRANSIGO_DB_URL"),
   pool_size: String.to_integer(System.get_env("POOL_SIZE", "10"))
 
 config :transigo_admin, TransigoAdminWeb.Endpoint,

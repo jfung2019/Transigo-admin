@@ -1,5 +1,4 @@
 defmodule TransigoAdmin.Account do
-
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
@@ -27,10 +26,19 @@ defmodule TransigoAdmin.Account do
 
   def get_exporter_signing_url(id) do
     exporter = Repo.get!(Exporter, id)
+
     case get_signature_request(exporter.hellosign_signature_request_id) do
       {:ok, signature_request} ->
         %{"signature_request" => %{"signatures" => signatures}} = signature_request
-        [_, %{"signer_email_address" => "nir.tal@transigo.io", "signature_id" => transigo_signature_id}] = signatures
+
+        [
+          _,
+          %{
+            "signer_email_address" => "nir.tal@transigo.io",
+            "signature_id" => transigo_signature_id
+          }
+        ] = signatures
+
         case get_sign_url(transigo_signature_id) do
           {:ok, embedded} ->
             %{"embedded" => %{"sign_url" => sign_url}} = embedded
@@ -46,12 +54,15 @@ defmodule TransigoAdmin.Account do
   end
 
   defp get_signature_request(signature_request_id) do
-    {:ok, response} = HTTPoison.get(
-      "https://api.hellosign.com/v3/signature_request/#{signature_request_id}",
-      [],
-      [hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]]
-    )
+    {:ok, response} =
+      HTTPoison.get(
+        "https://api.hellosign.com/v3/signature_request/#{signature_request_id}",
+        [],
+        hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]
+      )
+
     %{body: body} = response
+
     case Jason.decode!(body) do
       %{"error" => error} ->
         {:error, error}
@@ -62,12 +73,15 @@ defmodule TransigoAdmin.Account do
   end
 
   defp get_sign_url(signature_id) do
-    {:ok, response} = HTTPoison.get(
-      "https://api.hellosign.com/v3/embedded/sign_url/#{signature_id}",
-      [],
-      [hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]]
-    )
+    {:ok, response} =
+      HTTPoison.get(
+        "https://api.hellosign.com/v3/embedded/sign_url/#{signature_id}",
+        [],
+        hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]
+      )
+
     %{body: body} = response
+
     case Jason.decode!(body) do
       %{"error" => error} ->
         {:error, error}

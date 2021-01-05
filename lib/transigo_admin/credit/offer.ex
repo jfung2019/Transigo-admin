@@ -5,7 +5,6 @@ defmodule TransigoAdmin.Credit.Offer do
   @primary_key {:id, Ecto.UUID, read_after_writes: true}
   @foreign_key_type Ecto.UUID
   schema "offer" do
-
   end
 
   @doc false

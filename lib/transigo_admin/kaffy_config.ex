@@ -10,7 +10,7 @@ defmodule TransigoAdmin.KaffyConfig do
           ],
           importer: [
             schema: TransigoAdmin.Account.Importer,
-            admin: TransigoAdmin.Account.ImporterAdmin,
+            admin: TransigoAdmin.Account.ImporterAdmin
           ]
         ]
       ],

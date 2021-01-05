@@ -1,5 +1,4 @@
 defmodule TransigoAdmin.Account.ImporterAdmin do
-
   def index(_) do
     [
       importer_transigoUID: nil,
@@ -8,7 +7,7 @@ defmodule TransigoAdmin.Account.ImporterAdmin do
       business_address_city: nil,
       business_address_state: nil,
       business_address_zip: nil,
-      business_address_country: nil,
+      business_address_country: nil
     ]
   end
 
@@ -20,7 +19,7 @@ defmodule TransigoAdmin.Account.ImporterAdmin do
       business_address_city: nil,
       business_address_state: nil,
       business_address_zip: nil,
-      business_address_country: nil,
+      business_address_country: nil
     ]
   end
 end

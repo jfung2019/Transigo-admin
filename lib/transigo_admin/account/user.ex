@@ -22,8 +22,28 @@ defmodule TransigoAdmin.Account.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:firstname, :lastname, :email, :username, :title, :mobile, :role, :company, :password, :last_login])
-    |> validate_required([:firstname, :lastname, :email, :username, :mobile, :role, :company, :password])
+    |> cast(attrs, [
+      :firstname,
+      :lastname,
+      :email,
+      :username,
+      :title,
+      :mobile,
+      :role,
+      :company,
+      :password,
+      :last_login
+    ])
+    |> validate_required([
+      :firstname,
+      :lastname,
+      :email,
+      :username,
+      :mobile,
+      :role,
+      :company,
+      :password
+    ])
     |> validate_length(:password, min: 6, max: 100)
     |> unique_constraint(:email)
     |> unique_constraint(:username)

@@ -9,10 +9,6 @@ import Config
 
 config :transigo_admin, TransigoAdmin.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "transigo",
   pool_size: 10
 
 config :transigo_admin,

@@ -4,7 +4,7 @@ defmodule TransigoAdmin.Account.Guardian do
   alias TransigoAdmin.Account.User
   alias TransigoAdmin.Account
 
-  def subject_for_token(%User{}= user, _claims), do: {:ok, "user:#{user.id}"}
+  def subject_for_token(%User{} = user, _claims), do: {:ok, "user:#{user.id}"}
 
   def subject_for_token(_resource, _claims), do: {:error, :reason_for_error}
 

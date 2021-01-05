@@ -21,6 +21,12 @@ config :transigo_admin, TransigoAdminWeb.Endpoint,
     ]
   ]
 
+config :transigo_admin, TransigoAdmin.Repo,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "transigo"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

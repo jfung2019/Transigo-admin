@@ -1,5 +1,4 @@
 defmodule TransigoAdmin.Account.ExporterAdmin do
-
   def ordering(_schema) do
     [desc: :hs_signing_status]
   end
@@ -9,7 +8,7 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
       exporter_transigoUID: nil,
       business_name: nil,
       hellosign_signature_request_id: nil,
-      hs_signing_status: nil,
+      hs_signing_status: nil
     ]
   end
 
@@ -18,7 +17,7 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
       exporter_transigoUID: nil,
       business_name: nil,
       hellosign_signature_request_id: nil,
-      hs_signing_status: nil,
+      hs_signing_status: nil
     ]
   end
 end

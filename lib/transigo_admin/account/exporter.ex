@@ -13,7 +13,17 @@ defmodule TransigoAdmin.Account.Exporter do
   @doc false
   def changeset(exporter, attrs) do
     exporter
-    |> cast(attrs, [:exporter_transigoUID, :business_name, :hellosign_signature_request_id, :hs_signing_status])
-    |> validate_required([:exporter_transigoUID, :business_name, :hellosign_signature_request_id, :hs_signing_status])
+    |> cast(attrs, [
+      :exporter_transigoUID,
+      :business_name,
+      :hellosign_signature_request_id,
+      :hs_signing_status
+    ])
+    |> validate_required([
+      :exporter_transigoUID,
+      :business_name,
+      :hellosign_signature_request_id,
+      :hs_signing_status
+    ])
   end
 end

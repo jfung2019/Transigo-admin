@@ -16,7 +16,23 @@ defmodule TransigoAdmin.Account.Importer do
   @doc false
   def changeset(importer, attrs) do
     importer
-    |> cast(attrs, [:importer_transigoUID, :business_name, :business_address_street_address, :business_address_city, :business_address_state, :business_address_zip, :business_address_country])
-    |> validate_required([:importer_transigoUID, :business_name, :business_address_street_address, :business_address_city, :business_address_state, :business_address_zip, :business_address_country])
+    |> cast(attrs, [
+      :importer_transigoUID,
+      :business_name,
+      :business_address_street_address,
+      :business_address_city,
+      :business_address_state,
+      :business_address_zip,
+      :business_address_country
+    ])
+    |> validate_required([
+      :importer_transigoUID,
+      :business_name,
+      :business_address_street_address,
+      :business_address_city,
+      :business_address_state,
+      :business_address_zip,
+      :business_address_country
+    ])
   end
 end
