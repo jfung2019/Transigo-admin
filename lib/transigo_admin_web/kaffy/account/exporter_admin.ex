@@ -20,4 +20,16 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
       hs_signing_status: nil
     ]
   end
+
+  def custom_pages(_schema, _conn) do
+    [
+      %{
+        slug: "sign_doc",
+        name: "Sign Doc",
+        view: TransigoAdminWeb.SignDocView ,
+        template: "sign_doc.html",
+        order: 3
+      }
+    ]
+  end
 end

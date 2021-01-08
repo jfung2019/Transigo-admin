@@ -3,14 +3,19 @@ defmodule TransigoAdminWeb.HellosignController do
 
   alias TransigoAdmin.Account
 
-  def index(conn, %{"exporter_id" => exporter_id} = _param) do
-    Account.get_exporter_signing_url(exporter_id)
+  def index(conn, %{"signature_request_id" => signature_request_id} = _param) do
+    case Account.get_signing_url(signature_request_id) do
+      {:ok, sign_url} ->
+        conn =
+          conn
+          |> assign(:hs_client_id, Application.get_env(:transigo_admin, :hs_client_id))
+          |> assign(:sign_url, sign_url)
 
-    conn =
-      conn
-      |> assign(:hs_client_id, Application.get_env(:transigo_admin, :hs_client_id))
-      |> assign(:sign_url, Account.get_exporter_signing_url(exporter_id))
+        render(conn, "index.html")
 
-    render(conn, "index.html")
+      {:error, error} ->
+        IO.inspect(error)
+        render(conn, "failed.html")
+    end
   end
 end

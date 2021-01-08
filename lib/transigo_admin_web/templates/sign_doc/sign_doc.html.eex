@@ -1,0 +1,18 @@
+<script>
+    function signDoc() {
+        const signingUrl = "<%= Routes.url(@conn) <> Routes.hellosign_path(@conn, :index) %>";
+        const signature_request_id = document.getElementById("signature_request_id").value.trim();
+        if (signature_request_id !== "")  {
+            window.open(`${signingUrl}?signature_request_id=${signature_request_id}`);
+        }
+    }
+</script>
+<div class="card" style="width: 20rem; margin: 0 auto;">
+    <div class="card-body">
+        <div>
+            <label for="signature_request_id">HelloSign Signature Request ID</label>
+            <input type="text" name="signature_request_id" id="signature_request_id" class="form-control my-2">
+            <button class="btn btn-primary" id="sign_doc_type" onclick="signDoc()">Sign</button>
+        </div>
+    </div>
+</div>

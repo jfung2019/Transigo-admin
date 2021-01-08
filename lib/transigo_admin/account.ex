@@ -24,32 +24,26 @@ defmodule TransigoAdmin.Account do
 
   def get_exporter!(id), do: Repo.get!(Exporter, id)
 
-  def get_exporter_signing_url(id) do
-    exporter = Repo.get!(Exporter, id)
-
-    case get_signature_request(exporter.hellosign_signature_request_id) do
+  def get_signing_url(signature_request_id) do
+    case get_signature_request(signature_request_id) do
       {:ok, signature_request} ->
         %{"signature_request" => %{"signatures" => signatures}} = signature_request
 
-        [
-          _,
-          %{
-            "signer_email_address" => "nir.tal@transigo.io",
-            "signature_id" => transigo_signature_id
-          }
-        ] = signatures
+        case get_transigo_signature(signatures) do
+          %{"signature_id" => transigo_signature_id} ->
+            case get_sign_url(transigo_signature_id) do
+              {:ok, embedded} ->
+                %{"embedded" => %{"sign_url" => sign_url}} = embedded
+                {:ok, sign_url}
 
-        case get_sign_url(transigo_signature_id) do
-          {:ok, embedded} ->
-            %{"embedded" => %{"sign_url" => sign_url}} = embedded
-            sign_url
-
-          {:error, error} ->
-            error
+              {:error, _error} = error_tuple ->
+                error_tuple
+            end
+          _ -> {:error, "Fail to get signature id"}
         end
 
-      {:error, error} ->
-        error
+      {:error, _error} = error_tuple ->
+        error_tuple
     end
   end
 
@@ -89,5 +83,15 @@ defmodule TransigoAdmin.Account do
       signature_request ->
         {:ok, signature_request}
     end
+  end
+
+  defp get_transigo_signature(signatures) do
+    Enum.flat_map(signatures, fn %{"signer_email_address" => email} = signature ->
+      case email do
+        "nir.tal@transigo.io" -> signature
+        _ -> []
+      end
+    end)
+    |> Enum.into(%{})
   end
 end
