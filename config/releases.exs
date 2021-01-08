@@ -15,6 +15,10 @@ config :transigo_admin, TransigoAdminWeb.Endpoint,
   ],
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 
+config :transigo_admin,
+  hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
+  hs_api_key: System.get_env("TRANSIGO_HS_API_KEY")
+
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix
