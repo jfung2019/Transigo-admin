@@ -3,7 +3,7 @@ defmodule TransigoAdmin.Account.User do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "users" do
+  schema "admins" do
     field :firstname, :string
     field :lastname, :string
     field :email, :string
