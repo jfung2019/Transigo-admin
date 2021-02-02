@@ -12,7 +12,7 @@ defmodule TransigoAdminWeb.Auth do
   @impl true
   def call(conn, _opts) do
     case TransigoAdmin.Account.Guardian.Plug.current_resource(conn) do
-      %TransigoAdmin.Account.User{} ->
+      %TransigoAdmin.Account.Admin{} ->
         conn
 
       _ ->
@@ -25,8 +25,8 @@ defmodule TransigoAdminWeb.Auth do
   @doc """
   Finds an user by email and password.
   """
-  def sign_in_user(email, given_pass) do
-    with user <- Account.find_user(email),
+  def sign_in_admin(email, given_pass) do
+    with user <- Account.find_admin(email),
          true <- check_password(user, given_pass) do
       {:ok, user}
     else

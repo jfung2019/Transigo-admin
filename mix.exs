@@ -50,7 +50,9 @@ defmodule TransigoAdmin.MixProject do
       {:argon2_elixir, "~> 2.3"},
       {:httpoison, "~> 1.7"},
       {:kaffy, "~> 0.9.0"},
-      {:guardian, "~> 2.0"}
+      {:guardian, "~> 2.0"},
+      {:oban, "~> 2.4.2"},
+      {:sendgrid, "~> 2.0"}
     ]
   end
 

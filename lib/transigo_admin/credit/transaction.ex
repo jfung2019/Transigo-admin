@@ -14,6 +14,10 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :financed_sum, :decimal
     field :hellosign_signature_request_id, :string
     field :hs_signing_status, :string
+    field :transaction_state, :string
+    field :invoice_date, :date
+    field :second_installment_USD, :decimal
+    field :dwolla_repayment_transfer_url, :text
   end
 
   @doc false
@@ -28,7 +32,11 @@ defmodule TransigoAdmin.Credit.Transaction do
       :factoring_fee_USD,
       :financed_sum,
       :hellosign_signature_request_id,
-      :hs_signing_status
+      :hs_signing_status,
+      :second_installment_USD,
+      :transaction_state,
+      :invoice_date,
+      :dwolla_repayment_transfer_url
     ])
     |> validate_required([
       :transaction_UID,
@@ -39,7 +47,8 @@ defmodule TransigoAdmin.Credit.Transaction do
       :factoring_fee_USD,
       :financed_sum,
       :hellosign_signature_request_id,
-      :hs_signing_status
+      :hs_signing_status,
+      :transaction_state
     ])
   end
 end

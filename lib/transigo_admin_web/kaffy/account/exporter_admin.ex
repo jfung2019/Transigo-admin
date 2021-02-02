@@ -26,7 +26,7 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
       %{
         slug: "sign_doc",
         name: "Sign Doc",
-        view: TransigoAdminWeb.SignDocView ,
+        view: TransigoAdminWeb.SignDocView,
         template: "sign_doc.html",
         order: 3
       }

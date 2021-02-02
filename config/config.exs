@@ -25,6 +25,19 @@ config :kaffy,
   router: TransigoAdminWeb.Router,
   resources: &TransigoAdmin.KaffyConfig.create_resources/1
 
+config :transigo_admin, Oban,
+  repo: TransigoAdmin.Repo,
+  queues: [default: 20],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 300},
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
+       {"0 0 * * *", TransigoAdmin.Job.DailyBalance},
+       {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevshare}
+     ]}
+  ]
+
 config :transigo_admin, TransigoAdmin.Account.Guardian,
   issuer: "transigo_admin",
   secret_key: "qKYyE2p3xQGqjO5Bs4LxPu7xr9IV4qCYLM9oXrzuTvnGOaCZm4YIl2O8CBPQeTnR",

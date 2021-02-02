@@ -2,18 +2,18 @@ defmodule TransigoAdmin.Account do
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
-  alias TransigoAdmin.Account.{User, Exporter}
+  alias TransigoAdmin.Account.{Admin, Exporter, Importer, Contact, User}
 
-  def create_user(attrs \\ %{}) do
-    %User{}
-    |> User.changeset(attrs)
+  def create_admin(attrs \\ %{}) do
+    %Admin{}
+    |> Admin.changeset(attrs)
     |> Repo.insert()
   end
 
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_admin!(id), do: Repo.get!(Admin, id)
 
-  def find_user(email) do
-    from(u in User, where: u.email == ^email)
+  def find_admin(email) do
+    from(a in Admin, where: a.email == ^email)
     |> Repo.one()
   end
 
@@ -39,7 +39,9 @@ defmodule TransigoAdmin.Account do
               {:error, _error} = error_tuple ->
                 error_tuple
             end
-          _ -> {:error, "Fail to get signature id"}
+
+          _ ->
+            {:error, "Fail to get signature id"}
         end
 
       {:error, _error} = error_tuple ->
@@ -93,5 +95,20 @@ defmodule TransigoAdmin.Account do
       end
     end)
     |> Enum.into(%{})
+  end
+
+  def get_contact_by_importer(importer_id) do
+    from(
+      c in Contact,
+      left_join: i in Importer,
+      on: i.contact_id == c.id,
+      where: i.id == ^importer_id
+    )
+    |> Repo.one()
+  end
+
+  def list_users_with_webhook() do
+    from(a in User, where: not is_nil(a.webhook))
+    |> Repo.all()
   end
 end

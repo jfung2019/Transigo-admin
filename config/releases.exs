@@ -19,6 +19,10 @@ config :transigo_admin,
   hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
   hs_api_key: System.get_env("TRANSIGO_HS_API_KEY")
 
+config :sendgrid,
+  api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),
+  sandbox_enable: false
+
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix

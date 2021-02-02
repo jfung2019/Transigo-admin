@@ -11,6 +11,7 @@ defmodule TransigoAdmin.Account.Importer do
     field :business_address_state, :string
     field :business_address_zip, :string
     field :business_address_country, :string
+    has_one :contact, TransigoAdmin.Account.Contact
   end
 
   @doc false
@@ -23,7 +24,8 @@ defmodule TransigoAdmin.Account.Importer do
       :business_address_city,
       :business_address_state,
       :business_address_zip,
-      :business_address_country
+      :business_address_country,
+      :contact_id
     ])
     |> validate_required([
       :importer_transigoUID,
@@ -32,7 +34,8 @@ defmodule TransigoAdmin.Account.Importer do
       :business_address_city,
       :business_address_state,
       :business_address_zip,
-      :business_address_country
+      :business_address_country,
+      :contact_id
     ])
   end
 end

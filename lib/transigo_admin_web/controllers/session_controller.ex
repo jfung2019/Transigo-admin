@@ -8,10 +8,10 @@ defmodule TransigoAdminWeb.SessionController do
   end
 
   def create(conn, %{"session" => %{"email" => email, "password" => password}}) do
-    case Auth.sign_in_user(email, password) do
-      {:ok, user} ->
+    case Auth.sign_in_admin(email, password) do
+      {:ok, admin} ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Guardian.Plug.sign_in(admin)
         |> redirect(to: Routes.kaffy_home_path(conn, :index))
 
       {:error, :unauthorized} ->
