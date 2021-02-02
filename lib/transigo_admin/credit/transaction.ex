@@ -17,7 +17,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :transaction_state, :string
     field :invoice_date, :date
     field :second_installment_USD, :decimal
-    field :dwolla_repayment_transfer_url, :text
+    field :dwolla_repayment_transfer_url, :string
   end
 
   @doc false
