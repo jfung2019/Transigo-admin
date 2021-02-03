@@ -14,7 +14,11 @@ config :transigo_admin, TransigoAdmin.Repo,
 config :transigo_admin,
   ecto_repos: [TransigoAdmin.Repo],
   hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
-  hs_api_key: System.get_env("TRANSIGO_HS_API_KEY")
+  hs_api_key: System.get_env("TRANSIGO_HS_API_KEY"),
+  dwolla_root_url: "https://api-sandbox.dwolla.com",
+  dwolla_client_id: System.get_env("DWOLLA_KEY"),
+  dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
+  dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE")
 
 config :kaffy,
   otp_app: :transigo_admin,

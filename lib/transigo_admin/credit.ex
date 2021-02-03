@@ -2,7 +2,7 @@ defmodule TransigoAdmin.Credit do
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
-  alias TransigoAdmin.Credit.Transaction
+  alias TransigoAdmin.Credit.{Transaction, Quota}
 
   def list_transactions_due_in_3_days() do
     from(
@@ -18,8 +18,7 @@ defmodule TransigoAdmin.Credit do
   end
 
   def list_transactions_due_today() do
-    from(
-      t in Transaction,
+    from(t in Transaction,
       where:
         fragment(
           "(? + make_interval(days => ?))::date = NOW()::date",
@@ -39,5 +38,13 @@ defmodule TransigoAdmin.Credit do
     transaction
     |> Transaction.changeset(attrs)
     |> Repo.update()
+  end
+
+  def find_granted_quota(importer_id) do
+    from(q in Quota,
+      left_join: i in assoc(q, :importer),
+      where: i.id == ^importer_id and q.creditStatus in ["granted", "partial"]
+    )
+    |> Repo.one()
   end
 end

@@ -10,12 +10,20 @@ defmodule TransigoAdmin.Credit.Quota do
     field :quota_USD, :decimal
     field :credit_days_quota, :integer
     field :creditStatus, :string
+    field :funding_source_url, :string
   end
 
   @doc false
   def changeset(quota, attrs) do
     quota
-    |> cast(attrs, [:importer_id, :quota_UID, :quota_USD, :credit_days_quota, :creditStatus])
+    |> cast(attrs, [
+      :importer_id,
+      :quota_UID,
+      :quota_USD,
+      :credit_days_quota,
+      :creditStatus,
+      :funding_source_url
+    ])
     |> validate_required([:importer_id, :quota_UID, :quota_USD, :credit_days_quota, :creditStatu])
   end
 end

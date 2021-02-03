@@ -17,7 +17,10 @@ config :transigo_admin, TransigoAdminWeb.Endpoint,
 
 config :transigo_admin,
   hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
-  hs_api_key: System.get_env("TRANSIGO_HS_API_KEY")
+  hs_api_key: System.get_env("TRANSIGO_HS_API_KEY"),
+  dwolla_root_url: System.get_env("DWOLLA_ROOT_URL"),
+  dwolla_client_id: System.get_env("DWOLLA_KEY"),
+  dwolla_client_secret: System.get_env("DWOLLA_SECRET")
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),
