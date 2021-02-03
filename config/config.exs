@@ -35,6 +35,7 @@ config :transigo_admin, Oban,
   plugins: [
     {Oban.Plugins.Pruner, max_age: 300},
     {Oban.Plugins.Cron,
+     timezone: "Asia/Hong_Kong",
      crontab: [
        {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
        {"0 0 * * *", TransigoAdmin.Job.DailyBalance},

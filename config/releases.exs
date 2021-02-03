@@ -20,7 +20,8 @@ config :transigo_admin,
   hs_api_key: System.get_env("TRANSIGO_HS_API_KEY"),
   dwolla_root_url: System.get_env("DWOLLA_ROOT_URL"),
   dwolla_client_id: System.get_env("DWOLLA_KEY"),
-  dwolla_client_secret: System.get_env("DWOLLA_SECRET")
+  dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
+  dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE")
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),
