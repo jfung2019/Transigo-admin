@@ -11,6 +11,12 @@ defmodule TransigoAdmin.Credit.Quota do
     field :credit_days_quota, :integer
     field :creditStatus, :string
     field :funding_source_url, :string
+
+    timestamps(
+      inserted_at_source: :created_datetime,
+      updated_at_source: :last_modified_datetime,
+      type: :utc_datetime
+    )
   end
 
   @doc false

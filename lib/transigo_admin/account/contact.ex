@@ -13,6 +13,12 @@ defmodule TransigoAdmin.Account.Contact do
     field :country, :string, default: "US"
     field :ssn, :string
     field :address, :string
+
+    timestamps(
+      inserted_at_source: :created_datetime,
+      updated_at_source: :last_modified_datetime,
+      type: :utc_datetime
+    )
   end
 
   @doc false

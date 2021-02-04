@@ -52,7 +52,8 @@ defmodule TransigoAdmin.MixProject do
       {:kaffy, "~> 0.9.0"},
       {:guardian, "~> 2.0"},
       {:oban, "~> 2.4.2"},
-      {:sendgrid, "~> 2.0"}
+      {:sendgrid, "~> 2.0"},
+      {:timex, "~> 3.0"}
     ]
   end
 

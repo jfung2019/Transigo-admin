@@ -11,6 +11,12 @@ defmodule TransigoAdmin.Credit.Offer do
     field :advance_USD, :decimal
     field :importer_fee, :decimal
     field :offer_accepted_declined, :string
+
+    timestamps(
+      inserted_at_source: :created_datetime,
+      updated_at_source: :last_modified_datetime,
+      type: :utc_datetime
+    )
   end
 
   @doc false

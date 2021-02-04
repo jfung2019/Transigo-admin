@@ -24,6 +24,12 @@ defmodule TransigoAdmin.Account do
 
   def get_exporter!(id), do: Repo.get!(Exporter, id)
 
+  def create_exporter(attrs \\ %{}) do
+    %Exporter{}
+    |> Exporter.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def get_signing_url(signature_request_id) do
     case get_signature_request(signature_request_id) do
       {:ok, signature_request} ->
@@ -105,6 +111,12 @@ defmodule TransigoAdmin.Account do
       where: i.id == ^importer_id
     )
     |> Repo.one()
+  end
+
+  def create_importer(attrs \\ %{}) do
+    %Importer{}
+    |> Importer.changeset(attrs)
+    |> Repo.insert()
   end
 
   def list_users_with_webhook() do

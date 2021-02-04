@@ -34,6 +34,12 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
+  def create_transaction(attrs \\ %{}) do
+    %Transaction{}
+    |> Transaction.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def update_transaction(transaction, attrs \\ %{}) do
     transaction
     |> Transaction.changeset(attrs)
