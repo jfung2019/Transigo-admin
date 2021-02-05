@@ -1,5 +1,20 @@
 stages:
+  - test
   - build
+
+test:
+  image: plangora/alpine-elixir-phoenix:otp-23.2.3-elixir-1.11.3
+  services:
+    - postgres:latest
+  variables:
+    MIX_ENV: "test"
+    DB_HOST: postgres
+    POSTGRES_DB: transigo_admin_test
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+  script:
+    - mix clean
+    - mix do deps.get, test --exclude skip
 
 build:
   stage: build

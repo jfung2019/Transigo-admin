@@ -90,13 +90,112 @@ defmodule TransigoAdmin.CreditTest do
         exporter_id: exporter.id
       })
 
-      assert [transaction_due] == Credit.list_transactions_due_in_3_days()
+      assert [^transaction_due] = Credit.list_transactions_due_in_3_days()
     end
 
     test "can transaction due today", %{exporter: exporter, importer: importer} do
+      # transaction far in the future
+      Credit.create_transaction(%{
+        transaction_UID: "future",
+        credit_term_days: 60,
+        down_payment_USD: 3000,
+        factoring_fee_USD: 3000,
+        transaction_state: "originated",
+        financed_sum: 3000,
+        invoice_date: Timex.now(),
+        second_installment_USD: 3000,
+        importer_id: importer.id,
+        exporter_id: exporter.id
+      })
+
+      # transaction due in 3 days
+      due_date =
+        Timex.now()
+        |> Timex.shift(days: -60)
+
+      {:ok, transaction_due} =
+        Credit.create_transaction(%{
+          transaction_UID: "due",
+          credit_term_days: 60,
+          down_payment_USD: 3000,
+          factoring_fee_USD: 3000,
+          transaction_state: "email_sent",
+          financed_sum: 3000,
+          invoice_date: due_date,
+          second_installment_USD: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      # transaction in the past
+      due_past =
+        Timex.now()
+        |> Timex.shift(days: -120)
+
+      Credit.create_transaction(%{
+        transaction_UID: "past",
+        credit_term_days: 60,
+        down_payment_USD: 3000,
+        factoring_fee_USD: 3000,
+        transaction_state: "originated",
+        financed_sum: 3000,
+        invoice_date: due_past,
+        second_installment_USD: 3000,
+        importer_id: importer.id,
+        exporter_id: exporter.id
+      })
+
+      assert [^transaction_due] = Credit.list_transactions_due_today()
     end
 
     test "can get transaction with different state", %{exporter: exporter, importer: importer} do
+      {:ok, down_payment_done_transaction} =
+        Credit.create_transaction(%{
+          transaction_UID: "down_payment_done",
+          credit_term_days: 60,
+          down_payment_USD: 3000,
+          factoring_fee_USD: 3000,
+          transaction_state: "down_payment_done",
+          financed_sum: 3000,
+          invoice_date: Timex.now(),
+          second_installment_USD: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      {:ok, pull_initiated_transaction} =
+        Credit.create_transaction(%{
+          transaction_UID: "pull_initiated",
+          credit_term_days: 60,
+          down_payment_USD: 3000,
+          factoring_fee_USD: 3000,
+          transaction_state: "pull_initiated",
+          financed_sum: 3000,
+          invoice_date: Timex.now(),
+          second_installment_USD: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      {:ok, repaid_transaction} =
+        Credit.create_transaction(%{
+          transaction_UID: "repaid",
+          credit_term_days: 60,
+          down_payment_USD: 3000,
+          factoring_fee_USD: 3000,
+          transaction_state: "repaid",
+          financed_sum: 3000,
+          invoice_date: Timex.now(),
+          second_installment_USD: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      assert [^down_payment_done_transaction] =
+               Credit.list_transactions_by_state("down_payment_done")
+
+      assert [^pull_initiated_transaction] = Credit.list_transactions_by_state("pull_initiated")
+      assert [^repaid_transaction] = Credit.list_transactions_by_state("repaid")
     end
   end
 end
