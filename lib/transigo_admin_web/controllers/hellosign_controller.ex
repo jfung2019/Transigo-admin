@@ -14,7 +14,6 @@ defmodule TransigoAdminWeb.HellosignController do
         render(conn, "index.html")
 
       {:error, error} ->
-        IO.inspect(error)
         render(conn, "failed.html")
     end
   end

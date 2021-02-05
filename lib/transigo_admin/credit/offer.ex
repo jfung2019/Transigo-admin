@@ -2,7 +2,7 @@ defmodule TransigoAdmin.Credit.Offer do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key {:id, Ecto.UUID, read_after_writes: true}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "offer" do
     belongs_to :transaction, TransigoAdmin.Credit.Transaction

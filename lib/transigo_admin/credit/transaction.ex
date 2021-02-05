@@ -2,7 +2,7 @@ defmodule TransigoAdmin.Credit.Transaction do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key {:id, Ecto.UUID, read_after_writes: true}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "transaction" do
     field :transaction_UID, :string
