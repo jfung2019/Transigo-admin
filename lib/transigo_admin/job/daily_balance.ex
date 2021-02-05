@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.DailyBalance do
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, max_attempts: 5
 
   alias TransigoAdmin.{Credit, Job.Helper}
 
@@ -10,6 +10,8 @@ defmodule TransigoAdmin.Job.DailyBalance do
     |> Enum.reject(&is_nil(&1))
     |> format_webhook_result()
     |> Helper.notify_api_users("daily_balance")
+
+    :ok
   end
 
   def format_webhook_result(transactions) do

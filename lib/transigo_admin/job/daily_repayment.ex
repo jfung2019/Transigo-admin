@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.DailyRepayment do
-  use Oban.Worker, queue: :default
+  use Oban.Worker, queue: :default, max_attempts: 5
 
   import Ecto.Query, warn: false
 
@@ -23,6 +23,8 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
     |> Enum.reject(&is_nil(&1))
     |> Helper.notify_api_users("daily_repayment")
+
+    :ok
   end
 
   defp send_transaction_due_email(%Transaction{} = transaction) do

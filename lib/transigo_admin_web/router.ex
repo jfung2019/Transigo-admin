@@ -25,7 +25,13 @@ defmodule TransigoAdminWeb.Router do
 
     live "/", PageLive, :index
     resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
-    resources "/signing", HellosignController, only: [:index]
+
+    scope "/admin" do
+      pipe_through :admin_authenticated
+
+      resources "/signing", HellosignController, only: [:index]
+      live "/jobs", ObanJobLive.Index, :index
+    end
   end
 
   # Other scopes may use custom stacks.

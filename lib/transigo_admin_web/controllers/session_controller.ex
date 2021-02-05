@@ -1,10 +1,16 @@
 defmodule TransigoAdminWeb.SessionController do
   use TransigoAdminWeb, :controller
   alias TransigoAdminWeb.Auth
-  alias TransigoAdmin.Account.Guardian
+  alias TransigoAdmin.Account.{Admin, Guardian}
 
   def new(conn, _params) do
-    render(conn, "new.html")
+    case Guardian.Plug.current_resource(conn) do
+      %Admin{} ->
+        redirect(conn, to: Routes.kaffy_home_path(conn, :index))
+
+      _ ->
+        render(conn, "new.html")
+    end
   end
 
   def create(conn, %{"session" => %{"email" => email, "password" => password}}) do

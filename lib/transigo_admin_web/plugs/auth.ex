@@ -1,7 +1,7 @@
 defmodule TransigoAdminWeb.Auth do
   @behaviour Plug
 
-  alias TransigoAdmin.Account
+  alias TransigoAdmin.{Account, Account.Guardian}
   alias TransigoAdminWeb.Router.Helpers, as: Routes
 
   import Argon2, only: [verify_pass: 2, no_user_verify: 0]
@@ -11,7 +11,7 @@ defmodule TransigoAdminWeb.Auth do
 
   @impl true
   def call(conn, _opts) do
-    case TransigoAdmin.Account.Guardian.Plug.current_resource(conn) do
+    case Guardian.Plug.current_resource(conn) do
       %TransigoAdmin.Account.Admin{} ->
         conn
 

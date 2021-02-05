@@ -123,4 +123,9 @@ defmodule TransigoAdmin.Account do
     from(a in User, where: not is_nil(a.webhook))
     |> Repo.all()
   end
+
+  def list_oban_jobs() do
+    from(oj in Oban.Job, order_by: [desc: oj.inserted_at])
+    |> Repo.all()
+  end
 end
