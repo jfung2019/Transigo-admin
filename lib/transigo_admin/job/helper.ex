@@ -17,17 +17,11 @@ defmodule TransigoAdmin.Job.Helper do
   defp post_webhook_event(%User{webhook: webhook}, payload),
     do: HTTPoison.post(webhook, payload, [{"Content-Type", "application/json"}])
 
-  def format_webhook_result(transactions) do
-    total =
+  def cal_total_sum(transactions),
+    do:
       Enum.reduce(transactions, %{sum: 0}, fn %{sum: sum}, acc ->
         %{sum: acc.sum + sum}
       end)
-
-    %{
-      totalRemitSum: total.sum,
-      dailyTransaction: transactions
-    }
-  end
 
   def move_transaction_to_state(%Transaction{} = transaction, state) do
     case Credit.update_transaction(transaction, %{transaction_state: state}) do
