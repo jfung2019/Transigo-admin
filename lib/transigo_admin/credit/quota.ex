@@ -7,7 +7,7 @@ defmodule TransigoAdmin.Credit.Quota do
   schema "quota" do
     belongs_to :importer, TransigoAdmin.Account.Importer
     field :quota_UID, :string
-    field :quota_USD, :decimal
+    field :quota_USD, :float
     field :credit_days_quota, :integer
     field :creditStatus, :string
     field :funding_source_url, :string

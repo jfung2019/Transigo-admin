@@ -15,7 +15,10 @@ defmodule TransigoAdmin.Account.Importer do
     field :business_address_state, :string
     field :business_address_zip, :string
     field :business_address_country, :string
-    field :business_type, Ecto.Enum, values: [:soleProprietorship, :corporation, :llc, :partnership]
+
+    field :business_type, Ecto.Enum,
+      values: [:soleProprietorship, :corporation, :llc, :partnership]
+
     field :business_classification_id, :string
 
     belongs_to :contact, TransigoAdmin.Account.Contact
@@ -57,7 +60,7 @@ defmodule TransigoAdmin.Account.Importer do
     :business_address_zip,
     :business_address_country,
     :business_type,
-    :business_classification_id,
+    :business_classification_id
   ]
 
   @doc false

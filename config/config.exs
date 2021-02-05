@@ -39,7 +39,7 @@ config :transigo_admin, Oban,
      crontab: [
        {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
        {"0 0 * * *", TransigoAdmin.Job.DailyBalance},
-       {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevshare}
+       {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevShare}
      ]}
   ]
 

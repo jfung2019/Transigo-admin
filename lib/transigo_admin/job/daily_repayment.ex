@@ -19,7 +19,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Enum.each(&create_dwolla_transfer(&1, access_token))
 
     # check transfer status
-    Credit.list_transactions_with_repaid_pulled()
+    Credit.list_transactions_by_state("pull_initiated")
     |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
     |> Enum.reject(&is_nil(&1))
     |> Helper.notify_api_users("daily_repayment")
@@ -30,8 +30,8 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
     repaid_amount =
       transaction.second_installment_USD
-      |> Decimal.round(2)
-      |> Decimal.to_string()
+      |> Float.round(2)
+      |> Float.to_string()
 
     message =
       "You have a transaction due in 3 days. Please have USD#{repaid_amount} ready in your account."
@@ -50,6 +50,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   defp create_dwolla_transfer(%Transaction{} = transaction, access_token) do
     %{importer_id: importer_id, second_installment_USD: repaid_value} = transaction
     %{funding_source_url: funding_source_url} = Credit.find_granted_quota(importer_id)
+    repaid_value = Float.round(repaid_value, 2)
 
     body = %{
       _links: %{
@@ -88,12 +89,12 @@ defmodule TransigoAdmin.Job.DailyRepayment do
       {:ok, %{body: body}} ->
         case Jason.decode(body) do
           {:ok, %{"status" => "processed"}} ->
-            Credit.update_transaction(transaction, %{transaction_state: "repaid"})
+            attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
+            {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
             repaid_amount =
               transaction.second_installment_USD
-              |> Decimal.round(2)
-              |> Decimal.to_float()
+              |> Float.round(2)
 
             %{
               transactionUID: transaction.transaction_UID,

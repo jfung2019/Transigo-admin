@@ -1,12 +1,8 @@
 defmodule TransigoAdmin.Job.Helper do
   alias TransigoAdmin.{Account, Account.User}
+  alias TransigoAdmin.{Credit, Credit.Transaction}
 
   def notify_api_users(result, event) do
-    Account.list_users_with_webhook()
-    |> Enum.each(&post_webhook_event(&1, event, result))
-  end
-
-  defp post_webhook_event(%User{webhook: webhook}, event, result) do
     payload =
       %{
         event: event,
@@ -14,7 +10,37 @@ defmodule TransigoAdmin.Job.Helper do
       }
       |> Jason.encode!()
 
-    HTTPoison.post(webhook, payload, [{"Content-Type", "application/json"}])
+    Account.list_users_with_webhook()
+    |> Enum.each(&post_webhook_event(&1, payload))
+  end
+
+  defp post_webhook_event(%User{webhook: webhook}, payload),
+    do: HTTPoison.post(webhook, payload, [{"Content-Type", "application/json"}])
+
+  def format_webhook_result(transactions) do
+    total =
+      Enum.reduce(transactions, %{sum: 0}, fn %{sum: sum}, acc ->
+        %{sum: acc.sum + sum}
+      end)
+
+    %{
+      totalRemitSum: total.sum,
+      dailyTransaction: transactions
+    }
+  end
+
+  def move_transaction_to_state(%Transaction{} = transaction, state) do
+    case Credit.update_transaction(transaction, %{transaction_state: state}) do
+      {:ok, transaction} ->
+        %{
+          transctionUID: transaction.transaction_UID,
+          sum: Float.round(transaction.financed_sum, 2),
+          transactionDateTime: transaction.repaid_datetime
+        }
+
+      {:error, _} ->
+        nil
+    end
   end
 
   def dwolla_auth() do

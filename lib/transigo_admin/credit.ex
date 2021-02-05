@@ -29,8 +29,8 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
-  def list_transactions_with_repaid_pulled() do
-    from(t in Transaction, where: t.transaction_state == "pull_initiated")
+  def list_transactions_by_state(state) do
+    from(t in Transaction, where: t.transaction_state == ^state)
     |> Repo.all()
   end
 

@@ -5,7 +5,7 @@ defmodule TransigoAdmin.CreditTest do
 
   describe "transaction" do
     setup do
-      exporter =
+      {:ok, exporter} =
         Account.create_exporter(%{
           exporter_transigoUID: "test_exporter",
           business_name: "test",
@@ -19,7 +19,7 @@ defmodule TransigoAdmin.CreditTest do
           signatory_title: "owner"
         })
 
-      importer =
+      {:ok, importer} =
         Account.create_importer(%{
           importer_transigoUID: "test_importer",
           business_name: "test",
@@ -40,13 +40,63 @@ defmodule TransigoAdmin.CreditTest do
 
     test "can get transaction due in 3 days", %{exporter: exporter, importer: importer} do
       # transaction far in the future
+      Credit.create_transaction(%{
+        transaction_UID: "future",
+        credit_term_days: 60,
+        down_payment_USD: 3000,
+        factoring_fee_USD: 3000,
+        transaction_state: "originated",
+        financed_sum: 3000,
+        invoice_date: Timex.now(),
+        second_installment_USD: 3000,
+        importer_id: importer.id,
+        exporter_id: exporter.id
+      })
 
       # transaction due in 3 days
-#      transaction_due = Credit.create_transaction(%{})
+      due_date =
+        Timex.now()
+        |> Timex.shift(days: -57)
+
+      {:ok, transaction_due} =
+        Credit.create_transaction(%{
+          transaction_UID: "due",
+          credit_term_days: 60,
+          down_payment_USD: 3000,
+          factoring_fee_USD: 3000,
+          transaction_state: "originated",
+          financed_sum: 3000,
+          invoice_date: due_date,
+          second_installment_USD: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
 
       # transaction in the past
+      due_past =
+        Timex.now()
+        |> Timex.shift(days: -120)
 
-      assert [] == Credit.list_transactions_due_in_3_days()
+      Credit.create_transaction(%{
+        transaction_UID: "past",
+        credit_term_days: 60,
+        down_payment_USD: 3000,
+        factoring_fee_USD: 3000,
+        transaction_state: "originated",
+        financed_sum: 3000,
+        invoice_date: due_past,
+        second_installment_USD: 3000,
+        importer_id: importer.id,
+        exporter_id: exporter.id
+      })
+
+      assert [transaction_due] == Credit.list_transactions_due_in_3_days()
+    end
+
+    test "can transaction due today", %{exporter: exporter, importer: importer} do
+    end
+
+    test "can get transaction with different state", %{exporter: exporter, importer: importer} do
     end
   end
 end

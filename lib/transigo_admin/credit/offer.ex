@@ -6,10 +6,10 @@ defmodule TransigoAdmin.Credit.Offer do
   @foreign_key_type Ecto.UUID
   schema "offer" do
     belongs_to :transaction, TransigoAdmin.Credit.Transaction
-    field :transaction_USD, :decimal
-    field :advance_percentage, :decimal
-    field :advance_USD, :decimal
-    field :importer_fee, :decimal
+    field :transaction_USD, :float
+    field :advance_percentage, :float
+    field :advance_USD, :float
+    field :importer_fee, :float
     field :offer_accepted_declined, :string
 
     timestamps(
