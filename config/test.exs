@@ -9,7 +9,7 @@ config :transigo_admin, TransigoAdmin.Repo,
   username: "postgres",
   password: "postgres",
   database: "transigo_admin_test#{System.get_env("MIX_TEST_PARTITION")}",
-  hostname: "localhost",
+  hostname: System.get_env("DB_HOST", "localhost"),
   pool: Ecto.Adapters.SQL.Sandbox
 
 # We don't run a server during test. If one is required,
