@@ -113,6 +113,12 @@ defmodule TransigoAdmin.Account do
     |> Repo.one()
   end
 
+  def create_contact(attrs \\ %{}) do
+    %Contact{}
+    |> Contact.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def create_importer(attrs \\ %{}) do
     %Importer{}
     |> Importer.changeset(attrs)

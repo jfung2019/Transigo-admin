@@ -3,6 +3,7 @@ defmodule TransigoAdmin.Account.Importer do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
   schema "importer" do
     field :importer_transigoUID, :string
     field :business_name, :string

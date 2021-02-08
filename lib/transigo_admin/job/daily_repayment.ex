@@ -6,13 +6,15 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
   alias SendGrid.{Mail, Email}
 
+  @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
+
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
     # notify customers of the dwolla pull
     Credit.list_transactions_due_in_3_days()
     |> Enum.each(&send_transaction_due_email(&1))
 
-    {:ok, access_token} = Helper.dwolla_auth()
+    {:ok, access_token} = @dwolla_api.dwolla_auth()
 
     # create transfer from customer to Transigo
     Credit.list_transactions_due_today()
@@ -65,7 +67,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
       }
     }
 
-    case Helper.dwolla_post("transfers", access_token, body) do
+    case @dwolla_api.dwolla_post("transfers", access_token, body) do
       {:ok, %{headers: headers, body: body}} ->
         case Enum.into(headers, %{}) do
           %{"Location" => transfer_url} ->
@@ -87,7 +89,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   end
 
   defp check_transaction_dwolla_status(%Transaction{} = transaction, access_token) do
-    case Helper.dwolla_get(transaction.dwolla_repayment_transfer_url, access_token) do
+    case @dwolla_api.dwolla_get(transaction.dwolla_repayment_transfer_url, access_token) do
       {:ok, %{body: body}} ->
         case Jason.decode(body) do
           {:ok, %{"status" => "processed"}} ->

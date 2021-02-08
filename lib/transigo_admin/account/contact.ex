@@ -4,6 +4,7 @@ defmodule TransigoAdmin.Account.Contact do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "contact" do
+    field :contact_transigoUID, :string
     field :first_name, :string
     field :last_name, :string
     field :mobile, :string
@@ -13,6 +14,7 @@ defmodule TransigoAdmin.Account.Contact do
     field :country, :string, default: "US"
     field :ssn, :string
     field :address, :string
+    field :date_of_birth, :date
 
     timestamps(
       inserted_at_source: :created_datetime,
@@ -21,20 +23,35 @@ defmodule TransigoAdmin.Account.Contact do
     )
   end
 
+  @available_attrs [
+    :contact_transigoUID,
+    :first_name,
+    :last_name,
+    :mobile,
+    :work_phone,
+    :email,
+    :role,
+    :country,
+    :ssn,
+    :address,
+    :date_of_birth
+  ]
+
+  @required_attrs [
+    :contact_transigoUID,
+    :first_name,
+    :last_name,
+    :mobile,
+    :work_phone,
+    :email,
+    :role,
+    :country
+  ]
+
   @doc false
   def changeset(contact, attrs) do
     contact
-    |> cast(attrs, [
-      :first_name,
-      :last_name,
-      :mobile,
-      :work_phone,
-      :email,
-      :role,
-      :country,
-      :ssn,
-      :address
-    ])
-    |> validate_required([:first_name, :last_name, :mobile, :work_phone, :email, :country])
+    |> cast(attrs, @available_attrs)
+    |> validate_required(@required_attrs)
   end
 end

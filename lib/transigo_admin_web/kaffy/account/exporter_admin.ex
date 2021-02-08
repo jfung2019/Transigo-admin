@@ -27,13 +27,13 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
         slug: "sign_doc",
         name: "Sign Doc",
         view: TransigoAdminWeb.CustomPageView,
-        template: "sign_doc.html",
+        template: "sign_doc.html"
       },
       %{
         slug: "periodic_jobs",
         name: "Periodic Jobs",
         view: TransigoAdminWeb.CustomPageView,
-        template: "oban_job.html",
+        template: "oban_job.html"
       }
     ]
   end

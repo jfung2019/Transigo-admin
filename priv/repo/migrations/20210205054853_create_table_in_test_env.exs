@@ -4,8 +4,21 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
   def change do
     execute "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 
+    execute "ALTER TABLE users RENAME TO admins;"
+
     create_if_not_exists table("contact", primary_key: false) do
       add :id, :binary_id, primary_key: true, default: fragment("uuid_generate_v4()")
+      add :contact_transigoUID, :string
+      add :first_name, :string
+      add :last_name, :string
+      add :mobile, :string
+      add :work_phone, :string
+      add :email, :string
+      add :role, :string
+      add :country, :string
+      add :ssn, :string
+      add :address, :string
+      add :date_of_birth, :date
 
       timestamps(
         inserted_at: :created_datetime,
@@ -82,6 +95,18 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :dwolla_repayment_transfer_url, :string
       add :importer_id, references(:importer, on_delete: :nothing, type: :binary_id)
       add :exporter_id, references(:exporter, on_delete: :nothing, type: :binary_id)
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
+
+    create_if_not_exists table("users", primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :webhook, :string
+      add :company, :string
 
       timestamps(
         inserted_at: :created_datetime,
