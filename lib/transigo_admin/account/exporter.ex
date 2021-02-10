@@ -3,13 +3,13 @@ defmodule TransigoAdmin.Account.Exporter do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
   schema "exporter" do
     field :exporter_transigoUID, :string
     field :business_name, :string
     field :address, :string
     field :business_address_country, :string
     field :registration_number, :string
-    field :exporter_origin, :string, default: "DH"
     field :signatory_first_name, :string
     field :signatory_last_name, :string
     field :signatory_mobile, :string
@@ -17,6 +17,8 @@ defmodule TransigoAdmin.Account.Exporter do
     field :signatory_title, :string
     field :hellosign_signature_request_id, :string
     field :hs_signing_status, :string, default: "awaiting_signature"
+
+    belongs_to :marketplace, TransigoAdmin.Credit.Marketplace
 
     timestamps(
       inserted_at_source: :created_datetime,
@@ -31,14 +33,14 @@ defmodule TransigoAdmin.Account.Exporter do
     :address,
     :business_address_country,
     :registration_number,
-    :exporter_origin,
     :signatory_first_name,
     :signatory_last_name,
     :signatory_mobile,
     :signatory_email,
     :signatory_title,
     :hellosign_signature_request_id,
-    :hs_signing_status
+    :hs_signing_status,
+    :marketplace_id
   ]
 
   @required_attrs [
@@ -47,13 +49,13 @@ defmodule TransigoAdmin.Account.Exporter do
     :address,
     :business_address_country,
     :registration_number,
-    :exporter_origin,
     :signatory_first_name,
     :signatory_last_name,
     :signatory_mobile,
     :signatory_email,
     :signatory_title,
-    :hs_signing_status
+    :hs_signing_status,
+    :marketplace_id
   ]
 
   @doc false

@@ -5,6 +5,9 @@ defmodule TransigoAdmin.CreditTest do
 
   describe "transaction" do
     setup do
+      {:ok, %{id: marketplace_id}} =
+        Credit.create_marketplace(%{origin: "DH", marketplace: "DHgate"})
+
       {:ok, exporter} =
         Account.create_exporter(%{
           exporter_transigoUID: "test_exporter",
@@ -12,6 +15,7 @@ defmodule TransigoAdmin.CreditTest do
           address: "100 address",
           business_address_country: "country",
           registration_number: "123",
+          marketplace_id: marketplace_id,
           signatory_first_name: "first",
           signatory_last_name: "last",
           signatory_mobile: "12345678",

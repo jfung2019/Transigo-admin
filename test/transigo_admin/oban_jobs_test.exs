@@ -4,6 +4,9 @@ defmodule TransigoAdmin.ObanJobsTest do
   alias TransigoAdmin.{Account, Credit, Job}
 
   setup do
+    {:ok, %{id: marketplace_id}} =
+      Credit.create_marketplace(%{origin: "DH", marketplace: "DHgate"})
+
     {:ok, exporter} =
       Account.create_exporter(%{
         exporter_transigoUID: "test_exporter",
@@ -11,6 +14,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         address: "100 address",
         business_address_country: "country",
         registration_number: "123",
+        marketplace_id: marketplace_id,
         signatory_first_name: "first",
         signatory_last_name: "last",
         signatory_mobile: "12345678",
@@ -18,16 +22,17 @@ defmodule TransigoAdmin.ObanJobsTest do
         signatory_title: "owner"
       })
 
-    {:ok, %{id: contact_id}} = Account.create_contact(%{
-      contact_transigoUID: "importer_contact",
-      first_name: "first",
-      last_name: "last",
-      mobile: "12345678",
-      work_phone: "12345678",
-      email: "test@email.com",
-      role: "owner",
-      country: "us"
-    })
+    {:ok, %{id: contact_id}} =
+      Account.create_contact(%{
+        contact_transigoUID: "importer_contact",
+        first_name: "first",
+        last_name: "last",
+        mobile: "12345678",
+        work_phone: "12345678",
+        email: "test@email.com",
+        role: "owner",
+        country: "us"
+      })
 
     {:ok, importer} =
       Account.create_importer(%{

@@ -4,6 +4,7 @@ defmodule TransigoAdmin.Account.User do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
+    field :user_uid, :string
     field :webhook, :string
     field :company, :string
 
@@ -17,7 +18,7 @@ defmodule TransigoAdmin.Account.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:webhook, :company])
-    |> validate_required([:company])
+    |> cast(attrs, [:user_uid, :webhook, :company])
+    |> validate_required([:user_uid, :company])
   end
 end

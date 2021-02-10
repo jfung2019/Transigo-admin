@@ -42,7 +42,19 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :business_address_country, :string
       add :business_type, :string
       add :business_classification_id, :string
-      add :contact_id, references(:contact, on_delete: :nothing, type: :binary_id)
+      add :contact_id, references(:contact, on_delete: :delete_all, type: :binary_id)
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
+
+    create_if_not_exists table("marketplaces", primary_key: false) do
+      add :id, :binary_id, primary_key: true, default: fragment("uuid_generate_v4()")
+      add :origin, :string
+      add :marketplace, :string
 
       timestamps(
         inserted_at: :created_datetime,
@@ -58,7 +70,6 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :address, :string
       add :business_address_country, :string
       add :registration_number, :string
-      add :exporter_origin, :string, default: "DH"
       add :signatory_first_name, :string
       add :signatory_last_name, :string
       add :signatory_mobile, :string
@@ -66,6 +77,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :signatory_title, :string
       add :hellosign_signature_request_id, :string
       add :hs_signing_status, :string, default: "awaiting_signature"
+      add :marketplace_id, references(:marketplaces, on_delete: :delete_all, type: :binary_id)
 
       timestamps(
         inserted_at: :created_datetime,
@@ -93,8 +105,8 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :second_installment_USD, :float
       add :repaid_datetime, :utc_datetime
       add :dwolla_repayment_transfer_url, :string
-      add :importer_id, references(:importer, on_delete: :nothing, type: :binary_id)
-      add :exporter_id, references(:exporter, on_delete: :nothing, type: :binary_id)
+      add :importer_id, references(:importer, on_delete: :delete_all, type: :binary_id)
+      add :exporter_id, references(:exporter, on_delete: :delete_all, type: :binary_id)
 
       timestamps(
         inserted_at: :created_datetime,
@@ -105,6 +117,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
 
     create_if_not_exists table("users", primary_key: false) do
       add :id, :binary_id, primary_key: true
+      add :user_uid, :string
       add :webhook, :string
       add :company, :string
 

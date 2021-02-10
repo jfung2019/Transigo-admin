@@ -2,7 +2,7 @@ defmodule TransigoAdmin.Credit do
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
-  alias TransigoAdmin.Credit.{Transaction, Quota}
+  alias TransigoAdmin.Credit.{Transaction, Quota, Marketplace}
 
   def list_transactions_due_in_3_days() do
     from(
@@ -52,5 +52,11 @@ defmodule TransigoAdmin.Credit do
       where: i.id == ^importer_id and q.creditStatus in ["granted", "partial"]
     )
     |> Repo.one()
+  end
+
+  def create_marketplace(attrs \\ %{}) do
+    %Marketplace{}
+    |> Marketplace.changeset(attrs)
+    |> Repo.insert()
   end
 end
