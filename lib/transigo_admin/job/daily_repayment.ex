@@ -56,16 +56,19 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     %{funding_source_url: funding_source_url} = Credit.find_granted_quota(importer_id)
     repaid_value = Float.round(repaid_value, 2)
 
-    body = %{
-      _links: %{
-        source: %{href: funding_source_url},
-        destination: %{href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)}
-      },
-      amount: %{
-        currency: "USD",
-        value: repaid_value
+    body =
+      %{
+        _links: %{
+          source: %{href: funding_source_url},
+          destination: %{
+            href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)
+          }
+        },
+        amount: %{
+          currency: "USD",
+          value: repaid_value
+        }
       }
-    }
 
     case @dwolla_api.dwolla_post("transfers", access_token, body) do
       {:ok, %{headers: headers, body: body}} ->

@@ -46,6 +46,12 @@ defmodule TransigoAdmin.Credit do
     |> Repo.update()
   end
 
+  def create_quota(attrs \\ %{}) do
+    %Quota{}
+    |> Quota.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def find_granted_quota(importer_id) do
     from(q in Quota,
       left_join: i in assoc(q, :importer),

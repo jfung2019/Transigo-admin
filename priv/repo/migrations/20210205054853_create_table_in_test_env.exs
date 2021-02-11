@@ -86,6 +86,31 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       )
     end
 
+    create_if_not_exists table("quota", primary_key: false) do
+      add :id, :binary_id, primary_key: true, default: fragment("uuid_generate_v4()")
+      add :quota_transigoUID, :string
+      add :quota_USD, :float
+      add :credit_days_quota, :integer
+      add :credit_request_date, :date
+      add :token, :string
+      add :marketplace_transactions, :integer
+      add :marketplace_total_transaction_sum_USD, :float
+      add :marketplace_transactions_last_12_months, :integer
+      add :marketplace_total_transaction_sum_USD_last_12_months, :float
+      add :marketplace_number_disputes, :integer
+      add :marketplace_number_adverse_disputes, :integer
+      add :creditStatus, :string
+      add :funding_source_url, :string
+      add :credit_terms, :string
+      add :importer_id, references(:importer, on_delete: :delete_all, type: :binary_id)
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
+
     create_if_not_exists table("transaction", primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :transaction_UID, :string
