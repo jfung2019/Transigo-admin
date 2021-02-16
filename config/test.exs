@@ -21,7 +21,7 @@ config :transigo_admin, TransigoAdminWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
-config :transigo_admin, Oban, crontab: false, queues: false, prune: :disabled
+config :transigo_admin, Oban, plugins: false, queues: false
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY", "API_KEY"),

@@ -14,9 +14,10 @@ defmodule TransigoAdmin.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: TransigoAdmin.PubSub},
       # Start the Endpoint (http/https)
-      TransigoAdminWeb.Endpoint
+      TransigoAdminWeb.Endpoint,
       # Start a worker by calling: TransigoAdmin.Worker.start_link(arg)
       # {TransigoAdmin.Worker, arg}
+      {Oban, Application.get_env(:transigo_admin, Oban)}
     ]
 
     events = [[:oban, :started], [:oban, :success], [:oban, :failed]]
