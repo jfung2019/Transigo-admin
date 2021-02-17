@@ -19,7 +19,7 @@ defmodule TransigoAdmin.Job.MonthlyRevShare do
 
     %{
       totalRemitSum: total.sum,
-      monthlyTransaction: transactions
+      monthlyTransactions: transactions
     }
   end
 end

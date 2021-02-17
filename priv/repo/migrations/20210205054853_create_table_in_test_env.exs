@@ -152,5 +152,31 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
         type: :utc_datetime
       )
     end
+
+    create_if_not_exists table("webhook_events", primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :event, :string
+      add :result, :map
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
+
+    create_if_not_exists table("webhook_user_events", primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :retry_number, :integer, default: 0
+      add :state, :string, default: "init"
+      add :webhook_event_id, references(:webhook_events, on_delete: :delete_all, type: :binary_id)
+      add :user_id, references(:users, on_delete: :delete_all, type: :binary_id)
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
   end
 end

@@ -181,6 +181,7 @@ defmodule TransigoAdmin.ObanJobsTest do
       # check transfers are created for transactions that dues today
       assert [%{id: ^due_id}] = Credit.list_transactions_by_state("pull_initiated")
 
+      # check transfers are processed from dwolla
       assert [%{id: ^repaid_id}] = Credit.list_transactions_by_state("repaid")
     end
   end

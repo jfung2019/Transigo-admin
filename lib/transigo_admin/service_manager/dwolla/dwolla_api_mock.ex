@@ -13,12 +13,12 @@ defmodule TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock do
     do: {:ok, %HTTPoison.Response{headers: [{"Location", @mock_transfer}], body: ""}}
 
   def dwolla_post("transfers", _token, %{_links: %{source: %{href: @mock_source_repaid}}}),
-      do: {:ok, %HTTPoison.Response{headers: [{"Location", @mock_transfer_repaid}], body: ""}}
+    do: {:ok, %HTTPoison.Response{headers: [{"Location", @mock_transfer_repaid}], body: ""}}
 
   def dwolla_post(_path, _token, _payload), do: {:ok, %HTTPoison.Response{body: ""}}
 
-  def dwolla_get(@mock_transfer_repaid, _token), do:
-    {:ok, %HTTPoison.Response{body: Jason.encode!(%{"status" => "processed"})}}
+  def dwolla_get(@mock_transfer_repaid, _token),
+    do: {:ok, %HTTPoison.Response{body: Jason.encode!(%{"status" => "processed"})}}
 
   def dwolla_get(_url, _token), do: {:ok, %HTTPoison.Response{body: ""}}
 end

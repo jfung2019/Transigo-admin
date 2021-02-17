@@ -19,7 +19,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
 
     %{
       totalRemitSum: total.sum,
-      dailyTransaction: transactions
+      dailyTransactions: transactions
     }
   end
 end

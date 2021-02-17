@@ -24,6 +24,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     Credit.list_transactions_by_state("pull_initiated")
     |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
     |> Enum.reject(&is_nil(&1))
+    |> format_webhook_result()
     |> Helper.notify_api_users("daily_repayment")
 
     :ok
@@ -56,19 +57,18 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     %{funding_source_url: funding_source_url} = Credit.find_granted_quota(importer_id)
     repaid_value = Float.round(repaid_value, 2)
 
-    body =
-      %{
-        _links: %{
-          source: %{href: funding_source_url},
-          destination: %{
-            href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)
-          }
-        },
-        amount: %{
-          currency: "USD",
-          value: repaid_value
+    body = %{
+      _links: %{
+        source: %{href: funding_source_url},
+        destination: %{
+          href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)
         }
+      },
+      amount: %{
+        currency: "USD",
+        value: repaid_value
       }
+    }
 
     case @dwolla_api.dwolla_post("transfers", access_token, body) do
       {:ok, %{headers: headers, body: body}} ->
@@ -99,13 +99,9 @@ defmodule TransigoAdmin.Job.DailyRepayment do
             attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
             {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
-            repaid_amount =
-              transaction.second_installment_USD
-              |> Float.round(2)
-
             %{
               transactionUID: transaction.transaction_UID,
-              repaymentSum: repaid_amount,
+              sum: Float.round(transaction.second_installment_USD, 2),
               transactionDatetime: transaction.repaid_datetime
             }
 
@@ -116,5 +112,14 @@ defmodule TransigoAdmin.Job.DailyRepayment do
       _ ->
         nil
     end
+  end
+
+  def format_webhook_result(transactions) do
+    total = Helper.cal_total_sum(transactions)
+
+    %{
+      repaymentSum: total.sum,
+      dailyRepayments: transactions
+    }
   end
 end

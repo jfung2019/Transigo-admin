@@ -32,15 +32,18 @@ config :kaffy,
 
 config :transigo_admin, Oban,
   repo: TransigoAdmin.Repo,
-  queues: [default: 20],
+  queues: [default: 20, webhook: 20],
   plugins: [
-    {Oban.Plugins.Pruner, max_age: 300},
+    {Oban.Plugins.Pruner, max_age: 21600},
     {Oban.Plugins.Cron,
      timezone: "Asia/Hong_Kong",
      crontab: [
        {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
        {"0 0 * * *", TransigoAdmin.Job.DailyBalance},
-       {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevShare}
+       {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevShare},
+       {"* * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "init_send_fail"}},
+       {"0 * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "first_resend_fail"}},
+       {"0 0 * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "second_resend_fail"}}
      ]}
   ]
 

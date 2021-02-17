@@ -2,7 +2,16 @@ defmodule TransigoAdmin.Account do
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
-  alias TransigoAdmin.Account.{Admin, Exporter, Importer, Contact, User}
+
+  alias TransigoAdmin.Account.{
+    Admin,
+    Exporter,
+    Importer,
+    Contact,
+    User,
+    WebhookEvent,
+    WebhookUserEvent
+  }
 
   def create_admin(attrs \\ %{}) do
     %Admin{}
@@ -125,13 +134,33 @@ defmodule TransigoAdmin.Account do
     |> Repo.insert()
   end
 
-  def list_users_with_webhook() do
-    from(a in User, where: not is_nil(a.webhook))
-    |> Repo.all()
-  end
+  def list_users, do: Repo.all(User)
 
   def list_oban_jobs() do
     from(oj in Oban.Job, order_by: [desc: oj.inserted_at])
     |> Repo.all()
+  end
+
+  def create_webhook_event(attrs \\ %{}) do
+    %WebhookEvent{}
+    |> WebhookEvent.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def list_webhook_user_event_by_state(state, preloads \\ [:webhook_event, :user]) do
+    from(wue in WebhookUserEvent, where: wue.state == ^state, preload: ^preloads)
+    |> Repo.all()
+  end
+
+  def create_webhook_user_event(attrs \\ %{}) do
+    %WebhookUserEvent{}
+    |> WebhookUserEvent.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_webhook_user_event(webhook_user_event, attrs \\ %{}) do
+    webhook_user_event
+    |> WebhookUserEvent.changeset(attrs)
+    |> Repo.update()
   end
 end
