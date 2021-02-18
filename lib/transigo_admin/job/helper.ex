@@ -3,25 +3,26 @@ defmodule TransigoAdmin.Job.Helper do
   alias TransigoAdmin.{Credit, Credit.Transaction}
 
   def notify_api_users(result, event) do
-    now = Timex.now()
+    {:ok, webhook_event} = Account.create_webhook_event(%{message_uid: get_message_uid(), event: event, result: result})
 
     payload =
       %{
         event: event,
         result: result,
         metadata: %{
-          currentDateTime: now,
-          originalDateTime: now,
+          messageUID: webhook_event.message_uid,
+          currentDateTime: webhook_event.inserted_at,
+          originalDateTime: webhook_event.inserted_at,
           retryNumber: 0
         }
       }
       |> Jason.encode!()
 
-    {:ok, webhook_event} = Account.create_webhook_event(%{event: event, result: result})
-
     Account.list_users()
     |> Enum.each(&send_webhook_event(&1, payload, webhook_event))
   end
+
+  def post_webhook_event(%User{webhook: nil}, _payload), do: {:error, :webhook_not_found}
 
   def post_webhook_event(%User{webhook: webhook}, payload),
     do: HTTPoison.post(webhook, payload, [{"Content-Type", "application/json"}])
@@ -37,6 +38,11 @@ defmodule TransigoAdmin.Job.Helper do
       _ ->
         Account.update_webhook_user_event(user_event, %{state: "init_send_fail"})
     end
+  end
+
+  def get_message_uid do
+    {:ok, %{body: message_uid}} = HTTPoison.get(Application.get_env(:transigo_admin, :uid_util_url))
+    message_uid
   end
 
   def cal_total_sum(transactions),

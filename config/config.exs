@@ -19,7 +19,8 @@ config :transigo_admin,
   dwolla_root_url: "https://api-sandbox.dwolla.com",
   dwolla_client_id: System.get_env("DWOLLA_KEY"),
   dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
-  dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE")
+  dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE"),
+  uid_util_url: System.get_env("UID_UTIL_URL")
 
 config :kaffy,
   otp_app: :transigo_admin,

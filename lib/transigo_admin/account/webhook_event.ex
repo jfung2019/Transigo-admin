@@ -4,6 +4,7 @@ defmodule TransigoAdmin.Account.WebhookEvent do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "webhook_events" do
+    field :message_uid, :string
     field :event, :string
     field :result, :map
 
@@ -17,7 +18,7 @@ defmodule TransigoAdmin.Account.WebhookEvent do
   @doc false
   def changeset(webhook_event, attrs) do
     webhook_event
-    |> cast(attrs, [:event, :result])
-    |> validate_required([:event, :result])
+    |> cast(attrs, [:message_uid, :event, :result])
+    |> validate_required([:message_uid, :event, :result])
   end
 end

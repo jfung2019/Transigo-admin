@@ -17,8 +17,9 @@ defmodule TransigoAdmin.Job.WebhookResend do
         event: user_event.webhook_event.event,
         result: user_event.webhook_event.result,
         metadata: %{
+          message_uid: user_event.webhook_event.message_uid,
           currentDateTime: Timex.now(),
-          originalDateTime: user_event.inserted_at,
+          originalDateTime: user_event.webhook_event.inserted_at,
           retryNumber: retries + 1
         }
       }

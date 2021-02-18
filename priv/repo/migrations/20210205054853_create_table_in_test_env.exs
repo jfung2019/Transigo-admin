@@ -155,6 +155,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
 
     create_if_not_exists table("webhook_events", primary_key: false) do
       add :id, :binary_id, primary_key: true
+      add :message_uid, :string
       add :event, :string
       add :result, :map
 
