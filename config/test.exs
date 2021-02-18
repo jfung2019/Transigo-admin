@@ -28,4 +28,5 @@ config :sendgrid,
   sandbox_enable: true
 
 config :transigo_admin,
-  dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock
+  dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock,
+  util_api: TransigoAdmin.ServiceManager.Util.UtilMock

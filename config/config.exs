@@ -20,6 +20,7 @@ config :transigo_admin,
   dwolla_client_id: System.get_env("DWOLLA_KEY"),
   dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
   dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE"),
+  util_api: TransigoAdmin.ServiceManager.Util.UtilApi,
   uid_util_url: System.get_env("UID_UTIL_URL")
 
 config :kaffy,

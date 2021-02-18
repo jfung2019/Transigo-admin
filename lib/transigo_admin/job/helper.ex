@@ -2,8 +2,15 @@ defmodule TransigoAdmin.Job.Helper do
   alias TransigoAdmin.{Account, Account.User, Account.WebhookEvent}
   alias TransigoAdmin.{Credit, Credit.Transaction}
 
+  @util_api Application.compile_env(:transigo_admin, :util_api)
+
   def notify_api_users(result, event) do
-    {:ok, webhook_event} = Account.create_webhook_event(%{message_uid: get_message_uid(), event: event, result: result})
+    {:ok, webhook_event} =
+      Account.create_webhook_event(%{
+        message_uid: @util_api.get_message_uid(),
+        event: event,
+        result: result
+      })
 
     payload =
       %{
@@ -38,11 +45,6 @@ defmodule TransigoAdmin.Job.Helper do
       _ ->
         Account.update_webhook_user_event(user_event, %{state: "init_send_fail"})
     end
-  end
-
-  def get_message_uid do
-    {:ok, %{body: message_uid}} = HTTPoison.get(Application.get_env(:transigo_admin, :uid_util_url))
-    message_uid
   end
 
   def cal_total_sum(transactions),
