@@ -4,7 +4,7 @@ defmodule TransigoAdmin.Job.WebhookResend do
   alias TransigoAdmin.{Account, Account.WebhookUserEvent, Job.Helper}
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{state: state}}) do
+  def perform(%Oban.Job{args: %{"state" => state}}) do
     Account.list_webhook_user_event_by_state(state)
     |> Enum.each(&resend_event(&1))
 
