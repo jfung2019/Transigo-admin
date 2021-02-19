@@ -1,3 +1,10 @@
+<style>
+    .container {
+        padding: 0;
+        margin: 0;
+    }
+</style>
+
 <h1>Periodic Jobs</h1>
 <table>
     <thead>
@@ -21,25 +28,25 @@
         </tr>
     </thead>
     <tbody>
-        <%= for job <- @jobs do %>
-          <tr>
-              <td><%= job.state %></td>
-              <td><%= job.queue %></td>
-              <td><%= job.worker %></td>
-              <td><%= job.errors %></td>
-              <td><%= job.tags %></td>
-              <td><%= job.attempt %></td>
-              <td><%= job.attempted_by %></td>
-              <td><%= job.max_attempts %></td>
-              <td><%= job.meta %></td>
-              <td><%= job.attempted_at %></td>
-              <td><%= job.completed_at %></td>
-              <td><%= job.discarded_at %></td>
-              <td><%= job.cancelled_at %></td>
-              <td><%= job.inserted_at %></td>
-              <td><%= job.scheduled_at %></td>
-              <td><%= job.unsaved_error %></td>
-          </tr>
-        <% end %>
+    <%= for job <- @jobs do %>
+        <tr>
+            <td><%= job.state %></td>
+            <td><%= job.queue %></td>
+            <td><%= job.worker %></td>
+            <td><%= Jason.encode!(job.errors) %></td>
+            <td><%= job.tags %></td>
+            <td><%= job.attempt %></td>
+            <td><%= job.attempted_by %></td>
+            <td><%= job.max_attempts %></td>
+            <td><%= Jason.encode!(job.meta) %></td>
+            <td><%= job.attempted_at %></td>
+            <td><%= job.completed_at %></td>
+            <td><%= job.discarded_at %></td>
+            <td><%= job.cancelled_at %></td>
+            <td><%= job.inserted_at %></td>
+            <td><%= job.scheduled_at %></td>
+            <td><%= job.unsaved_error %></td>
+        </tr>
+    <% end %>
     </tbody>
 </table>
