@@ -34,7 +34,7 @@ config :kaffy,
 
 config :transigo_admin, Oban,
   repo: TransigoAdmin.Repo,
-  queues: [default: 20, webhook: 20],
+  queues: [default: 20, webhook: 20, eh_status: 20],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 21600},
     {Oban.Plugins.Cron,
