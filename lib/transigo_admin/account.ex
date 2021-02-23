@@ -140,6 +140,8 @@ defmodule TransigoAdmin.Account do
     |> Repo.update()
   end
 
+  def get_importer!(id), do: Repo.get!(Importer, id)
+
   def list_importer_with_pending_eh_job() do
     from(i in Importer, where: not is_nil(i.eh_grade_job_url) and is_nil(i.eh_grade))
     |> Repo.all()

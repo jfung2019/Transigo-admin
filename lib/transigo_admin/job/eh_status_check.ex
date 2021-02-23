@@ -3,6 +3,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
 
   alias TransigoAdmin.{Credit, Credit.Quota}
   alias TransigoAdmin.{Account, Account.Importer}
+  alias SendGrid.{Mail, Email}
 
   @eh_api Application.compile_env(:transigo_admin, :eh_api)
 
@@ -77,6 +78,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
         body
         |> Jason.decode(body)
         |> update_job_result(schema)
+        |> send_email_to_importer()
 
       _ ->
         nil
@@ -103,8 +105,57 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   defp update_job_result({:ok, result}, %Importer{} = importer),
     do: Account.update_importer(importer, %{eh_grade: result})
 
-  defp update_job_result({:ok, result}, %Quota{} = quota),
-    do: Credit.update_quota(quota, %{eh_cover: result})
+  defp update_job_result(
+         {:ok, %{"decision" => %{"permanent" => %{"permanentAmount" => eh_amount}}} = result},
+         %Quota{plaid_underwriting_result: underwriting_amount} = quota
+       ) do
+    cond do
+      eh_amount > underwriting_amount and underwriting_amount >= 5000 ->
+        Credit.update_quota(quota, %{
+          eh_cover: result,
+          quota_USD: underwriting_amount,
+          creditStatus: "granted"
+        })
+
+      eh_amount < underwriting_amount and eh_amount >= 5000 ->
+        Credit.update_quota(quota, %{
+          eh_cover: result,
+          quota_USD: eh_amount,
+          creditStatus: "granted"
+        })
+
+      true ->
+        Credit.update_quota(quota, %{eh_cover: result, creditStatus: "rejected"})
+    end
+  end
+
+  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, status: "granted"}}) do
+    contact = Account.get_contact_by_importer(importer_id)
+    importer = Account.get_importer!(importer_id)
+    kyc_url = "http://api.tcaas.app/v2/importers/#{importer.importer_transigoUID}/kyc"
+    message = "<p>Quota is granted. Please click <a href='#{kyc_url}'>here</a> to continue.</p>"
+
+    Email.build()
+    |> Email.put_from("tcaas@transigo.io", "Transigo")
+    |> Email.add_to(contact.email)
+    |> Email.put_subject("Transigo Quota Granted")
+    |> Email.put_html(message)
+    |> Mail.send()
+  end
+
+  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, status: "rejected"}}) do
+    contact = Account.get_contact_by_importer(importer_id)
+    message = "<p>Quota is rejected.</p>"
+
+    Email.build()
+    |> Email.put_from("tcaas@transigo.io", "Transigo")
+    |> Email.add_to(contact.email)
+    |> Email.put_subject("Transigo Quota Rejected")
+    |> Email.put_html(message)
+    |> Mail.send()
+  end
+
+  defp send_email_to_importer(_tuple), do: :ok
 
   defp compare_old_new_eh_cover(
          %{"decision" => %{"decisionDate" => new_date}} = new_cover,
