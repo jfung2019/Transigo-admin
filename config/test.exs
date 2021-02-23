@@ -29,4 +29,5 @@ config :sendgrid,
 
 config :transigo_admin,
   dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock,
-  util_api: TransigoAdmin.ServiceManager.Util.UtilMock
+  util_api: TransigoAdmin.ServiceManager.Util.UtilMock,
+  eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApiMock

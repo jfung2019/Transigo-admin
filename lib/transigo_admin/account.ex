@@ -134,6 +134,17 @@ defmodule TransigoAdmin.Account do
     |> Repo.insert()
   end
 
+  def update_importer(importer, attrs \\ %{}) do
+    importer
+    |> Importer.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def list_importer_with_pending_eh_job() do
+    from(i in Importer, where: not is_nil(i.eh_grade_job_url) and is_nil(i.eh_grade))
+    |> Repo.all()
+  end
+
   def list_users, do: Repo.all(User)
 
   def list_oban_jobs() do

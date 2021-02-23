@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.DailyRepayment do
-  use Oban.Worker, queue: :default, max_attempts: 5
+  use Oban.Worker, queue: :transaction, max_attempts: 5
 
   import Ecto.Query, warn: false
 

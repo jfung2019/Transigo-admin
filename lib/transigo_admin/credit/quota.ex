@@ -19,6 +19,10 @@ defmodule TransigoAdmin.Credit.Quota do
     field :creditStatus, :string
     field :funding_source_url, :string
     field :credit_terms, :string, default: "open_account"
+    field :plaid_underwriting_result, :float
+    field :eh_cover, :map
+    field :eh_cover_job_url, :string
+    field :plaid_form_result, :map
 
     belongs_to :importer, TransigoAdmin.Account.Importer
 
@@ -44,6 +48,10 @@ defmodule TransigoAdmin.Credit.Quota do
     :creditStatus,
     :funding_source_url,
     :credit_terms,
+    :plaid_underwriting_result,
+    :eh_cover,
+    :eh_cover_job_url,
+    :plaid_form_result,
     :importer_id
   ]
 

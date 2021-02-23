@@ -21,7 +21,10 @@ config :transigo_admin,
   dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
   dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE"),
   util_api: TransigoAdmin.ServiceManager.Util.UtilApi,
-  uid_util_url: System.get_env("UID_UTIL_URL")
+  uid_util_url: System.get_env("UID_UTIL_URL"),
+  eh_api_key: System.get_env("TRANSIGO_EH_KEY"),
+  eh_root_url: "",
+  eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApi
 
 config :kaffy,
   otp_app: :transigo_admin,
@@ -34,7 +37,7 @@ config :kaffy,
 
 config :transigo_admin, Oban,
   repo: TransigoAdmin.Repo,
-  queues: [default: 20, webhook: 20, eh_status: 20],
+  queues: [default: 20, transaction: 20, webhook: 20, eh_status: 20],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 21600},
     {Oban.Plugins.Cron,
@@ -45,7 +48,10 @@ config :transigo_admin, Oban,
        {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevShare},
        {"* * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "init_send_fail"}},
        {"0 * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "first_resend_fail"}},
+       # ,
        {"0 0 * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "second_resend_fail"}}
+       #       {"*/10 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "10_mins"}},
+       #       {"0 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "1_hours"}}
      ]}
   ]
 

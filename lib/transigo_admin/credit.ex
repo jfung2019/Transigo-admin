@@ -65,4 +65,22 @@ defmodule TransigoAdmin.Credit do
     |> Marketplace.changeset(attrs)
     |> Repo.insert()
   end
+
+  def update_quota(quota, attrs \\ %{}) do
+    quota
+    |> Quota.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def list_quota_with_pending_eh_job() do
+    from(q in Quota,
+      where: not is_nil(q.eh_cover_job_url) and is_nil(q.eh_cover)
+    )
+    |> Repo.all()
+  end
+
+  def list_quota_with_eh_cover() do
+    from(q in Quota, where: not is_nil(q.eh_cover))
+    |> Repo.all()
+  end
 end
