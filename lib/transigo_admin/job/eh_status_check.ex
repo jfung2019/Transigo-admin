@@ -129,7 +129,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     end
   end
 
-  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, status: "granted"}}) do
+  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "granted"}}) do
     contact = Account.get_contact_by_importer(importer_id)
     importer = Account.get_importer!(importer_id)
     kyc_url = "http://api.tcaas.app/v2/importers/#{importer.importer_transigoUID}/kyc"
@@ -143,7 +143,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     |> Mail.send()
   end
 
-  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, status: "rejected"}}) do
+  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "rejected"}}) do
     contact = Account.get_contact_by_importer(importer_id)
     message = "<p>Quota is rejected.</p>"
 
