@@ -151,6 +151,8 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :user_uid, :string
       add :webhook, :string
       add :company, :string
+      add :client_id, :string
+      add :client_secret, :string
 
       timestamps(
         inserted_at: :created_datetime,

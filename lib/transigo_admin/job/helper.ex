@@ -58,12 +58,18 @@ defmodule TransigoAdmin.Job.Helper do
       {:ok, transaction} ->
         %{
           transctionUID: transaction.transaction_UID,
-          sum: Float.round(transaction.financed_sum, 2),
-          transactionDateTime: transaction.repaid_datetime
+          sum: Float.round(transaction.financed_sum, 2)
         }
+        |> put_datetime(transaction)
 
       {:error, _} ->
         nil
     end
   end
+
+  def put_datetime(result, %Transaction{transaction_state: "moved_to_payment"} = transaction),
+    do: Map.put(result, :transactionDateTime, transaction.down_payment_confirmed_datetime)
+
+  def put_datetime(result, %Transaction{transaction_state: "rev_share_to_be_paid"} = transaction),
+    do: Map.put(result, :transactionDateTime, transaction.repaid_datetime)
 end

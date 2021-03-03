@@ -39,6 +39,8 @@ defmodule TransigoAdmin.Account do
     |> Repo.insert()
   end
 
+  def delete_exporter(%Exporter{} = exporter), do: Repo.delete(exporter)
+
   def get_signing_url(signature_request_id) do
     case get_signature_request(signature_request_id) do
       {:ok, signature_request} ->
@@ -122,11 +124,15 @@ defmodule TransigoAdmin.Account do
     |> Repo.one()
   end
 
+  def get_contact!(id), do: Repo.get!(Contact, id)
+
   def create_contact(attrs \\ %{}) do
     %Contact{}
     |> Contact.changeset(attrs)
     |> Repo.insert()
   end
+
+  def delete_contact(%Contact{} = contact), do: Repo.delete(contact)
 
   def create_importer(attrs \\ %{}) do
     %Importer{}
@@ -140,6 +146,8 @@ defmodule TransigoAdmin.Account do
     |> Repo.update()
   end
 
+  def delete_importer(%Importer{} = importer), do: Repo.delete(importer)
+
   def get_importer!(id), do: Repo.get!(Importer, id)
 
   def list_importer_with_pending_eh_job() do
@@ -148,6 +156,20 @@ defmodule TransigoAdmin.Account do
   end
 
   def list_users, do: Repo.all(User)
+
+  def create_user(attrs \\ %{}) do
+    %User{}
+    |> User.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_user(user, attrs \\ %{}) do
+    user
+    |> User.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def get_user!(id), do: Repo.get!(User, id)
 
   def list_oban_jobs() do
     from(oj in Oban.Job,

@@ -7,6 +7,8 @@ defmodule TransigoAdmin.Account.User do
     field :user_uid, :string
     field :webhook, :string
     field :company, :string
+    field :client_id, :string
+    field :client_secret, :string
 
     timestamps(
       inserted_at_source: :created_datetime,
@@ -18,7 +20,7 @@ defmodule TransigoAdmin.Account.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:user_uid, :webhook, :company])
-    |> validate_required([:user_uid, :company])
+    |> cast(attrs, [:user_uid, :webhook, :company, :client_id, :client_secret])
+    |> validate_required([:user_uid, :company, :client_id, :client_secret])
   end
 end

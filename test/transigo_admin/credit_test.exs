@@ -131,24 +131,6 @@ defmodule TransigoAdmin.CreditTest do
           exporter_id: exporter.id
         })
 
-      # transaction in the past
-      due_past =
-        Timex.now()
-        |> Timex.shift(days: -120)
-
-      Credit.create_transaction(%{
-        transaction_UID: "past",
-        credit_term_days: 60,
-        down_payment_USD: 3000,
-        factoring_fee_USD: 3000,
-        transaction_state: "originated",
-        financed_sum: 3000,
-        invoice_date: due_past,
-        second_installment_USD: 3000,
-        importer_id: importer.id,
-        exporter_id: exporter.id
-      })
-
       assert [^transaction_due] = Credit.list_transactions_due_today()
     end
 

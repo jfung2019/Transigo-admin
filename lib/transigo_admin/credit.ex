@@ -21,7 +21,7 @@ defmodule TransigoAdmin.Credit do
     from(t in Transaction,
       where:
         fragment(
-          "(? + make_interval(days => ?))::date = NOW()::date",
+          "(? + make_interval(days => ?))::date <= NOW()::date",
           t.invoice_date,
           t.credit_term_days
         ) and t.transaction_state in ["email_sent", "originated"]
@@ -33,6 +33,8 @@ defmodule TransigoAdmin.Credit do
     from(t in Transaction, where: t.transaction_state == ^state)
     |> Repo.all()
   end
+
+  def get_transaction!(id), do: Repo.get!(Transaction, id)
 
   def create_transaction(attrs \\ %{}) do
     %Transaction{}
@@ -51,6 +53,8 @@ defmodule TransigoAdmin.Credit do
     |> Quota.changeset(attrs)
     |> Repo.insert()
   end
+
+  def get_quota!(id), do: Repo.get!(Importer, id)
 
   def find_granted_quota(importer_id) do
     from(q in Quota,
@@ -71,6 +75,8 @@ defmodule TransigoAdmin.Credit do
     |> Quota.changeset(attrs)
     |> Repo.update()
   end
+
+  def delete_quota(%Quota{} = quota), do: Repo.delete(quota)
 
   def list_quota_with_pending_eh_job() do
     from(q in Quota,

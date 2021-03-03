@@ -35,8 +35,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
     repaid_amount =
       transaction.second_installment_USD
-      |> Float.round(2)
-      |> Float.to_string()
+      |> :erlang.float_to_binary(decimals: 2)
 
     message =
       "You have a transaction due in 3 days. Please have USD#{repaid_amount} ready in your account."
@@ -53,13 +52,15 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   end
 
   defp create_dwolla_transfer(%Transaction{} = transaction, access_token) do
-    %{importer_id: importer_id, second_installment_USD: repaid_value} = transaction
-    %{funding_source_url: funding_source_url} = Credit.find_granted_quota(importer_id)
-    repaid_value = Float.round(repaid_value, 2)
+    repaid_value =
+      transaction.second_installment_USD
+      |> :erlang.float_to_binary(decimals: 2)
 
     body = %{
       _links: %{
-        source: %{href: funding_source_url},
+        source: %{
+          href: get_funding_source_url(transaction.importer_id)
+        },
         destination: %{
           href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)
         }
@@ -114,12 +115,22 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     end
   end
 
-  def format_webhook_result(transactions) do
+  defp format_webhook_result(transactions) do
     total = Helper.cal_total_sum(transactions)
 
     %{
       repaymentSum: total.sum,
       dailyRepayments: transactions
     }
+  end
+
+  defp get_funding_source_url(importer_id) do
+    case Credit.find_granted_quota(importer_id) do
+      %{funding_source_url: funding_source_url} ->
+        funding_source_url
+
+      _ ->
+        nil
+    end
   end
 end
