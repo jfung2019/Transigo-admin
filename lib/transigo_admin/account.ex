@@ -172,10 +172,7 @@ defmodule TransigoAdmin.Account do
   def get_user!(id), do: Repo.get!(User, id)
 
   def list_oban_jobs() do
-    from(oj in Oban.Job,
-      where: (oj.queue == "webhook" and oj.state != "completed") or oj.queue != "webhook",
-      order_by: [desc: oj.inserted_at]
-    )
+    from(oj in Oban.Job, order_by: [desc: oj.inserted_at])
     |> Repo.all()
   end
 

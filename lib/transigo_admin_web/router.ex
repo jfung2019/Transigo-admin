@@ -30,7 +30,7 @@ defmodule TransigoAdminWeb.Router do
       pipe_through :admin_authenticated
 
       resources "/signing", HellosignController, only: [:index]
-      live "/jobs", ObanJobLive.Index, :index
+      resources "/jobs", ObanJobController, only: [:index]
     end
   end
 

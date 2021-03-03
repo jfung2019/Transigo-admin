@@ -7,8 +7,18 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
     [
       exporter_transigoUID: nil,
       business_name: nil,
+      address: nil,
+      business_address_country: nil,
+      registration_number: nil,
+      signatory_first_name: nil,
+      signatory_last_name: nil,
+      signatory_mobile: nil,
+      signatory_email: nil,
+      signatory_title: nil,
       hellosign_signature_request_id: nil,
-      hs_signing_status: nil
+      hs_signing_status: nil,
+      inserted_at: %{name: "created datetime"},
+      updated_at: %{name: "last modified datetime"}
     ]
   end
 
@@ -16,8 +26,18 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
     [
       exporter_transigoUID: nil,
       business_name: nil,
+      address: nil,
+      business_address_country: nil,
+      registration_number: nil,
+      signatory_first_name: nil,
+      signatory_last_name: nil,
+      signatory_mobile: nil,
+      signatory_email: nil,
+      signatory_title: nil,
       hellosign_signature_request_id: nil,
-      hs_signing_status: nil
+      hs_signing_status: nil,
+      inserted_at: %{name: "created datetime"},
+      updated_at: %{name: "last modified datetime"}
     ]
   end
 
