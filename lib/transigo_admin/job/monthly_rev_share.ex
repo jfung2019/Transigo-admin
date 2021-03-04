@@ -18,7 +18,7 @@ defmodule TransigoAdmin.Job.MonthlyRevShare do
     total = Helper.cal_total_sum(transactions)
 
     %{
-      totalRemitSum: total.sum,
+      revShareRemitSum: total.sum,
       monthlyTransactions: transactions
     }
   end
