@@ -23,7 +23,7 @@ config :transigo_admin,
   util_api: TransigoAdmin.ServiceManager.Util.UtilApi,
   uid_util_url: System.get_env("UID_UTIL_URL"),
   eh_api_key: System.get_env("TRANSIGO_EH_KEY"),
-  eh_root_url: "",
+  eh_auth_url: System.get_env("EH_AUTH_URL"),
   eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApi
 
 config :kaffy,

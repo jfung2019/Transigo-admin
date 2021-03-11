@@ -2,8 +2,8 @@ defmodule TransigoAdmin.ServiceManager.EulerHermes.EhApi do
   @behaviour TransigoAdmin.ServiceManager.EulerHermes.EhApiBehavior
 
   def eh_auth() do
-    auth_url = "#{Application.get_env(:transigo_admin, :eh_root_url)}/v1/idp/oauth2/authorize"
-    body_json = %{apiKey: Application.get_env(:transigo_admin, :eh_api_key)}
+    auth_url = "#{Application.get_env(:transigo_admin, :eh_auth_url)}/oauth2/authorize"
+    body_json = %{apiKey: Application.get_env(:transigo_admin, :eh_api_key)} |> Jason.encode!()
 
     case HTTPoison.post(auth_url, body_json, [{"Content-Type", "application/json"}]) do
       {:ok, %{body: body}} ->
