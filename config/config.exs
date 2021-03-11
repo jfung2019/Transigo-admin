@@ -48,9 +48,9 @@ config :transigo_admin, Oban,
        {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevShare},
        {"* * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "init_send_fail"}},
        {"0 * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "first_resend_fail"}},
-       {"0 0 * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "second_resend_fail"}}
-       #       {"*/10 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "10_mins"}},
-       #       {"0 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "1_hours"}}
+       {"0 0 * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "second_resend_fail"}},
+       {"*/10 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "10_mins"}},
+       {"0 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "1_hours"}}
      ]}
   ]
 
