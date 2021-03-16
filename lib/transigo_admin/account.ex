@@ -13,6 +13,8 @@ defmodule TransigoAdmin.Account do
     WebhookUserEvent
   }
 
+  @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
+
   def create_admin(attrs \\ %{}) do
     %Admin{}
     |> Admin.changeset(attrs)
@@ -134,6 +136,14 @@ defmodule TransigoAdmin.Account do
 
   def delete_contact(%Contact{} = contact), do: Repo.delete(contact)
 
+  def address_states do
+    ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL",
+      "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA",
+      "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH",
+      "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC",
+      "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"]
+  end
+
   def create_importer(attrs \\ %{}) do
     %Importer{}
     |> Importer.changeset(attrs)
@@ -153,6 +163,20 @@ defmodule TransigoAdmin.Account do
   def list_importer_with_pending_eh_job() do
     from(i in Importer, where: not is_nil(i.eh_grade_job_url) and is_nil(i.eh_grade))
     |> Repo.all()
+  end
+
+  def importer_business_types do
+    [
+      {"Sole Proprietorship", "soleProprietorship"},
+      {"Corporation", "corporation"},
+      {"Limited Liability Company", "llc"},
+      {"Partnership", "partnership"}
+    ]
+  end
+
+  def importer_business_classifications do
+    {:ok, access_token} = @dwolla_api.dwolla_auth()
+    []
   end
 
   def list_users, do: Repo.all(User)

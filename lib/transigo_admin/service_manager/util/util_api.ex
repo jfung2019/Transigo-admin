@@ -7,4 +7,12 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
       {:error, _error} = error_tuple -> error_tuple
     end
   end
+
+  def create_importer(importer_param) do
+    payload = Jason.encode!(importer_param)
+
+    HTTPoison.post("http://localhost:5000/v2/importers", payload, [
+      {"Content-Type", "application/json"}
+    ])
+  end
 end
