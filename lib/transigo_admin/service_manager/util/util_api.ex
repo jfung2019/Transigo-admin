@@ -1,6 +1,8 @@
 defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
   @behaviour TransigoAdmin.ServiceManager.Util.UtilBehavior
 
+  require Logger
+
   import Ecto.Query
 
   alias TransigoAdmin.Repo
