@@ -19,6 +19,7 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
       |> Jason.encode!()
 
     {:ok, user_id} = Ecto.UUID.dump(Application.get_env(:transigo_admin, :dev_user_id))
+
     access_token =
       from(t in "tokens",
         where: t.user_id == ^user_id,

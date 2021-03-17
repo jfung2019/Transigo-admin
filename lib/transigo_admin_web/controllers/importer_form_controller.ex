@@ -32,7 +32,7 @@ defmodule TransigoAdminWeb.ImporterFormController do
             |> render("new.html")
         end
 
-      {:error, _error} ->
+      _ ->
         conn
         |> assign_errors([])
         |> assign_available_options(nil)
