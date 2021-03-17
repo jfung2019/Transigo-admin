@@ -75,3 +75,5 @@ config :phoenix, :plug_init_mode, :runtime
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),
   sandbox_enable: true
+
+config :transigo_admin, Oban, plugins: false, queues: false

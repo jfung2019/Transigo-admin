@@ -15,6 +15,17 @@ defmodule TransigoAdmin.Account do
 
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
 
+  @states_list Code.eval_string("""
+                 [
+                   "AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL",
+                   "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA",
+                   "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH",
+                   "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC",
+                   "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"
+                 ]
+               """)
+               |> elem(0)
+
   def create_admin(attrs \\ %{}) do
     %Admin{}
     |> Admin.changeset(attrs)
@@ -136,13 +147,7 @@ defmodule TransigoAdmin.Account do
 
   def delete_contact(%Contact{} = contact), do: Repo.delete(contact)
 
-  def address_states do
-    ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL",
-      "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA",
-      "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH",
-      "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC",
-      "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"]
-  end
+  def address_states, do: @states_list
 
   def create_importer(attrs \\ %{}) do
     %Importer{}
@@ -176,7 +181,19 @@ defmodule TransigoAdmin.Account do
 
   def importer_business_classifications do
     {:ok, access_token} = @dwolla_api.dwolla_auth()
-    []
+    url = "#{Application.get_env(:transigo_admin, :dwolla_root_url)}/business-classifications"
+    {:ok, %{body: body}} = @dwolla_api.dwolla_get(url, access_token)
+    %{"_embedded" => %{"business-classifications" => classifications}} = Jason.decode!(body)
+
+    classifications
+    |> Enum.map(fn %{"_embedded" => %{"industry-classifications" => items}} ->
+      items
+      |> Enum.map(fn %{"id" => id, "name" => name} ->
+        {name, id}
+      end)
+    end)
+    |> Enum.reduce(fn x, acc -> acc ++ x end)
+    |> Enum.sort_by(&elem(&1, 0))
   end
 
   def list_users, do: Repo.all(User)

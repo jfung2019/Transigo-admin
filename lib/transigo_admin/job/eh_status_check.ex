@@ -135,7 +135,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   defp update_job_result({:ok, %{"coverStatusCode" => "Rejected"} = result}, %Quota{} = quota),
     do: Credit.update_quota(quota, %{eh_cover: result, creditStatus: "rejected"})
 
-  defp update_job_result(_result, schema), do: {:error, :pass}
+  defp update_job_result(_result, _schema), do: {:error, :pass}
 
   defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "granted"}}) do
     contact = Account.get_contact_by_importer(importer_id)

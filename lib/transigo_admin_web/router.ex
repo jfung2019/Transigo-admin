@@ -23,7 +23,7 @@ defmodule TransigoAdminWeb.Router do
   scope "/", TransigoAdminWeb do
     pipe_through :browser
 
-    resources "/importers", ImporterFormController, only: [:new, :create]
+    resources "/importers_signup", ImporterFormController, only: [:new, :create]
     resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
 
     scope "/admin" do

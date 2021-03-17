@@ -13,7 +13,7 @@
 
     <div class="form-group">
         <%= label f, :businessClassificationId, "Business Classification*", class: "control-label" %>
-        <%= select f, :businessClassificationId, @available_business_classifications, required: true %>
+        <%= select f, :businessClassificationId, @available_business_classifications, required: true, class: "chosen" %>
     </div>
 
     <div class="form-group">
@@ -55,7 +55,7 @@
 
     <div class="form-group">
         <%= label f, :businessAddressState, "State*", class: "control-label" %>
-        <%= select f, :businessAddressState, @available_states, required: true %>
+        <%= select f, :businessAddressState, @available_states, required: true, class: "chosen" %>
     </div>
 
     <div class="form-group">
@@ -65,7 +65,7 @@
 
     <div class="form-group">
         <%= label f, :businessAddressCountry, "Country*", class: "control-label" %>
-        <%= text_input f, :businessAddressCountry, required: true, value: "US", disabled: true %>
+        <%= text_input f, :businessAddressCountry, required: true, value: "US", readonly: true %>
     </div>
 
     <h2>Personal Information</h2>
@@ -81,8 +81,8 @@
     </div>
 
     <div class="form-group">
-        <%= label f, :dob, "Date of Birth*", class: "control-label" %>
-        <%= date_select f, :dob, required: true, year: [options: 1900..2023] %>
+        <%= label f, :dateOfBirth, "Date of Birth*", class: "control-label" %>
+        <%= date_select f, :dateOfBirth, required: true, year: [options: 1900..2023] %>
     </div>
 
     <div class="form-group">
@@ -119,7 +119,7 @@
 
     <div class="form-group">
         <%= label f, :state, "State*", class: "control-label" %>
-        <%= select f, :state, @available_states, required: true %>
+        <%= select f, :state, @available_states, required: true, class: "chosen" %>
     </div>
 
     <div class="form-group">
@@ -129,7 +129,7 @@
 
     <div class="form-group">
         <%= label f, :country, "Country*", class: "control-label" %>
-        <%= text_input f, :country, required: true, value: "US", disabled: true %>
+        <%= text_input f, :country, required: true, value: "US", readonly: true %>
     </div>
 
     <div class="mb-3">
