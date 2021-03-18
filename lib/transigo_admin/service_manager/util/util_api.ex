@@ -1,8 +1,6 @@
 defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
   @behaviour TransigoAdmin.ServiceManager.Util.UtilBehavior
 
-  require Logger
-
   import Ecto.Query
 
   alias TransigoAdmin.Repo
@@ -20,19 +18,20 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
       |> format_date()
       |> Jason.encode!()
 
-    {:ok, user_id} = Ecto.UUID.dump(Application.get_env(:transigo_admin, :dev_user_id))
-    Logger.error(Ecto.UUID.dump(Application.get_env(:transigo_admin, :dev_user_id)))
+    {:ok, user_id} = Ecto.UUID.dump(Application.get_env(:transigo_admin, :dev_user_id)) |> IO.inspect()
+
     access_token =
       from(t in "tokens",
         where: t.user_id == ^user_id,
         select: t.access_token
       )
       |> Repo.one()
+      |> IO.inspect()
 
     HTTPoison.post("#{Application.get_env(:transigo_admin, :api_domain)}/v2/importers", payload, [
       {"Content-Type", "application/json"},
       {"Authorization", "Bearer #{access_token}"}
-    ])
+    ]) |> IO.inspect()
   end
 
   defp format_date(
