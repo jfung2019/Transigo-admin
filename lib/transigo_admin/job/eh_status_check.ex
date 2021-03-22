@@ -9,28 +9,26 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"type" => "10_mins"}}) do
-    {:ok, access_token} = @eh_api.eh_auth()
-
     Account.list_importer_with_pending_eh_job()
-    |> Enum.each(&check_eh_job(&1, access_token))
+    |> Enum.each(&check_eh_job(&1))
 
     Credit.list_quota_with_pending_eh_job()
-    |> Enum.each(&check_eh_job(&1, access_token))
+    |> Enum.each(&check_eh_job(&1))
 
     :ok
   end
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"type" => "1_hours"}}) do
-    {:ok, access_token} = @eh_api.eh_auth()
-
     Credit.list_quota_with_eh_cover()
-    |> Enum.each(&check_cover_update(&1, access_token))
+    |> Enum.each(&check_cover_update(&1))
 
     :ok
   end
 
-  defp check_eh_job(%Importer{eh_grade_job_url: job_url, eh_grade: nil} = importer, access_token) do
+  defp check_eh_job(%Importer{eh_grade_job_url: job_url, eh_grade: nil} = importer) do
+    {:ok, access_token} = @eh_api.eh_auth()
+
     case @eh_api.eh_get(job_url, access_token) do
       {:ok, %{body: body, status_code: 200}} ->
         body
@@ -42,20 +40,23 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     end
   end
 
-  defp check_eh_job(%Quota{eh_cover_job_url: job_url, eh_cover: nil} = quota, access_token) do
+  defp check_eh_job(%Quota{eh_cover_job_url: job_url, eh_cover: nil} = quota) do
+    {:ok, access_token} = @eh_api.eh_auth()
+
     case @eh_api.eh_get(job_url, access_token) do
       {:ok, %{body: body, status_code: 200}} ->
         body
         |> Jason.decode()
         |> handle_job_result(quota, access_token)
 
-      {:error, _} ->
+      _ ->
         nil
     end
   end
 
-  defp check_cover_update(%Quota{eh_cover: %{"coverId" => cover_id}} = quota, access_token) do
+  defp check_cover_update(%Quota{eh_cover: %{"coverId" => cover_id}} = quota) do
     cover_url = "#{Application.get_env(:transigo_admin, :eh_root_url)}/covers/#{cover_id}"
+    {:ok, access_token} = @eh_api.eh_auth()
 
     case @eh_api.eh_get(cover_url, access_token) do
       {:ok, %{body: body, status_code: 200}} ->

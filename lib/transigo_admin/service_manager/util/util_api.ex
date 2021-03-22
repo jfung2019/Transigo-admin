@@ -18,7 +18,7 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
       |> format_date()
       |> Jason.encode!()
 
-    {:ok, user_id} = Ecto.UUID.dump(Application.get_env(:transigo_admin, :dev_user_id)) |> IO.inspect()
+    {:ok, user_id} = Ecto.UUID.dump(Application.get_env(:transigo_admin, :dev_user_id))
 
     access_token =
       from(t in "tokens",
@@ -26,12 +26,11 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
         select: t.access_token
       )
       |> Repo.one()
-      |> IO.inspect()
 
     HTTPoison.post("#{Application.get_env(:transigo_admin, :api_domain)}/v2/importers", payload, [
       {"Content-Type", "application/json"},
       {"Authorization", "Bearer #{access_token}"}
-    ]) |> IO.inspect()
+    ])
   end
 
   defp format_date(
