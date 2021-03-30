@@ -77,7 +77,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     case @eh_api.eh_get(url, access_token) do
       {:ok, %{body: body, status_code: 200}} ->
         body
-        |> Jason.decode(body)
+        |> Jason.decode()
         |> update_job_result(schema)
         |> send_email_to_importer()
 
@@ -136,7 +136,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   defp update_job_result({:ok, %{"coverStatusCode" => "Rejected"} = result}, %Quota{} = quota),
     do: Credit.update_quota(quota, %{eh_cover: result, creditStatus: "rejected"})
 
-  defp update_job_result(_result, _schema), do: {:error, :pass}
+  defp update_job_result(_result, _schema), do: {:ok, :pass}
 
   defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "granted"}}) do
     contact = Account.get_contact_by_importer(importer_id)
