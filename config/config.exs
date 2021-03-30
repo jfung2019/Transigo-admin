@@ -41,7 +41,7 @@ config :transigo_admin, Oban,
   repo: TransigoAdmin.Repo,
   queues: [default: 20, transaction: 20, webhook: 20, eh_status: 20],
   plugins: [
-    {Oban.Plugins.Pruner, max_age: 21600},
+    {Oban.Plugins.Pruner, max_age: 10800},
     {Oban.Plugins.Cron,
      timezone: "Asia/Hong_Kong",
      crontab: [
