@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.EhStatusCheck do
-  use Oban.Worker, queue: :eh_status, max_attempts: 5
+  use Oban.Worker, queue: :eh_status, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Credit.Quota}
   alias TransigoAdmin.{Account, Account.Importer}
@@ -55,7 +55,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   end
 
   defp check_cover_update(%Quota{eh_cover: %{"coverId" => cover_id}} = quota) do
-    cover_url = "#{Application.get_env(:transigo_admin, :eh_root_url)}/covers/#{cover_id}"
+    cover_url = "#{Application.get_env(:transigo_admin, :eh_risk_url)}/covers/#{cover_id}"
     {:ok, access_token} = @eh_api.eh_auth()
 
     case @eh_api.eh_get(cover_url, access_token) do

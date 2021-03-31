@@ -24,6 +24,7 @@ config :transigo_admin,
   uid_util_url: System.get_env("UID_UTIL_URL"),
   eh_api_key: System.get_env("TRANSIGO_EH_KEY"),
   eh_auth_url: System.get_env("EH_AUTH_URL"),
+  eh_risk_url: System.get_env("EH_RISK_URL"),
   eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApi,
   dev_user_id: System.get_env("DEV_USER_ID"),
   api_domain: System.get_env("API_DOMAIN")
