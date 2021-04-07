@@ -49,8 +49,8 @@ defmodule TransigoAdmin.Credit.Quota do
     :funding_source_url,
     :credit_terms,
     :plaid_underwriting_result,
-    :eh_cover,
-    :eh_cover_job_url,
+    :eh_grade,
+    :eh_grade_job_url,
     :plaid_form_result,
     :importer_id
   ]

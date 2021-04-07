@@ -103,8 +103,8 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :funding_source_url, :string
       add :credit_terms, :string
       add :plaid_underwriting_result, :float
-      add :eh_cover, :map
-      add :eh_cover_job_url, :string
+      add :eh_grade, :map
+      add :eh_grade_job_url, :string
       add :plaid_form_result, :map
       add :importer_id, references(:importer, on_delete: :delete_all, type: :binary_id)
 
@@ -134,8 +134,6 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :second_installment_USD, :float
       add :repaid_datetime, :utc_datetime
       add :dwolla_repayment_transfer_url, :string
-      add :eh_grade, :map
-      add :eh_grade_job_url, :string
       add :importer_id, references(:importer, on_delete: :delete_all, type: :binary_id)
       add :exporter_id, references(:exporter, on_delete: :delete_all, type: :binary_id)
 

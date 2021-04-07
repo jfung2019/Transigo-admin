@@ -45,8 +45,6 @@ defmodule TransigoAdmin.Account.Importer do
     :business_address_country,
     :business_type,
     :business_classification_id,
-    :eh_grade,
-    :eh_grade_job_url,
     :contact_id
   ]
 

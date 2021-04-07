@@ -3,7 +3,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
 
   alias TransigoAdmin.{Credit, Credit.Quota}
   alias TransigoAdmin.{Account, Account.Importer}
-  alias SendGrid.{Mail, Email}
+#  alias SendGrid.{Mail, Email}
 
   @eh_api Application.compile_env(:transigo_admin, :eh_api)
 
@@ -20,25 +20,25 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"type" => "1_hours"}}) do
-    Credit.list_quota_with_eh_cover()
-    |> Enum.each(&check_cover_update(&1))
+#    Credit.list_quota_with_eh_cover()
+#    |> Enum.each(&check_cover_update(&1))
 
     :ok
   end
 
-  defp check_eh_job(%Importer{eh_grade_job_url: job_url, eh_grade: nil} = importer) do
-    {:ok, access_token} = @eh_api.eh_auth()
-
-    case @eh_api.eh_get(job_url, access_token) do
-      {:ok, %{body: body, status_code: 200}} ->
-        body
-        |> Jason.decode()
-        |> handle_job_result(importer, access_token)
-
-      _ ->
-        nil
-    end
-  end
+#  defp check_eh_job(%Importer{eh_grade_job_url: job_url, eh_grade: nil} = importer) do
+#    {:ok, access_token} = @eh_api.eh_auth()
+#
+#    case @eh_api.eh_get(job_url, access_token) do
+#      {:ok, %{body: body, status_code: 200}} ->
+#        body
+#        |> Jason.decode()
+#        |> handle_job_result(importer, access_token)
+#
+#      _ ->
+#        nil
+#    end
+#  end
 
   defp check_eh_job(%Quota{eh_grade_job_url: job_url, eh_grade: nil} = quota) do
     {:ok, access_token} = @eh_api.eh_auth()
@@ -54,20 +54,20 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     end
   end
 
-  defp check_cover_update(%Quota{eh_cover: %{"coverId" => cover_id}} = quota) do
-    cover_url = "#{Application.get_env(:transigo_admin, :eh_risk_url)}/covers/#{cover_id}"
-    {:ok, access_token} = @eh_api.eh_auth()
-
-    case @eh_api.eh_get(cover_url, access_token) do
-      {:ok, %{body: body, status_code: 200}} ->
-        body
-        |> Jason.decode()
-        |> handle_job_result(quota, access_token, :check)
-
-      {:error, _} ->
-        nil
-    end
-  end
+#  defp check_cover_update(%Quota{eh_cover: %{"coverId" => cover_id}} = quota) do
+#    cover_url = "#{Application.get_env(:transigo_admin, :eh_risk_url)}/covers/#{cover_id}"
+#    {:ok, access_token} = @eh_api.eh_auth()
+#
+#    case @eh_api.eh_get(cover_url, access_token) do
+#      {:ok, %{body: body, status_code: 200}} ->
+#        body
+#        |> Jason.decode()
+#        |> handle_job_result(quota, access_token, :check)
+#
+#      {:error, _} ->
+#        nil
+#    end
+#  end
 
   defp handle_job_result(
          {:ok, %{"jobStatusCode" => "PROCESSED", "resourceUrl" => url}},
@@ -85,22 +85,22 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     end
   end
 
-  defp handle_job_result(
-         {:ok, %{"jobStatusCode" => "PROCESSED", "resourceUrl" => url}},
-         %Quota{} = quota,
-         access_token,
-         :check
-       ) do
-    case @eh_api.eh_get(url, access_token) do
-      {:ok, %{body: body, status_code: 200}} ->
-        body
-        |> Jason.decode(body)
-        |> compare_old_new_eh_cover(quota)
-
-      _ ->
-        nil
-    end
-  end
+#  defp handle_job_result(
+#         {:ok, %{"jobStatusCode" => "PROCESSED", "resourceUrl" => url}},
+#         %Quota{} = quota,
+#         access_token,
+#         :check
+#       ) do
+#    case @eh_api.eh_get(url, access_token) do
+#      {:ok, %{body: body, status_code: 200}} ->
+#        body
+#        |> Jason.decode(body)
+#        |> compare_old_new_eh_cover(quota)
+#
+#      _ ->
+#        nil
+#    end
+#  end
 
   defp update_job_result(
          {:ok, %{"requestStatus" => "ANSWERED"} = result},
@@ -143,38 +143,38 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
 
   defp update_job_result(_result, _schema), do: {:ok, :pass}
 
-  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "granted"}}) do
-    contact = Account.get_contact_by_importer(importer_id)
-    importer = Account.get_importer!(importer_id)
-    kyc_url = "http://api.tcaas.app/v2/importers/#{importer.importer_transigoUID}/kyc"
-    message = "<p>Quota is granted. Please click <a href='#{kyc_url}'>here</a> to continue.</p>"
+#  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "granted"}}) do
+#    contact = Account.get_contact_by_importer(importer_id)
+#    importer = Account.get_importer!(importer_id)
+#    kyc_url = "http://api.tcaas.app/v2/importers/#{importer.importer_transigoUID}/kyc"
+#    message = "<p>Quota is granted. Please click <a href='#{kyc_url}'>here</a> to continue.</p>"
+#
+#    Email.build()
+#    |> Email.put_from("tcaas@transigo.io", "Transigo")
+#    |> Email.add_to(contact.email)
+#    |> Email.put_subject("Transigo Quota Granted")
+#    |> Email.put_html(message)
+#    |> Mail.send()
+#  end
+#
+#  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "rejected"}}) do
+#    contact = Account.get_contact_by_importer(importer_id)
+#    message = "<p>Quota is rejected.</p>"
+#
+#    Email.build()
+#    |> Email.put_from("tcaas@transigo.io", "Transigo")
+#    |> Email.add_to(contact.email)
+#    |> Email.put_subject("Transigo Quota Rejected")
+#    |> Email.put_html(message)
+#    |> Mail.send()
+#  end
+#
+#  defp send_email_to_importer(_tuple), do: :ok
 
-    Email.build()
-    |> Email.put_from("tcaas@transigo.io", "Transigo")
-    |> Email.add_to(contact.email)
-    |> Email.put_subject("Transigo Quota Granted")
-    |> Email.put_html(message)
-    |> Mail.send()
-  end
-
-  defp send_email_to_importer({:ok, %Quota{importer_id: importer_id, creditStatus: "rejected"}}) do
-    contact = Account.get_contact_by_importer(importer_id)
-    message = "<p>Quota is rejected.</p>"
-
-    Email.build()
-    |> Email.put_from("tcaas@transigo.io", "Transigo")
-    |> Email.add_to(contact.email)
-    |> Email.put_subject("Transigo Quota Rejected")
-    |> Email.put_html(message)
-    |> Mail.send()
-  end
-
-  defp send_email_to_importer(_tuple), do: :ok
-
-  defp compare_old_new_eh_cover(
-         %{"decision" => %{"decisionDate" => new_date}} = new_cover,
-         %Quota{eh_cover: %{"decision" => %{"decisionDate" => old_date}}} = quota
-       ) do
-    if new_date != old_date, do: Credit.update_quota(quota, %{eh_cover: new_cover})
-  end
+#  defp compare_old_new_eh_cover(
+#         %{"decision" => %{"decisionDate" => new_date}} = new_cover,
+#         %Quota{eh_cover: %{"decision" => %{"decisionDate" => old_date}}} = quota
+#       ) do
+#    if new_date != old_date, do: Credit.update_quota(quota, %{eh_cover: new_cover})
+#  end
 end
