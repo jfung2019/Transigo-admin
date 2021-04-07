@@ -9,8 +9,8 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"type" => "10_mins"}}) do
-    Account.list_importer_with_pending_eh_job()
-    |> Enum.each(&check_eh_job(&1))
+#    Account.list_importer_with_pending_eh_job()
+#    |> Enum.each(&check_eh_job(&1))
 
     Credit.list_quota_with_pending_eh_job()
     |> Enum.each(&check_eh_job(&1))
@@ -40,7 +40,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     end
   end
 
-  defp check_eh_job(%Quota{eh_cover_job_url: job_url, eh_cover: nil} = quota) do
+  defp check_eh_job(%Quota{eh_grade_job_url: job_url, eh_grade: nil} = quota) do
     {:ok, access_token} = @eh_api.eh_auth()
 
     case @eh_api.eh_get(job_url, access_token) do
@@ -79,7 +79,6 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
         body
         |> Jason.decode()
         |> update_job_result(schema)
-        |> send_email_to_importer()
 
       _ ->
         nil
@@ -108,6 +107,12 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
          %Importer{} = importer
        ),
        do: Account.update_importer(importer, %{eh_grade: result})
+
+  defp update_job_result(
+         {:ok, %{"requestStatus" => "ANSWERED"} = result},
+         %Quota{} = quota
+       ),
+       do: Credit.update_quota(quota, %{eh_grade: result})
 
   defp update_job_result(
          {:ok, %{"decision" => %{"permanent" => %{"permanentAmount" => eh_amount}}} = result},

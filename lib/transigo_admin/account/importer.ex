@@ -21,8 +21,6 @@ defmodule TransigoAdmin.Account.Importer do
       values: [:soleProprietorship, :corporation, :llc, :partnership]
 
     field :business_classification_id, :string
-    field :eh_grade, :map
-    field :eh_grade_job_url, :string
 
     belongs_to :contact, TransigoAdmin.Account.Contact
 

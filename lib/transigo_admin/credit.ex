@@ -80,7 +80,7 @@ defmodule TransigoAdmin.Credit do
 
   def list_quota_with_pending_eh_job() do
     from(q in Quota,
-      where: not is_nil(q.eh_cover_job_url) and is_nil(q.eh_cover)
+      where: not is_nil(q.eh_grade_job_url) and is_nil(q.eh_grade)
     )
     |> Repo.all()
   end

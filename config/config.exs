@@ -52,8 +52,8 @@ config :transigo_admin, Oban,
        {"* * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "init_send_fail"}},
        {"0 * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "first_resend_fail"}},
        {"0 0 * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "second_resend_fail"}},
-       {"* * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "10_mins"}}, # do it once every 1 min for demo
-       {"0 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "1_hours"}}
+       {"* * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "10_mins"}} # do it once every 1 min for demo
+#       {"0 * * * *", TransigoAdmin.Job.EhStatusCheck, args: %{type: "1_hours"}}
      ]}
   ]
 
