@@ -61,7 +61,7 @@ defmodule TransigoAdmin.Credit do
   def find_granted_quota(importer_id) do
     from(q in Quota,
       left_join: i in assoc(q, :importer),
-      where: i.id == ^importer_id and q.creditStatus in ["granted", "partial"]
+      where: i.id == ^importer_id and q.credit_status in ["granted", "partial"]
     )
     |> Repo.one()
   end

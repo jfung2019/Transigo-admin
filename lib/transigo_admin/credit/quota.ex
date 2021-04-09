@@ -63,7 +63,7 @@ defmodule TransigoAdmin.Credit.Quota do
 
   @required_attrs [
     :quota_transigo_uid,
-    :quota_USD,
+    :quota_usd,
     :credit_request_date,
     :token,
     :marketplace_transactions,

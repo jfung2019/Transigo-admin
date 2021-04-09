@@ -10,7 +10,7 @@ defmodule TransigoAdmin.CreditTest do
 
       {:ok, exporter} =
         Account.create_exporter(%{
-          exporter_transigoUID: "test_exporter",
+          exporter_transigo_uid: "test_exporter",
           business_name: "test",
           address: "100 address",
           business_address_country: "country",
@@ -25,11 +25,11 @@ defmodule TransigoAdmin.CreditTest do
 
       {:ok, importer} =
         Account.create_importer(%{
-          importer_transigoUID: "test_importer",
+          importer_transigo_uid: "test_importer",
           business_name: "test",
-          business_EIN: "ein",
+          business_ein: "ein",
           incorporation_date: Timex.today(),
-          number_DUNS: "duns",
+          number_duns: "duns",
           business_address_street_address: "100 street",
           business_address_city: "city",
           business_address_state: "state",
@@ -45,14 +45,14 @@ defmodule TransigoAdmin.CreditTest do
     test "can get transaction due in 3 days", %{exporter: exporter, importer: importer} do
       # transaction far in the future
       Credit.create_transaction(%{
-        transaction_UID: "future",
+        transaction_uid: "future",
         credit_term_days: 60,
-        down_payment_USD: 3000,
-        factoring_fee_USD: 3000,
+        down_payment_usd: 3000,
+        factoring_fee_usd: 3000,
         transaction_state: "originated",
         financed_sum: 3000,
         invoice_date: Timex.now(),
-        second_installment_USD: 3000,
+        second_installment_usd: 3000,
         importer_id: importer.id,
         exporter_id: exporter.id
       })
@@ -64,14 +64,14 @@ defmodule TransigoAdmin.CreditTest do
 
       {:ok, transaction_due} =
         Credit.create_transaction(%{
-          transaction_UID: "due",
+          transaction_uid: "due",
           credit_term_days: 60,
-          down_payment_USD: 3000,
-          factoring_fee_USD: 3000,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
           transaction_state: "originated",
           financed_sum: 3000,
           invoice_date: due_date,
-          second_installment_USD: 3000,
+          second_installment_usd: 3000,
           importer_id: importer.id,
           exporter_id: exporter.id
         })
@@ -82,14 +82,14 @@ defmodule TransigoAdmin.CreditTest do
         |> Timex.shift(days: -120)
 
       Credit.create_transaction(%{
-        transaction_UID: "past",
+        transaction_uid: "past",
         credit_term_days: 60,
-        down_payment_USD: 3000,
-        factoring_fee_USD: 3000,
+        down_payment_usd: 3000,
+        factoring_fee_usd: 3000,
         transaction_state: "originated",
         financed_sum: 3000,
         invoice_date: due_past,
-        second_installment_USD: 3000,
+        second_installment_usd: 3000,
         importer_id: importer.id,
         exporter_id: exporter.id
       })
@@ -100,14 +100,14 @@ defmodule TransigoAdmin.CreditTest do
     test "can transaction due today", %{exporter: exporter, importer: importer} do
       # transaction far in the future
       Credit.create_transaction(%{
-        transaction_UID: "future",
+        transaction_uid: "future",
         credit_term_days: 60,
-        down_payment_USD: 3000,
-        factoring_fee_USD: 3000,
+        down_payment_usd: 3000,
+        factoring_fee_usd: 3000,
         transaction_state: "originated",
         financed_sum: 3000,
         invoice_date: Timex.now(),
-        second_installment_USD: 3000,
+        second_installment_usd: 3000,
         importer_id: importer.id,
         exporter_id: exporter.id
       })
@@ -119,14 +119,14 @@ defmodule TransigoAdmin.CreditTest do
 
       {:ok, transaction_due} =
         Credit.create_transaction(%{
-          transaction_UID: "due",
+          transaction_uid: "due",
           credit_term_days: 60,
-          down_payment_USD: 3000,
-          factoring_fee_USD: 3000,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
           transaction_state: "email_sent",
           financed_sum: 3000,
           invoice_date: due_date,
-          second_installment_USD: 3000,
+          second_installment_usd: 3000,
           importer_id: importer.id,
           exporter_id: exporter.id
         })
@@ -137,42 +137,42 @@ defmodule TransigoAdmin.CreditTest do
     test "can get transaction with different state", %{exporter: exporter, importer: importer} do
       {:ok, down_payment_done_transaction} =
         Credit.create_transaction(%{
-          transaction_UID: "down_payment_done",
+          transaction_uid: "down_payment_done",
           credit_term_days: 60,
-          down_payment_USD: 3000,
-          factoring_fee_USD: 3000,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
           transaction_state: "down_payment_done",
           financed_sum: 3000,
           invoice_date: Timex.now(),
-          second_installment_USD: 3000,
+          second_installment_usd: 3000,
           importer_id: importer.id,
           exporter_id: exporter.id
         })
 
       {:ok, pull_initiated_transaction} =
         Credit.create_transaction(%{
-          transaction_UID: "pull_initiated",
+          transaction_uid: "pull_initiated",
           credit_term_days: 60,
-          down_payment_USD: 3000,
-          factoring_fee_USD: 3000,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
           transaction_state: "pull_initiated",
           financed_sum: 3000,
           invoice_date: Timex.now(),
-          second_installment_USD: 3000,
+          second_installment_usd: 3000,
           importer_id: importer.id,
           exporter_id: exporter.id
         })
 
       {:ok, repaid_transaction} =
         Credit.create_transaction(%{
-          transaction_UID: "repaid",
+          transaction_uid: "repaid",
           credit_term_days: 60,
-          down_payment_USD: 3000,
-          factoring_fee_USD: 3000,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
           transaction_state: "repaid",
           financed_sum: 3000,
           invoice_date: Timex.now(),
-          second_installment_USD: 3000,
+          second_installment_usd: 3000,
           importer_id: importer.id,
           exporter_id: exporter.id
         })
