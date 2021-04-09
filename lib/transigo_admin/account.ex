@@ -2,6 +2,7 @@ defmodule TransigoAdmin.Account do
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
+  alias Absinthe.Relay
 
   alias TransigoAdmin.Account.{
     Admin,
@@ -45,6 +46,9 @@ defmodule TransigoAdmin.Account do
   end
 
   def get_exporter!(id), do: Repo.get!(Exporter, id)
+
+  def list_exporters_paginated(pagination_args),
+    do: Relay.Connection.from_query(Exporter, &Repo.all/1, pagination_args)
 
   def create_exporter(attrs \\ %{}) do
     %Exporter{}
@@ -170,6 +174,9 @@ defmodule TransigoAdmin.Account do
     |> Repo.all()
   end
 
+  def list_importers_paginated(pagination_args),
+    do: Relay.Connection.from_query(Importer, &Repo.all/1, pagination_args)
+
   def importer_business_types do
     [
       {"Sole Proprietorship", "soleProprietorship"},
@@ -239,4 +246,8 @@ defmodule TransigoAdmin.Account do
     |> WebhookUserEvent.changeset(attrs)
     |> Repo.update()
   end
+
+  def datasource, do: Dataloader.Ecto.new(Repo, query: &query/2)
+
+  def query(queryable, _), do: queryable
 end

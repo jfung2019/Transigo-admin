@@ -5,12 +5,12 @@ defmodule TransigoAdmin.Credit.Transaction do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "transaction" do
-    field :transaction_UID, :string
+    field :transaction_uid, :string, source: :transaction_UID
     field :credit_term_days, :integer
     field :financier, :string, default: "Churchill"
-    field :down_payment_USD, :float
+    field :down_payment_usd, :float, source: :down_payment_USD
     field :down_payment_confirmed_datetime, :utc_datetime
-    field :factoring_fee_USD, :float
+    field :factoring_fee_usd, :float, source: :factoring_fee_USD
     field :transaction_state, :string, default: "xxx"
     field :financed_sum, :float
     field :invoice_date, :date
@@ -19,7 +19,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :po_ref, :string
     field :hellosign_signature_request_id, :string
     field :hs_signing_status, :string, default: "awaiting_signature"
-    field :second_installment_USD, :float
+    field :second_installment_usd, :float, source: :second_installment_USD
     field :repaid_datetime, :utc_datetime
     field :dwolla_repayment_transfer_url, :string
 
@@ -34,11 +34,11 @@ defmodule TransigoAdmin.Credit.Transaction do
   end
 
   @available_attrs [
-    :transaction_UID,
+    :transaction_uid,
     :credit_term_days,
-    :down_payment_USD,
+    :down_payment_usd,
     :down_payment_confirmed_datetime,
-    :factoring_fee_USD,
+    :factoring_fee_usd,
     :transaction_state,
     :financed_sum,
     :invoice_date,
@@ -47,7 +47,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     :po_ref,
     :hellosign_signature_request_id,
     :hs_signing_status,
-    :second_installment_USD,
+    :second_installment_usd,
     :repaid_datetime,
     :dwolla_repayment_transfer_url,
     :importer_id,
@@ -55,14 +55,14 @@ defmodule TransigoAdmin.Credit.Transaction do
   ]
 
   @required_attrs [
-    :transaction_UID,
+    :transaction_uid,
     :credit_term_days,
-    :down_payment_USD,
-    :factoring_fee_USD,
+    :down_payment_usd,
+    :factoring_fee_usd,
     :transaction_state,
     :financed_sum,
     :hs_signing_status,
-    :second_installment_USD,
+    :second_installment_usd,
     :importer_id,
     :exporter_id
   ]

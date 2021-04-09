@@ -5,7 +5,7 @@ defmodule TransigoAdmin.Account.Exporter do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "exporter" do
-    field :exporter_transigoUID, :string
+    field :exporter_transigo_uid, :string, source: :exporter_transigoUID
     field :business_name, :string
     field :address, :string
     field :business_address_country, :string
@@ -18,6 +18,7 @@ defmodule TransigoAdmin.Account.Exporter do
     field :hellosign_signature_request_id, :string
     field :hs_signing_status, :string, default: "awaiting_signature"
 
+    belongs_to :contact, TransigoAdmin.Account.Contact, source: :MSA_contact_id
     belongs_to :marketplace, TransigoAdmin.Credit.Marketplace
 
     timestamps(
@@ -28,7 +29,7 @@ defmodule TransigoAdmin.Account.Exporter do
   end
 
   @available_attrs [
-    :exporter_transigoUID,
+    :exporter_transigo_uid,
     :business_name,
     :address,
     :business_address_country,
@@ -44,7 +45,7 @@ defmodule TransigoAdmin.Account.Exporter do
   ]
 
   @required_attrs [
-    :exporter_transigoUID,
+    :exporter_transigo_uid,
     :business_name,
     :address,
     :business_address_country,

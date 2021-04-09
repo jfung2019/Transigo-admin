@@ -53,7 +53,12 @@ defmodule TransigoAdmin.MixProject do
       {:guardian, "~> 2.0"},
       {:oban, "~> 2.4.2"},
       {:sendgrid, "~> 2.0"},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.0"},
+      {:absinthe, "~> 1.6.3"},
+      {:absinthe_plug, "~> 1.5.7"},
+      {:absinthe_phoenix, "~> 2.0.1"},
+      {:absinthe_relay, "~> 1.5.1"},
+      {:dataloader, "~> 1.0.8"}
     ]
   end
 

@@ -2,7 +2,9 @@ defmodule TransigoAdmin.Credit do
   import Ecto.Query, warn: false
 
   alias TransigoAdmin.Repo
-  alias TransigoAdmin.Credit.{Transaction, Quota, Marketplace}
+  alias Absinthe.Relay
+
+  alias TransigoAdmin.Credit.{Transaction, Quota, Marketplace, Offer}
 
   def list_transactions_due_in_3_days() do
     from(
@@ -89,4 +91,14 @@ defmodule TransigoAdmin.Credit do
     from(q in Quota, where: not is_nil(q.eh_cover))
     |> Repo.all()
   end
+
+  def list_quotas_paginated(pagination_args),
+    do: Relay.Connection.from_query(Quota, &Repo.all/1, pagination_args)
+
+  def list_offers_paginated(pagination_args),
+    do: Relay.Connection.from_query(Offer, &Repo.all/1, pagination_args)
+
+  def datasource, do: Dataloader.Ecto.new(Repo, query: &query/2)
+
+  def query(queryable, _), do: queryable
 end

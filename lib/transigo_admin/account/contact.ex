@@ -4,7 +4,7 @@ defmodule TransigoAdmin.Account.Contact do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "contact" do
-    field :contact_transigoUID, :string
+    field :contact_transigo_uid, :string, source: :contact_transigoUID
     field :first_name, :string
     field :last_name, :string
     field :mobile, :string
@@ -24,7 +24,7 @@ defmodule TransigoAdmin.Account.Contact do
   end
 
   @available_attrs [
-    :contact_transigoUID,
+    :contact_transigo_uid,
     :first_name,
     :last_name,
     :mobile,
@@ -38,7 +38,7 @@ defmodule TransigoAdmin.Account.Contact do
   ]
 
   @required_attrs [
-    :contact_transigoUID,
+    :contact_transigo_uid,
     :first_name,
     :last_name,
     :mobile,

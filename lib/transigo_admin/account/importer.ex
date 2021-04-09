@@ -5,12 +5,12 @@ defmodule TransigoAdmin.Account.Importer do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "importer" do
-    field :importer_transigoUID, :string
+    field :importer_transigo_uid, :string, source: :importer_transigoUID
     field :business_name, :string
-    field :business_EIN, :string
+    field :business_ein, :string, source: :business_EIN
     field :incorporation_date, :date
     field :importer_origin, :string, default: "DH"
-    field :number_DUNS, :string
+    field :number_duns, :string, source: :number_DUNS
     field :business_address_street_address, :string
     field :business_address_city, :string
     field :business_address_state, :string
@@ -32,12 +32,12 @@ defmodule TransigoAdmin.Account.Importer do
   end
 
   @available_attrs [
-    :importer_transigoUID,
+    :importer_transigo_uid,
     :business_name,
-    :business_EIN,
+    :business_ein,
     :incorporation_date,
     :importer_origin,
-    :number_DUNS,
+    :number_duns,
     :business_address_street_address,
     :business_address_city,
     :business_address_state,
@@ -49,12 +49,12 @@ defmodule TransigoAdmin.Account.Importer do
   ]
 
   @required_attrs [
-    :importer_transigoUID,
+    :importer_transigo_uid,
     :business_name,
-    :business_EIN,
+    :business_ein,
     :incorporation_date,
     :importer_origin,
-    :number_DUNS,
+    :number_duns,
     :business_address_street_address,
     :business_address_city,
     :business_address_state,

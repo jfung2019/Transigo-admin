@@ -20,6 +20,10 @@ defmodule TransigoAdminWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :absinthe_api do
+    plug TransigoAdminWeb.Api.Context
+  end
+
   scope "/", TransigoAdminWeb do
     pipe_through :browser
 
@@ -35,9 +39,16 @@ defmodule TransigoAdminWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", TransigoAdminWeb do
-  #   pipe_through :api
-  # end
+  scope "/" do
+    pipe_through :absinthe_api
+
+    forward "/api", Absinthe.Plug, schema: TransigoAdminWeb.Api.Schema
+
+    forward "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: TransigoAdminWeb.Api.Schema,
+      socket: TransigoAdminWeb.UserSocket,
+      context: %{pubsub: TransigoAdminWeb.Endpoint}
+  end
 
   # Enables LiveDashboard only for development
   #
