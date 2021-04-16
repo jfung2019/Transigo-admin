@@ -142,7 +142,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         })
 
       Credit.create_quota(%{
-        quota_transigoUID: "quota2",
+        quota_transigo_uid: "quota2",
         quota_usd: 30000,
         credit_days_quota: 60,
         credit_request_date: Timex.today(),

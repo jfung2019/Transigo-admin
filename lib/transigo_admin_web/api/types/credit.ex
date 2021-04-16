@@ -63,4 +63,6 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
     field :importer, non_null(:importer), resolve: dataloader(Account)
     field :exporter, non_null(:exporter), resolve: dataloader(Account)
   end
+
+  connection(node_type: :transaction)
 end

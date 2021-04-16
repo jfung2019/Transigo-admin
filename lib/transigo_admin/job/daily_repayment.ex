@@ -56,7 +56,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
       transaction.second_installment_usd
       |> :erlang.float_to_binary(decimals: 2)
 
-    body = %{
+    request_body = %{
       _links: %{
         source: %{
           href: get_funding_source_url(transaction.importer_id)
@@ -70,9 +70,8 @@ defmodule TransigoAdmin.Job.DailyRepayment do
         value: repaid_value
       }
     }
-    |> IO.inspect()
 
-    case @dwolla_api.dwolla_post("transfers", access_token, body)|>IO.inspect() do
+    case @dwolla_api.dwolla_post("transfers", access_token, request_body) do
       {:ok, %{headers: headers, body: body}} ->
         case Enum.into(headers, %{}) do
           %{"Location" => transfer_url} ->
@@ -85,7 +84,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
           _ ->
             # failed to create transfer
-            {:error, Jason.decode!(body)}
+            {:error, body}
         end
 
       {:error, _} = error_tuple ->
@@ -102,8 +101,8 @@ defmodule TransigoAdmin.Job.DailyRepayment do
             {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
             %{
-              transactionUID: transaction.transaction_UID,
-              sum: Float.round(transaction.second_installment_USD, 2),
+              transactionUID: transaction.transaction_uid,
+              sum: Float.round(transaction.second_installment_usd, 2),
               transactionDatetime: transaction.repaid_datetime
             }
 
@@ -126,7 +125,6 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   end
 
   defp get_funding_source_url(importer_id) do
-    IO.inspect(importer_id)
     case Credit.find_granted_quota(importer_id) do
       %{funding_source_url: funding_source_url} ->
         funding_source_url

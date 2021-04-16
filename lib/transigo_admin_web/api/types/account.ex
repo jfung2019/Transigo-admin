@@ -6,6 +6,20 @@ defmodule TransigoAdminWeb.Api.Types.Account do
 
   alias TransigoAdmin.Account
 
+  object :admin_session do
+    field :admin, non_null(:admin)
+    field :token, non_null(:string)
+  end
+
+  object :admin do
+    field :id, non_null(:id)
+    field :firstname, non_null(:string)
+    field :lastname, non_null(:string)
+    field :email, non_null(:string)
+    field :username, non_null(:string)
+    field :title, non_null(:string)
+  end
+
   object :exporter do
     field :id, non_null(:id)
     field :exporter_transigo_uid, non_null(:string)

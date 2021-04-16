@@ -40,7 +40,7 @@ defmodule TransigoAdminWeb.Router do
 
   # Other scopes may use custom stacks.
   scope "/" do
-    pipe_through :absinthe_api
+    pipe_through [:api, :absinthe_api]
 
     forward "/api", Absinthe.Plug, schema: TransigoAdminWeb.Api.Schema
 

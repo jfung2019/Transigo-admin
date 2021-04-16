@@ -1,5 +1,6 @@
 defmodule TransigoAdmin.Account do
   import Ecto.Query, warn: false
+  import Argon2, only: [verify_pass: 2, no_user_verify: 0]
 
   alias TransigoAdmin.Repo
   alias Absinthe.Relay
@@ -40,6 +41,10 @@ defmodule TransigoAdmin.Account do
     |> Repo.one()
   end
 
+  def check_password(nil, _password), do: no_user_verify()
+
+  def check_password(user, password), do: verify_pass(password, user.password_hash)
+
   def list_awaiting_signature_exporter() do
     from(e in Exporter, where: e.hs_signing_status != "all signed")
     |> Repo.all()
@@ -47,8 +52,15 @@ defmodule TransigoAdmin.Account do
 
   def get_exporter!(id), do: Repo.get!(Exporter, id)
 
-  def list_exporters_paginated(pagination_args),
-    do: Relay.Connection.from_query(Exporter, &Repo.all/1, pagination_args)
+  def list_exporters_paginated(pagination_args) do
+    keyword = "%#{Map.get(pagination_args, :keyword)}%"
+    hs_status = "%#{Map.get(pagination_args, :hs_signing_status)}%"
+
+    from(e in Exporter,
+      where: ilike(e.business_name, ^keyword) or ilike(e.hs_signing_status, ^hs_status)
+    )
+    |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
+  end
 
   def create_exporter(attrs \\ %{}) do
     %Exporter{}

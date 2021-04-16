@@ -36,6 +36,9 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
+  def list_transactions_paginated(pagination_args),
+    do: Relay.Connection.from_query(Transaction, &Repo.all/1, pagination_args)
+
   def get_transaction!(id), do: Repo.get!(Transaction, id)
 
   def create_transaction(attrs \\ %{}) do
