@@ -14,7 +14,7 @@ defmodule TransigoAdmin.Credit do
           "(? + make_interval(days => ?))::date = (NOW() + make_interval(days => 3))::date",
           t.invoice_date,
           t.credit_term_days
-        ) and t.transaction_state == "originated"
+        ) and t.transaction_state == "assigned"
     )
     |> Repo.all()
   end
@@ -26,7 +26,15 @@ defmodule TransigoAdmin.Credit do
           "(? + make_interval(days => ?))::date <= NOW()::date",
           t.invoice_date,
           t.credit_term_days
-        ) and t.transaction_state in ["email_sent", "originated"]
+        ) and t.transaction_state in ["email_sent", "assigned"]
+    )
+    |> Repo.all()
+  end
+
+  def list_transactions_status_originated() do
+    from(t in Transaction,
+      where: t.transaction_state == "originated",
+      preload: [importer: [:contact]]
     )
     |> Repo.all()
   end
