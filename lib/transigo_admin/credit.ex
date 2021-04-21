@@ -34,7 +34,7 @@ defmodule TransigoAdmin.Credit do
   def list_transactions_status_originated() do
     from(t in Transaction,
       where: t.transaction_state == "originated",
-      preload: [importer: [:contact]]
+      preload: [:exporter, importer: [:contact]]
     )
     |> Repo.all()
   end

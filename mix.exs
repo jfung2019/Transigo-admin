@@ -58,7 +58,10 @@ defmodule TransigoAdmin.MixProject do
       {:absinthe_plug, "~> 1.5.7"},
       {:absinthe_phoenix, "~> 2.0.1"},
       {:absinthe_relay, "~> 1.5.1"},
-      {:dataloader, "~> 1.0.8"}
+      {:dataloader, "~> 1.0.8"},
+      {:ex_aws, "~> 2.0"},
+      {:ex_aws_s3, "~> 2.0"},
+      {:sweet_xml, "~> 0.6.6"}
     ]
   end
 

@@ -33,6 +33,30 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
     ])
   end
 
+  def generate_assignment_notice(payload, transaction_uid) do
+    response = HTTPosion.post(
+      "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_assignment_notice",
+      payload,
+      []
+    )
+
+    case response do
+      {:ok, %{status_code: 200, body: pdf_content}} ->
+        file_path = "temp/#{transaction_uid}_assignment_notice.pdf"
+        with :ok <- File.mkdir_p("temp"),
+             :ok <- File.write(file_path, pdf_content)
+          do
+          {:ok, file_path}
+        else
+          _ ->
+            {:error, "Fail to save file"}
+        end
+
+      error ->
+        {:error, error}
+    end
+  end
+
   defp format_date(
          %{
            "incorporationDate" => %{

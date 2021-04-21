@@ -28,6 +28,8 @@ config :sendgrid,
   sandbox_enable: true
 
 config :transigo_admin,
+  hs_api: TransigoAdmin.ServiceManager.HelloSign.HsMock,
   dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock,
   util_api: TransigoAdmin.ServiceManager.Util.UtilMock,
-  eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApiMock
+  eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApiMock,
+  s3_api: TransigoAdmin.ServiceManager.S3.S3Mock

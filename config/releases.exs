@@ -16,6 +16,7 @@ config :transigo_admin, TransigoAdminWeb.Endpoint,
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 
 config :transigo_admin,
+  hs_api: TransigoAdmin.ServiceManager.HelloSign.HsApi,
   hs_client_id: System.get_env("TRANSIGO_HS_CLIENT_ID"),
   hs_api_key: System.get_env("TRANSIGO_HS_API_KEY"),
   dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApi,
@@ -29,11 +30,19 @@ config :transigo_admin,
   eh_auth_url: System.get_env("EH_AUTH_URL"),
   eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApi,
   dev_user_id: System.get_env("DEV_USER_ID"),
-  api_domain: System.get_env("API_DOMAIN")
+  api_domain: System.get_env("API_DOMAIN"),
+  s3_api: TransigoAdmin.ServiceManager.S3.S3Api,
+  s3_bucket_name: System.get_env("S3_BUCKET_NAME")
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),
   sandbox_enable: false
+
+config :ex_aws,
+  json_codec: Jason,
+  region: "us-west-2",
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
+  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role]
 
 # ## Using releases (Elixir v1.9+)
 #

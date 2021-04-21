@@ -16,6 +16,7 @@ defmodule TransigoAdmin.Account do
   }
 
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
+  @hs_api Application.compile_env(:transigo_admin, :hs_api)
 
   @states_list Code.eval_string("""
                  [
@@ -71,13 +72,11 @@ defmodule TransigoAdmin.Account do
   def delete_exporter(%Exporter{} = exporter), do: Repo.delete(exporter)
 
   def get_signing_url(signature_request_id) do
-    case get_signature_request(signature_request_id) do
-      {:ok, signature_request} ->
-        %{"signature_request" => %{"signatures" => signatures}} = signature_request
-
+    case @hs_api.get_signature_request(signature_request_id) do
+      {:ok, %{"signature_request" => %{"signatures" => signatures}}} ->
         case get_transigo_signature(signatures) do
           %{"signature_id" => transigo_signature_id} ->
-            case get_sign_url(transigo_signature_id) do
+            case @hs_api.get_sign_url(transigo_signature_id) do
               {:ok, embedded} ->
                 %{"embedded" => %{"sign_url" => sign_url}} = embedded
                 {:ok, sign_url}
@@ -92,44 +91,6 @@ defmodule TransigoAdmin.Account do
 
       {:error, _error} = error_tuple ->
         error_tuple
-    end
-  end
-
-  defp get_signature_request(signature_request_id) do
-    {:ok, response} =
-      HTTPoison.get(
-        "https://api.hellosign.com/v3/signature_request/#{signature_request_id}",
-        [],
-        hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]
-      )
-
-    %{body: body} = response
-
-    case Jason.decode!(body) do
-      %{"error" => error} ->
-        {:error, error}
-
-      signature_request ->
-        {:ok, signature_request}
-    end
-  end
-
-  defp get_sign_url(signature_id) do
-    {:ok, response} =
-      HTTPoison.get(
-        "https://api.hellosign.com/v3/embedded/sign_url/#{signature_id}",
-        [],
-        hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]
-      )
-
-    %{body: body} = response
-
-    case Jason.decode!(body) do
-      %{"error" => error} ->
-        {:error, error}
-
-      signature_request ->
-        {:ok, signature_request}
     end
   end
 
