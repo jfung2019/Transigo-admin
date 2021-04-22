@@ -35,9 +35,10 @@ defmodule TransigoAdmin.Job.DailyAssignment do
             |> Mail.send()
             |> mark_transaction_as_assigned(transaction)
 
-            #        File.rm(filename)
+            File.rm(filename)
 
             :ok
+
           _ ->
             :error
         end
@@ -99,7 +100,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
           ]
           |> @util_api.generate_assignment_notice(transaction_uid)
 
-        #        File.rm(invoice_file)
+        File.rm(invoice_file)
 
         result
 
