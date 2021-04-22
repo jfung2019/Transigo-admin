@@ -5,5 +5,6 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilMock do
 
   def create_importer(_param), do: {:ok, %HTTPoison.Response{body: ""}}
 
-  def generate_assignment_notice(_request_id), do: Timex.now() |> Timex.format!("{ISOdate}")
+  def generate_assignment_notice(_payload, transaction_uid),
+    do: {:ok, "temp/#{transaction_uid}_assignment_notice.pdf"}
 end

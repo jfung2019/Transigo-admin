@@ -6,6 +6,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
 
   @util_api Application.compile_env(:transigo_admin, :util_api)
   @s3_api Application.compile_env(:transigo_admin, :s3_api)
+  @hs_api Application.compile_env(:transigo_admin, :hs_api)
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
@@ -86,7 +87,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
                support_email: "support@transigo.io"
              })}
           ]
-          |> @util_api.generate_assignment_notice()
+          |> @util_api.generate_assignment_notice(transaction_uid)
 
         File.rm(invoice_file)
 
@@ -108,7 +109,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   end
 
   defp get_hs_doc_create_date(hs_request_id) do
-    case @hs_api.get_signature_request(signature_request_id) do
+    case @hs_api.get_signature_request(hs_request_id) do
       {:ok, %{"signature_request" => %{"created_at" => created_at}}} ->
         DateTime.from_unix!(created_at, :second)
         |> Timex.format!("{ISOdate}")
