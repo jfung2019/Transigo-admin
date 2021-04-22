@@ -37,7 +37,7 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
     response =
       HTTPoison.post(
         "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_assignment_notice",
-        payload,
+        {:multipart, payload},
         []
       )
 
@@ -49,11 +49,13 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
              :ok <- File.write(file_path, pdf_content) do
           {:ok, file_path}
         else
-          _ ->
+          error ->
+            IO.inspect(error)
             {:error, "Fail to save file"}
         end
 
       error ->
+        IO.inspect(error)
         {:error, error}
     end
   end

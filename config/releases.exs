@@ -32,7 +32,8 @@ config :transigo_admin,
   dev_user_id: System.get_env("DEV_USER_ID"),
   api_domain: System.get_env("API_DOMAIN"),
   s3_api: TransigoAdmin.ServiceManager.S3.S3Api,
-  s3_bucket_name: System.get_env("S3_BUCKET_NAME")
+  s3_bucket_name: System.get_env("S3_BUCKET_NAME"),
+  doctools_url: System.get_env("DOCTOOLS_URL")
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),

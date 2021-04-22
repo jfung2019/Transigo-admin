@@ -11,6 +11,8 @@ defmodule TransigoAdmin.ServiceManager.S3.S3Api do
 
     invoice_file = "temp/#{transaction_uid}_invoice.pdf"
 
+    File.mkdir_p("temp")
+
     download =
       ExAws.S3.download_file(
         Application.get_env(:transigo_admin, :s3_bucket_name),
@@ -28,3 +30,5 @@ defmodule TransigoAdmin.ServiceManager.S3.S3Api do
     end
   end
 end
+
+# exporter/Texp-b401-41f0-fecd-5016-60ad-c97e/Timp-7cbd-d35a-3e5c-ec6d-9e05-a5b8/Ttra-4c6f-52e2-2f14-2cb2-ee94-14d0/Ttra-4c6f-52e2-2f14-2cb2-ee94-14d0_invoice.pdf

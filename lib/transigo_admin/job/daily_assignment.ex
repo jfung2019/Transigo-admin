@@ -19,18 +19,28 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   defp send_assignment_notice(%Transaction{} = transaction) do
     case download_assignment_notice(transaction) do
       {:ok, filename} ->
-        Email.build()
-        |> Email.put_from("tcaas@transigo.io", "Transigo")
-        |> Email.add_to(transaction.importer.contact.email)
-        |> Email.put_subject("Transigo Assignment Notice")
-        |> Email.put_text("Transigo Assignment Notice for credits")
-        |> Email.add_attachment(%{content: "pdf", filename: filename})
-        |> Mail.send()
-        |> mark_transaction_as_assigned(transaction)
+        case File.read(filename) do
+          {:ok, content} ->
+            Email.build()
+            |> Email.put_from("tcaas@transigo.io", "Transigo")
+            |> Email.add_to(transaction.importer.contact.email)
+            |> Email.put_subject("Transigo Assignment Notice")
+            |> Email.put_text("Transigo Assignment Notice for credits")
+            |> Email.add_attachment(%{
+              content: Base.encode64(content),
+              filename: Path.basename(filename),
+              type: "application/pdf",
+              disposition: "attachment"
+            })
+            |> Mail.send()
+            |> mark_transaction_as_assigned(transaction)
 
-        File.rm(filename)
+            #        File.rm(filename)
 
-        :ok
+            :ok
+          _ ->
+            :error
+        end
 
       {:error, _} ->
         :error
@@ -73,7 +83,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
              })},
             {:file, invoice_file,
              {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
-            {"tags", true},
+            {"tags", "true"},
             {"transigo",
              Jason.encode!(%{
                address:
@@ -89,7 +99,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
           ]
           |> @util_api.generate_assignment_notice(transaction_uid)
 
-        File.rm(invoice_file)
+        #        File.rm(invoice_file)
 
         result
 
@@ -108,7 +118,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
     "#{street}, #{city}, #{state}, #{zip}, #{country}"
   end
 
-  defp get_hs_doc_create_date(hs_request_id) do
+  def get_hs_doc_create_date(hs_request_id) do
     case @hs_api.get_signature_request(hs_request_id) do
       {:ok, %{"signature_request" => %{"created_at" => created_at}}} ->
         DateTime.from_unix!(created_at, :second)

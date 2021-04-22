@@ -30,7 +30,8 @@ config :transigo_admin,
   dev_user_id: System.get_env("DEV_USER_ID"),
   api_domain: System.get_env("API_DOMAIN"),
   s3_api: TransigoAdmin.ServiceManager.S3.S3Api,
-  s3_bucket_name: System.get_env("S3_BUCKET_NAME")
+  s3_bucket_name: System.get_env("S3_BUCKET_NAME"),
+  doctools_url: System.get_env("DOCTOOLS_URL")
 
 config :ex_aws,
   json_codec: Jason,
@@ -56,8 +57,9 @@ config :transigo_admin, Oban,
      timezone: "Asia/Hong_Kong",
      crontab: [
        {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
-       {"0 0 * * *", TransigoAdmin.Job.DailyBalance},
-       {"0 0 1 * *", TransigoAdmin.Job.MonthlyRevShare},
+       {"1 0 * * *", TransigoAdmin.Job.DailyBalance},
+       {"2 0 * * *", TransigoAdmin.Job.DailyBalance},
+       {"3 0 1 * *", TransigoAdmin.Job.DailyAssignment},
        {"* * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "init_send_fail"}},
        {"0 * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "first_resend_fail"}},
        {"0 0 * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "second_resend_fail"}},
