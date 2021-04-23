@@ -44,8 +44,21 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
-  def list_transactions_paginated(pagination_args),
-    do: Relay.Connection.from_query(Transaction, &Repo.all/1, pagination_args)
+  def list_transactions_paginated(pagination_args) do
+    keyword = "%#{Map.get(pagination_args, :keyword)}%"
+    hs_status = "%#{Map.get(pagination_args, :hs_signing_status)}%"
+    transaction_status = "%#{Map.get(pagination_args, :transaction_status)}%"
+
+    from(t in Transaction,
+      left_join: e in assoc(t, :exporter),
+      left_join: i in assoc(t, :importer),
+      where:
+        (ilike(i.business_name, ^keyword) or ilike(e.business_name, ^keyword)) and
+          ilike(t.hs_signing_status, ^hs_status) and
+          ilike(t.transaction_state, ^transaction_status)
+    )
+    |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
+  end
 
   def get_transaction!(id), do: Repo.get!(Transaction, id)
 
@@ -103,11 +116,43 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
-  def list_quotas_paginated(pagination_args),
-    do: Relay.Connection.from_query(Quota, &Repo.all/1, pagination_args)
+  def list_quotas_paginated(pagination_args) do
+    keyword = "%#{Map.get(pagination_args, :keyword)}%"
+    credit_status = "%#{Map.get(pagination_args, :credit_status)}%"
 
-  def list_offers_paginated(pagination_args),
-    do: Relay.Connection.from_query(Offer, &Repo.all/1, pagination_args)
+    from(q in Quota,
+      left_join: i in assoc(q, :importer),
+      where: ilike(i.business_name, ^keyword) and ilike(q.credit_status, ^credit_status)
+    )
+    |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
+  end
+
+  def create_offer(attrs \\ %{}) do
+    %Offer{}
+    |> Offer.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def list_offers_paginated(pagination_args) do
+    keyword = "%#{Map.get(pagination_args, :keyword)}%"
+    accept_decline = check_accept_decline(Map.get(pagination_args, :accepted))
+
+    from(o in Offer,
+      left_join: t in assoc(o, :transaction),
+      left_join: e in assoc(t, :exporter),
+      left_join: i in assoc(t, :importer),
+      where:
+        (ilike(i.business_name, ^keyword) or ilike(e.business_name, ^keyword)) and
+          ilike(o.offer_accepted_declined, ^accept_decline)
+    )
+    |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
+  end
+
+  defp check_accept_decline(nil), do: "%%"
+
+  defp check_accept_decline(true), do: "A"
+
+  defp check_accept_decline(false), do: "D"
 
   def datasource, do: Dataloader.Ecto.new(Repo, query: &query/2)
 

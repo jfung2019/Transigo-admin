@@ -41,7 +41,8 @@ defmodule TransigoAdmin.Account.Exporter do
     :signatory_title,
     :hellosign_signature_request_id,
     :hs_signing_status,
-    :marketplace_id
+    :marketplace_id,
+    :contact_id
   ]
 
   @required_attrs [

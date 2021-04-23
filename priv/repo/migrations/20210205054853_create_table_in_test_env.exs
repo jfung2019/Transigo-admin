@@ -78,6 +78,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :hellosign_signature_request_id, :string
       add :hs_signing_status, :string, default: "awaiting_signature"
       add :marketplace_id, references(:marketplaces, on_delete: :delete_all, type: :binary_id)
+      add :MSA_contact_id, references(:contact, on_delete: :delete_all, type: :binary_id)
 
       timestamps(
         inserted_at: :created_datetime,
@@ -136,6 +137,22 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :dwolla_repayment_transfer_url, :string
       add :importer_id, references(:importer, on_delete: :delete_all, type: :binary_id)
       add :exporter_id, references(:exporter, on_delete: :delete_all, type: :binary_id)
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
+
+    create_if_not_exists table("offer", primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :transaction_USD, :float
+      add :advance_percentage, :float
+      add :advance_USD, :float
+      add :importer_fee, :float
+      add :offer_accepted_declined, :string
+      add :transaction_id, references(:transaction, on_delete: :delete_all, type: :binary_id)
 
       timestamps(
         inserted_at: :created_datetime,
