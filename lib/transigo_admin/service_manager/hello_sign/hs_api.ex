@@ -40,4 +40,8 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsApi do
         {:error, "Fail to get sign url"}
     end
   end
+
+  def create_signature_request(msa_file_path, exporter) do
+
+  end
 end

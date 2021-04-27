@@ -51,6 +51,13 @@ defmodule TransigoAdmin.Account do
     |> Repo.all()
   end
 
+  def list_unsigned_exporters() do
+    from(e in Exporter,
+      where: e.hs_signing_status != "all signed" and not is_nil(e.hellosign_signature_request_id)
+    )
+    |> Repo.all()
+  end
+
   def get_exporter!(id), do: Repo.get!(Exporter, id)
 
   def list_exporters_paginated(pagination_args) do

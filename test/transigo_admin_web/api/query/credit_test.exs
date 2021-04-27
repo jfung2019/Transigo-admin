@@ -137,19 +137,20 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
       })
 
     {:ok, offer} =
-    Credit.create_offer(%{
-      transaction_id: transaction.id,
-      transaction_usd: 3000,
-      advance_percentage: 30,
-      advance_usd: 300,
-      importer_fee: 3000,
-      offer_accepted_declined: "D"
-    })
+      Credit.create_offer(%{
+        transaction_id: transaction.id,
+        transaction_usd: 3000,
+        advance_percentage: 30,
+        advance_usd: 300,
+        importer_fee: 3000,
+        offer_accepted_declined: "D"
+      })
 
     {:ok,
-      conn: put_req_header(conn, "authorization", "Bearer #{token}"),
-      quota: quota,
-      transaction: transaction,offer: offer}
+     conn: put_req_header(conn, "authorization", "Bearer #{token}"),
+     quota: quota,
+     transaction: transaction,
+     offer: offer}
   end
 
   test "can list quotas", %{conn: conn, quota: %{id: quota_id}} do

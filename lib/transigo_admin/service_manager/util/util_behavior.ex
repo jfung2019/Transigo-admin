@@ -8,4 +8,7 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilBehavior do
 
   @callback generate_assignment_notice([tuple()], String.t()) ::
               {:ok, String.t()} | {:errror, any()}
+
+  @callback generate_exporter_msa([tuple()], String.t()) ::
+              {:ok, String.t()} | {:errror, any()}
 end

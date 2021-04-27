@@ -60,6 +60,9 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
     end
   end
 
+  def generate_exporter_msa(payload, exporter_uid) do
+  end
+
   defp format_date(
          %{
            "incorporationDate" => %{
