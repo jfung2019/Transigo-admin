@@ -35,7 +35,7 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
   end
 
   def regenerate_msa(created_diff, %{contact: contact, marketplace: marketplace} = exporter) do
-      cond do
+    cond do
       created_diff <= -1 ->
         now = Timex.now() |> Timex.format!("{ISOdate}")
 
@@ -69,14 +69,15 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
 
   defp create_hs_request({:ok, msa_path}, exporter) do
     payload = [
+      {"client_id", Application.get_env(:transigo_admin, :hs_client_id)},
       {"test_mode", "1"},
       {"use_text_tags", "1"},
       {"hide_text_tags", "1"},
       {:file, msa_path, {"form-data", [name: "file[0]", filename: Path.basename(msa_path)]}, []},
-      {"signer[0][name]", "#{exporter.signatory_first_name} #{exporter.signatory_last_name}"},
-      {"signer[0][email_address]", exporter.signatory_email},
-      {"signer[1][name]", "Nir Tal"},
-      {"signer[1][email_address]", "nir.tal@transigo.io"}
+      {"signers[0][name]", "#{exporter.signatory_first_name} #{exporter.signatory_last_name}"},
+      {"signers[0][email_address]", exporter.signatory_email},
+      {"signers[1][name]", "Nir Tal"},
+      {"signers[1][email_address]", "nir.tal@transigo.io"}
     ]
 
     case @hs_api.create_signature_request(payload) do

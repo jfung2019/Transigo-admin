@@ -47,13 +47,13 @@ defmodule TransigoAdmin.Account do
   def check_password(user, password), do: verify_pass(password, user.password_hash)
 
   def list_awaiting_signature_exporter() do
-    from(e in Exporter, where: e.hs_signing_status != "all signed")
+    from(e in Exporter, where: e.hs_signing_status != "all_signed")
     |> Repo.all()
   end
 
   def list_unsigned_exporters() do
     from(e in Exporter,
-      where: e.hs_signing_status != "all signed" and not is_nil(e.hellosign_signature_request_id),
+      where: e.hs_signing_status != "all_signed" and not is_nil(e.hellosign_signature_request_id),
       preload: [:marketplace, :contact]
     )
     |> Repo.all()

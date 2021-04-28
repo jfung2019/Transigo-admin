@@ -262,4 +262,40 @@ defmodule TransigoAdmin.Demo do
       assign_id: transaction.id
     }
   end
+
+  def prepare_daily_signing_check() do
+    {:ok, %{id: contact_id}} =
+      Account.create_contact(%{
+        contact_transigo_uid: "exporter",
+        first_name: "first",
+        last_name: "last",
+        mobile: "87654321",
+        work_phone: "12345678",
+        email: "exporter@email.com",
+        role: "owner",
+        country: "us"
+      })
+
+    {:ok, exporter} =
+      Account.create_exporter(%{
+        exporter_transigo_uid: "signing_check",
+        business_name: "test",
+        address: "100 address",
+        business_address_country: "country",
+        registration_number: "123",
+        marketplace_id: "d8fb0588-b60f-4e24-aadf-dfd32ee251b2",
+        signatory_first_name: "first",
+        signatory_last_name: "last",
+        signatory_mobile: "12345678",
+        signatory_email: "test@email.com",
+        signatory_title: "owner",
+        hellosign_signature_request_id: "f6caf3f143e5398c75f6cb9187d1bce0d6c13ec1",
+        contact_id: contact_id
+      })
+
+    Account.get_user!("596c3db1-1936-4a9f-8411-0bcd836fac97")
+    |> Account.update_user(%{webhook: "https://webhook.site/7ead15bc-b49c-434e-8b6f-1cd3e3e8146c"})
+
+    %{exporter_id: exporter.id}
+  end
 end
