@@ -1,7 +1,7 @@
 defmodule TransigoAdmin.Job.DailyAssignment do
   use Oban.Worker, queue: :transaction, max_attempts: 5
 
-  alias TransigoAdmin.{Credit, Credit.Transaction}
+  alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
   alias SendGrid.{Mail, Email}
 
   @util_api Application.compile_env(:transigo_admin, :util_api)
@@ -85,18 +85,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
             {:file, invoice_file,
              {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
             {"tags", "true"},
-            {"transigo",
-             Jason.encode!(%{
-               address:
-                 "7400 Beaufont Springs Drive, Suite 300 PMB#9655, Richmond, VA 23225, USA",
-               contact: "Nir Tal",
-               contact_email: "nir@transigo.io",
-               name: "Transigo, Inc.",
-               phone: "888-783-6052",
-               snail_mail:
-                 "Transigo Inc., 7400 Beaufont Springs Drive, Suite 300 PMB#9655 Richmond, VA 23225",
-               support_email: "support@transigo.io"
-             })}
+            {"transigo", Helper.get_transigo_doc_info()}
           ]
           |> @util_api.generate_assignment_notice(transaction_uid)
 

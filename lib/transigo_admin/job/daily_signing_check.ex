@@ -34,10 +34,31 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
     end
   end
 
-  def regenerate_msa(created_diff, exporter) do
-    cond do
+  def regenerate_msa(created_diff, %{contact: contact, marketplace: marketplace} = exporter) do
+      cond do
       created_diff <= -1 ->
-        %{}
+        now = Timex.now() |> Timex.format!("{ISOdate}")
+
+        [
+          {"marketplace", marketplace.marketplace},
+          {"document_signature_date", now},
+          {"fname", "#{exporter.exporter_transigo_uid}_msa"},
+          {"tags", "true"},
+          {"exporter",
+           Jason.encode!(%{
+             MSA_date: now,
+             address: exporter.address,
+             company_name: exporter.business_name,
+             contact: "#{contact.first_name} #{contact.last_name}",
+             email: contact.email,
+             phone: contact.mobile,
+             title: contact.role,
+             signatory_email: exporter.signatory_email,
+             signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+             signatory_title: exporter.signatory_title
+           })},
+          {"transigo", Helper.get_transigo_doc_info()}
+        ]
         |> @util_api.generate_exporter_msa(exporter.exporter_transigo_uid)
         |> create_hs_request(exporter)
 
@@ -47,10 +68,23 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
   end
 
   defp create_hs_request({:ok, msa_path}, exporter) do
-    case @hs_api.create_signature_request(msa_path, exporter) do
-      {:ok, %{body: body}} ->
-        # update exporter
-        :ok
+    payload = [
+      {"test_mode", "1"},
+      {"use_text_tags", "1"},
+      {"hide_text_tags", "1"},
+      {:file, msa_path, {"form-data", [name: "file[0]", filename: Path.basename(msa_path)]}, []},
+      {"signer[0][name]", "#{exporter.signatory_first_name} #{exporter.signatory_last_name}"},
+      {"signer[0][email_address]", exporter.signatory_email},
+      {"signer[1][name]", "Nir Tal"},
+      {"signer[1][email_address]", "nir.tal@transigo.io"}
+    ]
+
+    case @hs_api.create_signature_request(payload) do
+      {:ok, %{"signature_request" => %{"signature_request_id" => req_id}}} ->
+        Account.update_exporter(exporter, %{
+          hellosign_signature_request_id: req_id,
+          hs_signing_status: "awaiting_signature"
+        })
 
       _ ->
         nil
@@ -62,7 +96,7 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
   defp webhook_result([]), do: :ok
 
   defp webhook_result(exporters) do
-    %{exporters: Enum.map(exporters, & &1.exporter_transigo_uid)}
+    %{exporters: Enum.map(exporters, fn {:ok, exporter} -> exporter.exporter_transigo_uid end)}
     |> Helper.notify_api_users("daily_signing_check")
   end
 end

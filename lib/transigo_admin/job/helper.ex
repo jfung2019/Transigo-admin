@@ -72,4 +72,17 @@ defmodule TransigoAdmin.Job.Helper do
 
   def put_datetime(result, %Transaction{transaction_state: "rev_share_to_be_paid"} = transaction),
     do: Map.put(result, :transactionDateTime, transaction.repaid_datetime)
+
+  def get_transigo_doc_info do
+    Jason.encode!(%{
+      address: "7400 Beaufont Springs Drive, Suite 300 PMB#9655, Richmond, VA 23225, USA",
+      contact: "Nir Tal",
+      contact_email: "nir@transigo.io",
+      name: "Transigo, Inc.",
+      phone: "888-783-6052",
+      snail_mail:
+        "Transigo Inc., 7400 Beaufont Springs Drive, Suite 300 PMB#9655 Richmond, VA 23225",
+      support_email: "support@transigo.io"
+    })
+  end
 end

@@ -53,7 +53,8 @@ defmodule TransigoAdmin.Account do
 
   def list_unsigned_exporters() do
     from(e in Exporter,
-      where: e.hs_signing_status != "all signed" and not is_nil(e.hellosign_signature_request_id)
+      where: e.hs_signing_status != "all signed" and not is_nil(e.hellosign_signature_request_id),
+      preload: [:marketplace, :contact]
     )
     |> Repo.all()
   end
@@ -74,6 +75,12 @@ defmodule TransigoAdmin.Account do
     %Exporter{}
     |> Exporter.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def update_exporter(exporter, attrs \\ %{}) do
+    exporter
+    |> Exporter.changeset(attrs)
+    |> Repo.update()
   end
 
   def delete_exporter(%Exporter{} = exporter), do: Repo.delete(exporter)

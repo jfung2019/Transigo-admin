@@ -34,33 +34,21 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
   end
 
   def generate_assignment_notice(payload, transaction_uid) do
-    response =
-      HTTPoison.post(
-        "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_assignment_notice",
-        {:multipart, payload},
-        []
-      )
-
-    case response do
-      {:ok, %{status_code: 200, body: pdf_content}} ->
-        file_path = "temp/#{transaction_uid}_assignment_notice.pdf"
-
-        with :ok <- File.mkdir_p("temp"),
-             :ok <- File.write(file_path, pdf_content) do
-          {:ok, file_path}
-        else
-          error ->
-            IO.inspect(error)
-            {:error, "Fail to save file"}
-        end
-
-      error ->
-        IO.inspect(error)
-        {:error, error}
-    end
+    HTTPoison.post(
+      "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_assignment_notice",
+      {:multipart, payload},
+      []
+    )
+    |> save_file("temp/#{transaction_uid}_assignment_notice.pdf")
   end
 
   def generate_exporter_msa(payload, exporter_uid) do
+    HTTPoison.post(
+      "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_msa",
+      {:multipart, payload},
+      []
+    )
+    |> save_file("temp/#{exporter_uid}_msa.pdf")
   end
 
   defp format_date(
@@ -79,4 +67,22 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
   end
 
   defp format_date(map), do: map
+
+  defp save_file(response, file_path) do
+    case response do
+      {:ok, %{status_code: 200, body: pdf_content}} ->
+        with :ok <- File.mkdir_p("temp"),
+             :ok <- File.write(file_path, pdf_content) do
+          {:ok, file_path}
+        else
+          error ->
+            IO.inspect(error)
+            {:error, "Fail to save file"}
+        end
+
+      error ->
+        IO.inspect(error)
+        {:error, error}
+    end
+  end
 end
