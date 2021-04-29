@@ -1,12 +1,12 @@
 defmodule TransigoAdmin.Account.ImporterAdmin do
   def index(_) do
     [
-      importer_transigoUID: nil,
+      importer_transigo_uid: nil,
       business_name: nil,
-      business_EIN: nil,
+      business_ein: nil,
       incorporation_date: nil,
       importer_origin: nil,
-      number_DUNS: nil,
+      number_duns: nil,
       business_address_street_address: nil,
       business_address_city: nil,
       business_address_state: nil,
@@ -21,12 +21,12 @@ defmodule TransigoAdmin.Account.ImporterAdmin do
 
   def form_fields(_) do
     [
-      importer_transigoUID: nil,
+      importer_transigo_uid: nil,
       business_name: nil,
-      business_EIN: nil,
+      business_ein: nil,
       incorporation_date: nil,
       importer_origin: nil,
-      number_DUNS: nil,
+      number_duns: nil,
       business_address_street_address: nil,
       business_address_city: nil,
       business_address_state: nil,

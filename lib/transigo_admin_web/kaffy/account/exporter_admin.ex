@@ -5,7 +5,7 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
 
   def index(_) do
     [
-      exporter_transigoUID: nil,
+      exporter_transigo_uid: nil,
       business_name: nil,
       address: nil,
       business_address_country: nil,
@@ -24,7 +24,7 @@ defmodule TransigoAdmin.Account.ExporterAdmin do
 
   def form_fields(_) do
     [
-      exporter_transigoUID: nil,
+      exporter_transigo_uid: nil,
       business_name: nil,
       address: nil,
       business_address_country: nil,

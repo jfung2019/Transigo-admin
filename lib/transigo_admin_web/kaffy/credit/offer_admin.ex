@@ -2,9 +2,9 @@ defmodule TransigoAdmin.Credit.OfferAdmin do
   def index(_) do
     [
       transaction_id: nil,
-      transaction_USD: nil,
+      transaction_usd: nil,
       advance_percentage: nil,
-      advance_USD: nil,
+      advance_usd: nil,
       importer_fee: nil,
       offer_accepted_declined: nil
     ]
@@ -13,9 +13,9 @@ defmodule TransigoAdmin.Credit.OfferAdmin do
   def form_fields(_) do
     [
       transaction_id: nil,
-      transaction_USD: nil,
+      transaction_usd: nil,
       advance_percentage: nil,
-      advance_USD: nil,
+      advance_usd: nil,
       importer_fee: nil,
       offer_accepted_declined: nil
     ]
