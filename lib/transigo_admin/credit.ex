@@ -119,6 +119,7 @@ defmodule TransigoAdmin.Credit do
   def list_quotas_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
     credit_status = "%#{Map.get(pagination_args, :credit_status)}%"
+
     from(q in Quota,
       left_join: i in assoc(q, :importer),
       where: ilike(i.business_name, ^keyword) and ilike(q.credit_status, ^credit_status)
@@ -134,20 +135,27 @@ defmodule TransigoAdmin.Credit do
 
   def list_offers_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
-    accept_decline = check_accept_decline(Map.get(pagination_args, :accepted))
 
-    from(o in Offer,
-      left_join: t in assoc(o, :transaction),
-      left_join: e in assoc(t, :exporter),
-      left_join: i in assoc(t, :importer),
-      where:
-        (ilike(i.business_name, ^keyword) or ilike(e.business_name, ^keyword)) and
-          ilike(o.offer_accepted_declined, ^accept_decline)
-    )
+    query =
+      from(o in Offer,
+        left_join: t in assoc(o, :transaction),
+        left_join: e in assoc(t, :exporter),
+        left_join: i in assoc(t, :importer),
+        where: ilike(i.business_name, ^keyword) or ilike(e.business_name, ^keyword)
+      )
+
+    case check_accept_decline(Map.get(pagination_args, :accepted)) do
+      nil ->
+        query
+
+      accept_decline ->
+        query
+        |> where([o], ilike(o.offer_accepted_declined, ^accept_decline))
+    end
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
-  defp check_accept_decline(nil), do: "%%"
+  defp check_accept_decline(nil), do: nil
 
   defp check_accept_decline(true), do: "A"
 
