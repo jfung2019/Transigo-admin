@@ -119,7 +119,6 @@ defmodule TransigoAdmin.Credit do
   def list_quotas_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
     credit_status = "%#{Map.get(pagination_args, :credit_status)}%"
-
     from(q in Quota,
       left_join: i in assoc(q, :importer),
       where: ilike(i.business_name, ^keyword) and ilike(q.credit_status, ^credit_status)

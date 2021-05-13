@@ -15,9 +15,9 @@ defmodule TransigoAdmin.Credit.Quota do
     field :marketplace_total_transaction_sum_usd, :float,
       source: :marketplace_total_transaction_sum_USD
 
-    field :marketplace_transactions_last_12_months, :integer
+    field :marketplace_transactions_last_year, :integer, source: :marketplace_transactions_last_12_months
 
-    field :marketplace_total_transaction_sum_usd_last_12_months, :float,
+    field :marketplace_total_transaction_sum_usd_last_year, :float,
       source: :marketplace_total_transaction_sum_USD_last_12_months
 
     field :marketplace_number_disputes, :integer
