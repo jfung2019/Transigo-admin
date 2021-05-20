@@ -2,7 +2,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateUserTable do
   use Ecto.Migration
 
   def change do
-    execute "CREATE EXTENSION citext", "DROP EXTENSION citext"
+    execute "CREATE EXTENSION IF NOT EXISTS citext", "DROP EXTENSION citext"
 
     create table(:users, primary_key: false) do
       add :id, :binary_id, primary_key: true
