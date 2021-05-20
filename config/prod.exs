@@ -10,7 +10,7 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :transigo_admin, TransigoAdminWeb.Endpoint,
-  url: [host: "api.tcaas.app", port: 443, scheme: "https"],
+  url: [host: System.get_env("ENDPOINT_HOST"), port: 443, scheme: "https"],
   server: true,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
