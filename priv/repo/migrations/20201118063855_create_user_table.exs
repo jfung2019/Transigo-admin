@@ -4,7 +4,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateUserTable do
   def change do
     execute "CREATE EXTENSION IF NOT EXISTS citext", "DROP EXTENSION citext"
 
-    create table(:users, primary_key: false) do
+    create table(:admins, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :firstname, :string, null: false
       add :lastname, :string, null: false
@@ -20,7 +20,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateUserTable do
       timestamps()
     end
 
-    create unique_index(:users, [:email])
-    create unique_index(:users, [:username])
+    create unique_index(:admins, [:email])
+    create unique_index(:admins, [:username])
   end
 end

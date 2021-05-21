@@ -4,8 +4,6 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
   def change do
     execute "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 
-    execute "ALTER TABLE users RENAME TO admins;"
-
     create_if_not_exists table("contact", primary_key: false) do
       add :id, :binary_id, primary_key: true, default: fragment("uuid_generate_v4()")
       add :contact_transigoUID, :string
