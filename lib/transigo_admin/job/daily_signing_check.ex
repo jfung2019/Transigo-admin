@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.DailySigningCheck do
-  use Oban.Worker, queue: :default, max_attempts: 5
+  use Oban.Worker, queue: :default, max_attempts: 1
 
   alias TransigoAdmin.{Account, Job.Helper}
 

@@ -1,5 +1,5 @@
 defmodule TransigoAdminWeb.Api.Resolvers.Account do
-  alias TransigoAdmin.{Account, Account.Guardian}
+  f.{Account, Account.Guardian}
 
   def login(_root, %{email: email, password: password}, _context) do
     with admin <- Account.find_admin(email),

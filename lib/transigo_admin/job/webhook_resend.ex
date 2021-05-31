@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.WebhookResend do
-  use Oban.Worker, queue: :webhook, max_attempts: 5
+  use Oban.Worker, queue: :webhook, max_attempts: 1
 
   alias TransigoAdmin.{Account, Account.WebhookUserEvent, Job.Helper}
 

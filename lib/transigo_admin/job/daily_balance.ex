@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Job.DailyBalance do
-  use Oban.Worker, queue: :transaction, max_attempts: 5
+  use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Job.Helper}
 
