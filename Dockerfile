@@ -6,7 +6,7 @@ ADD . .
 
 # Run frontend build, compile, and digest assets, and set default to own the directory
 RUN mix deps.get && cd assets/ && \
-		npm install && \
+		npm install -f && \
     npm run deploy && \
     cd - && \
     mix do compile, phx.digest, release
