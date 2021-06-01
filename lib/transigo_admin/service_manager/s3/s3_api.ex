@@ -1,29 +1,45 @@
 defmodule TransigoAdmin.ServiceManager.S3.S3Api do
   @behaviour TransigoAdmin.ServiceManager.S3.S3Behavior
 
-  def download_invoice_file(%{
-        transaction_uid: transaction_uid,
-        exporter: %{exporter_transigo_uid: exporter_uid},
-        importer: %{importer_transigo_uid: importer_uid}
-      }) do
-    invoice_s3_key =
-      "exporter/#{exporter_uid}/#{importer_uid}/#{transaction_uid}/#{transaction_uid}_invoice.pdf"
+  def download_invoice_po_file(
+        %{
+          transaction_uid: transaction_uid,
+          exporter: %{exporter_transigo_uid: exporter_uid},
+          importer: %{importer_transigo_uid: importer_uid}
+        },
+        :invoice
+      ),
+      do: do_download_invoice_po(transaction_uid, exporter_uid, importer_uid, "invoice")
 
-    invoice_file = "temp/#{transaction_uid}_invoice.pdf"
+  def download_invoice_po_file(
+        %{
+          transaction_uid: transaction_uid,
+          exporter: %{exporter_transigo_uid: exporter_uid},
+          importer: %{importer_transigo_uid: importer_uid}
+        },
+        :po
+      ),
+      do: do_download_invoice_po(transaction_uid, exporter_uid, importer_uid, "po")
+
+  defp do_download_invoice_po(transaction_uid, exporter_uid, importer_uid, type) do
+    s3_key =
+      "exporter/#{exporter_uid}/#{importer_uid}/#{transaction_uid}/#{transaction_uid}_#{type}.pdf"
+
+    file = "temp/#{transaction_uid}_#{type}.pdf"
 
     File.mkdir_p("temp")
 
     download =
       ExAws.S3.download_file(
         Application.get_env(:transigo_admin, :s3_bucket_name),
-        invoice_s3_key,
-        invoice_file
+        s3_key,
+        file
       )
       |> ExAws.request()
 
     case download do
       {:ok, :done} ->
-        {:ok, invoice_file}
+        {:ok, file}
 
       _ ->
         {:error, "Fail to download invoice"}

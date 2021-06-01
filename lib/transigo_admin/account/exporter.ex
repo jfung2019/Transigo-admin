@@ -17,6 +17,7 @@ defmodule TransigoAdmin.Account.Exporter do
     field :signatory_title, :string
     field :hellosign_signature_request_id, :string
     field :hs_signing_status, :string, default: "awaiting_signature"
+    field :sign_msa_datetime, :date, source: :sign_MSA_datetime
 
     belongs_to :contact, TransigoAdmin.Account.Contact, source: :MSA_contact_id
     belongs_to :marketplace, TransigoAdmin.Credit.Marketplace

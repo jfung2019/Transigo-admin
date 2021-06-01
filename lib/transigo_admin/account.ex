@@ -238,6 +238,14 @@ defmodule TransigoAdmin.Account do
     |> Repo.update()
   end
 
+  def get_token_id(token) do
+    from(t in "tokens",
+      where: t.access_token == ^token,
+      select: t.id
+    )
+    |> Repo.one()
+  end
+
   def datasource, do: Dataloader.Ecto.new(Repo, query: &query/2)
 
   def query(queryable, _), do: queryable

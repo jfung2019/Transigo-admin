@@ -21,6 +21,8 @@ defmodule TransigoAdmin.Account.Importer do
       values: [:soleProprietorship, :corporation, :llc, :partnership]
 
     field :business_classification_id, :string
+    field :bank_account, :string
+    field :bank_name, :string
 
     belongs_to :contact, TransigoAdmin.Account.Contact
 
@@ -45,7 +47,9 @@ defmodule TransigoAdmin.Account.Importer do
     :business_address_country,
     :business_type,
     :business_classification_id,
-    :contact_id
+    :contact_id,
+    :bank_account,
+    :bank_name
   ]
 
   @required_attrs [

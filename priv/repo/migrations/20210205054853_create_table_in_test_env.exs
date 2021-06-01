@@ -4,6 +4,26 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
   def change do
     execute "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 
+    create_if_not_exists table("US_place", primary_key: false) do
+      add :id, :binary_id, primary_key: true, default: fragment("uuid_generate_v4()")
+      add :street_address, :string
+      add :city, :string
+      add :state, :string
+      add :zip_code, :string
+      add :country, :string
+      add :full_address, :string
+      add :google_place_id, :string
+      add :latitude, :float
+      add :longitude, :float
+      add :google_json, :string
+
+      timestamps(
+        inserted_at: :created_datetime,
+        updated_at: :last_modified_datetime,
+        type: :utc_datetime
+      )
+    end
+
     create_if_not_exists table("contact", primary_key: false) do
       add :id, :binary_id, primary_key: true, default: fragment("uuid_generate_v4()")
       add :contact_transigoUID, :string
@@ -17,6 +37,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :ssn, :string
       add :address, :string
       add :date_of_birth, :date
+      add :personal_US_address_id, :binary_id
 
       timestamps(
         inserted_at: :created_datetime,
@@ -41,6 +62,8 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :business_type, :string
       add :business_classification_id, :string
       add :contact_id, references(:contact, on_delete: :delete_all, type: :binary_id)
+      add :bank_account, :string
+      add :bank_name, :string
 
       timestamps(
         inserted_at: :created_datetime,
@@ -77,6 +100,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :hs_signing_status, :string, default: "awaiting_signature"
       add :marketplace_id, references(:marketplaces, on_delete: :delete_all, type: :binary_id)
       add :MSA_contact_id, references(:contact, on_delete: :delete_all, type: :binary_id)
+      add :sign_MSA_datetime, :date
 
       timestamps(
         inserted_at: :created_datetime,

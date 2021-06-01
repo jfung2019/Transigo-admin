@@ -3,6 +3,7 @@ defmodule TransigoAdmin.Account.Contact do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
   schema "contact" do
     field :contact_transigo_uid, :string, source: :contact_transigoUID
     field :first_name, :string
@@ -15,6 +16,8 @@ defmodule TransigoAdmin.Account.Contact do
     field :ssn, :string
     field :address, :string
     field :date_of_birth, :date
+
+    belongs_to :us_place, TransigoAdmin.Account.UsPlace, source: :personal_US_address_id
 
     timestamps(
       inserted_at_source: :created_datetime,
@@ -34,7 +37,8 @@ defmodule TransigoAdmin.Account.Contact do
     :country,
     :ssn,
     :address,
-    :date_of_birth
+    :date_of_birth,
+    :us_place_id
   ]
 
   @required_attrs [

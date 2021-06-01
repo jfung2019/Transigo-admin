@@ -24,6 +24,10 @@ defmodule TransigoAdminWeb.Router do
     plug TransigoAdminWeb.Api.Context
   end
 
+  pipeline :api_auth do
+    plug TransigoAdminWeb.ApiAuth
+  end
+
   scope "/", TransigoAdminWeb do
     pipe_through :browser
 
@@ -36,6 +40,12 @@ defmodule TransigoAdminWeb.Router do
       resources "/signing", HellosignController, only: [:index]
       resources "/jobs", ObanJobController, only: [:index]
     end
+  end
+
+  scope "/v2", TransigoAdminWeb.Api do
+    pipe_through [:api, :api_auth]
+
+    get "/trans/:transaction_uid/sign_docs", OfferController, :sign_docs
   end
 
   # Other scopes may use custom stacks.

@@ -51,6 +51,16 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
     |> save_file("temp/#{exporter_uid}_msa.pdf")
   end
 
+  def generate_transaction_doc(payload, transaction_uid) do
+    HTTPoison.post(
+      "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_trans_docs",
+      {:multipart, payload},
+      [],
+      recv_timeout: 60_000
+    )
+    |> save_file("temp/#{transaction_uid}_transaction.pdf")
+  end
+
   defp format_date(
          %{
            "incorporationDate" => %{

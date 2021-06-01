@@ -61,7 +61,8 @@ defmodule TransigoAdmin.MixProject do
       {:dataloader, "~> 1.0.8"},
       {:ex_aws, "~> 2.0"},
       {:ex_aws_s3, "~> 2.0"},
-      {:sweet_xml, "~> 0.6.6"}
+      {:sweet_xml, "~> 0.6.6"},
+      {:hackney, "~> 1.17"}
     ]
   end
 

@@ -71,12 +71,14 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsApi do
           {:ok, signature_request} ->
             {:ok, signature_request}
 
-          _ ->
-            {:error, "Fail to create sign url"}
+          _error ->
+            IO.inspect(_error)
+            {:error, "Fail to create signature request"}
         end
 
-      _ ->
-        {:error, "Fail to create sign url"}
+      _error ->
+        IO.inspect(_error)
+        {:error, "Fail to create signature request"}
     end
   end
 end

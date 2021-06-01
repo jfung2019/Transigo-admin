@@ -11,4 +11,7 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilBehavior do
 
   @callback generate_exporter_msa([tuple()], String.t()) ::
               {:ok, String.t()} | {:errror, any()}
+
+  @callback generate_transaction_doc([tuple()], String.t()) ::
+              {:ok, String.t()} | {:error, any()}
 end
