@@ -148,9 +148,7 @@ defmodule TransigoAdmin.Credit do
     acc_file_basename = "#{transaction.transaction_uid}_acc.pdf"
 
     importer_address =
-      "#{importer.business_address_street_address}, #{importer.business_address_city}, #{
-        importer.business_address_state
-      }, #{importer.business_address_zip}, #{importer.business_address_country}"
+      "#{importer.business_address_street_address}, #{importer.business_address_city}, #{importer.business_address_state}, #{importer.business_address_zip}, #{importer.business_address_country}"
 
     second_installment_date =
       transaction.invoice_date

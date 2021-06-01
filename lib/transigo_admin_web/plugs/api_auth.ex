@@ -26,6 +26,5 @@ defmodule TransigoAdminWeb.ApiAuth do
       nil -> :error
       _ -> :ok
     end
-
   end
 end
