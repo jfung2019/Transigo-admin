@@ -37,8 +37,6 @@ npm-debug.log
 .idea/*
 *.iml
 
-.tool-versions
-
 # Mac
 .DS_Store
 
