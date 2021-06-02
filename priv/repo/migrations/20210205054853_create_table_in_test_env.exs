@@ -144,6 +144,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :credit_term_days, :integer
       add :financier, :string, default: "Churchill"
       add :down_payment_USD, :float
+      add :downpayment_confirm, :string
       add :down_payment_confirmed_datetime, :utc_datetime
       add :factoring_fee_USD, :float
       add :transaction_state, :string, default: "xxx"
