@@ -31,6 +31,7 @@ defmodule TransigoAdminWeb.Router do
   scope "/", TransigoAdminWeb do
     pipe_through :browser
 
+    get "/health-check", HealthCheckController, :health_check
     resources "/importers_signup", ImporterFormController, only: [:new, :create]
     resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
 
