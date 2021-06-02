@@ -24,17 +24,17 @@ defmodule TransigoAdminWeb.Api.OfferController do
 
   def get_offer(conn, %{"transaction_uid" => transaction_uid}) do
     case Credit.get_offer_by_transaction_uid(transaction_uid, [:transaction]) do
-      {:ok, offer} ->
+      nil ->
+        conn
+        |> put_status(400)
+        |> put_view(@error_view)
+        |> render("errors.json", message: "Offer not found")
+
+      offer ->
         conn
         |> put_status(200)
         |> put_view(@offer_view)
         |> render("offer.json", offer: offer)
-
-      {:error, message} ->
-        conn
-        |> put_status(400)
-        |> put_view(@error_view)
-        |> render("errors.json", message: message)
     end
   end
 end

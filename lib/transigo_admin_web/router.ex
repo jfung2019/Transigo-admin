@@ -45,6 +45,7 @@ defmodule TransigoAdminWeb.Router do
   scope "/v2", TransigoAdminWeb.Api do
     pipe_through [:api, :api_auth]
 
+    get "/trans/:transaction_uid/offer", OfferController, :get_offer
     get "/trans/:transaction_uid/sign_docs", OfferController, :sign_docs
   end
 

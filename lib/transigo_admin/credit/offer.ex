@@ -11,6 +11,7 @@ defmodule TransigoAdmin.Credit.Offer do
     field :advance_usd, :float, source: :advance_USD
     field :importer_fee, :float
     field :offer_accepted_declined, :string
+    field :offer_accept_decline_datetime, :utc_datetime
 
     timestamps(
       inserted_at_source: :created_datetime,
@@ -28,7 +29,8 @@ defmodule TransigoAdmin.Credit.Offer do
       :advance_percentage,
       :advance_usd,
       :importer_fee,
-      :offer_accepted_declined
+      :offer_accepted_declined,
+      :offer_accept_decline_datetime
     ])
     |> validate_required([
       :transaction_id,

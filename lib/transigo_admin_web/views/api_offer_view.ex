@@ -16,12 +16,12 @@ defmodule TransigoAdminWeb.ApiOfferView do
     %{
       result: %{
         offer: %{
-          transactionTransigoUID: transaction.transaction_UID,
-          transactionUSD: offer.transaction_USD,
+          transactionTransigoUID: transaction.transaction_uid,
+          transactionUSD: offer.transaction_usd,
           downPaymentPercentage: offer.advance_percentage,
-          downPaymentUSD: offer.advance_USD,
+          downPaymentUSD: offer.advance_usd,
           creditTermDays: transaction.credit_term_days,
-          secondInstallmentUSD: transaction.second_installment_USD,
+          secondInstallmentUSD: transaction.second_installment_usd,
           secondInstallmentDate: cal_second_installment_date(transaction),
           importerFee: offer.importer_fee,
           offerAcceptedDeclined: offer.offer_accepted_declined,

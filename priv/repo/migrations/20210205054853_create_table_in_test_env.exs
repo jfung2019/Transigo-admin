@@ -174,6 +174,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :advance_USD, :float
       add :importer_fee, :float
       add :offer_accepted_declined, :string
+      add :offer_accept_decline_datetime, :utc_datetime
       add :transaction_id, references(:transaction, on_delete: :delete_all, type: :binary_id)
 
       timestamps(
