@@ -37,8 +37,7 @@ defmodule TransigoAdmin.Credit.Offer do
       :transaction_usd,
       :advance_percentage,
       :advance_usd,
-      :importer_fee,
-      :offer_accepted_declined
+      :importer_fee
     ])
   end
 end

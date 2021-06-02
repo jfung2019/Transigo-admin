@@ -9,6 +9,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :credit_term_days, :integer
     field :financier, :string, default: "Churchill"
     field :down_payment_usd, :float, source: :down_payment_USD
+    field :downpayment_confirm, :string
     field :down_payment_confirmed_datetime, :utc_datetime
     field :factoring_fee_usd, :float, source: :factoring_fee_USD
     field :transaction_state, :string, default: "xxx"
@@ -37,6 +38,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     :transaction_uid,
     :credit_term_days,
     :down_payment_usd,
+    :downpayment_confirm,
     :down_payment_confirmed_datetime,
     :factoring_fee_usd,
     :transaction_state,

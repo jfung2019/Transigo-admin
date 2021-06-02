@@ -46,6 +46,8 @@ defmodule TransigoAdminWeb.Router do
     pipe_through [:api, :api_auth]
 
     get "/trans/:transaction_uid/offer", OfferController, :get_offer
+    post "/trans/:transaction_uid/accept", OfferController, :accept_decline_offer
+    post "/trans/:transaction_uid/confirm_downpayment", OfferController, :confirm_downpayment
     get "/trans/:transaction_uid/sign_docs", OfferController, :sign_docs
   end
 

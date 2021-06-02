@@ -65,16 +65,6 @@ defmodule TransigoAdmin.Credit do
 
   def get_transaction!(id), do: Repo.get!(Transaction, id)
 
-  def get_offer_by_transaction_uid(transaction_uid, preloads \\ []) do
-    from(
-      o in Offer,
-      left_join: t in assoc(o, :transaction),
-      where: t.transaction_uid == ^transaction_uid,
-      preload: ^preloads
-    )
-    |> Repo.one()
-  end
-
   def create_transaction(attrs \\ %{}) do
     %Transaction{}
     |> Transaction.changeset(attrs)
@@ -85,6 +75,39 @@ defmodule TransigoAdmin.Credit do
     transaction
     |> Transaction.changeset(attrs)
     |> Repo.update()
+  end
+
+  def get_transaction_by_transaction_uid(transaction_uid) do
+    from(t in Transaction, where: t.transaction_uid == ^transaction_uid)
+    |> Repo.one()
+  end
+
+  def confirm_downpayment(transaction_uid, params) do
+    transaction = get_transaction_by_transaction_uid(transaction_uid)
+    downpayment_confirm = Map.get(params, "downpaymentConfirm")
+    sum_paid_usd = Map.get(params, "sumPaidUSD")
+
+    cond do
+      is_nil(downpayment_confirm) ->
+        {:error, "downpaymentConfirm missing"}
+
+      is_nil(sum_paid_usd) ->
+        {:error, "sumPaidUSD missing"}
+
+      is_nil(transaction) ->
+        {:error, "Offer not found"}
+
+      transaction.down_payment_usd != sum_paid_usd ->
+        {:error, "Downpayment does not match"}
+
+      true ->
+        transaction
+        |> update_transaction(%{
+          transaction_state: "down_payment_done",
+          downpayment_confirm: downpayment_confirm,
+          down_payment_confirmed_datetime: Timex.now()
+        })
+    end
   end
 
   def sign_docs(transaction_uid) do
@@ -387,10 +410,43 @@ defmodule TransigoAdmin.Credit do
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
+  def get_offer_by_transaction_uid(transaction_uid, preloads \\ []) do
+    from(
+      o in Offer,
+      left_join: t in assoc(o, :transaction),
+      where: t.transaction_uid == ^transaction_uid,
+      preload: ^preloads
+    )
+    |> Repo.one()
+  end
+
   def create_offer(attrs \\ %{}) do
     %Offer{}
     |> Offer.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def get_offer(id, preloads \\ []) do
+    from(o in Offer, where: o.id == ^id, preload: ^preloads)
+    |> Repo.one()
+  end
+
+  def accept_decline_offer(_transaction_uid, nil), do: {:error, "acceptDecline missing"}
+
+  def accept_decline_offer(transaction_uid, true),
+    do: do_accept_decline_offer(get_offer_by_transaction_uid(transaction_uid), "A")
+
+  def accept_decline_offer(transaction_uid, false),
+    do: do_accept_decline_offer(get_offer_by_transaction_uid(transaction_uid), "D")
+
+  defp do_accept_decline_offer(nil, _a_or_d), do: {:error, "Offer not found"}
+
+  defp do_accept_decline_offer(%Offer{id: offer_id} = offer, accept_or_decline) do
+    offer
+    |> Offer.changeset(%{offer_accepted_declined: accept_or_decline})
+    |> Repo.update()
+
+    {:ok, get_offer(offer_id, [:transaction])}
   end
 
   def list_offers_paginated(pagination_args) do

@@ -31,9 +31,30 @@ defmodule TransigoAdminWeb.ApiOfferView do
     }
   end
 
+  def render("accept_decline_offer.json", %{
+        offer: %{
+          transaction: %{transaction_uid: transaction_uid},
+          offer_accepted_declined: offer_accepted_declined
+        }
+      }) do
+    %{
+      result: %{
+        transaction_UID: transaction_uid,
+        acceptDecline: offer_accepted_declined
+      }
+    }
+  end
+
+  def render("confirm_downpayment.json", %{transaction: %{transaction_uid: transaction_uid}}) do
+    %{result: "#{transaction_uid} downpayment confirmed"}
+  end
+
   defp cal_second_installment_date(%{invoice_date: nil}), do: nil
 
-  defp cal_second_installment_date(%{invoice_date: invoice_date, credit_term_days: credit_term_days}) do
+  defp cal_second_installment_date(%{
+         invoice_date: invoice_date,
+         credit_term_days: credit_term_days
+       }) do
     invoice_date
     |> Timex.shift(days: credit_term_days)
   end
