@@ -49,6 +49,10 @@ defmodule TransigoAdminWeb.ApiOfferView do
     %{result: "#{transaction_uid} downpayment confirmed"}
   end
 
+  def("uploaded.json", %{message: message}) do
+    %{result: message}
+  end
+
   defp cal_second_installment_date(%{invoice_date: nil}), do: nil
 
   defp cal_second_installment_date(%{

@@ -77,8 +77,8 @@ defmodule TransigoAdmin.Credit do
     |> Repo.update()
   end
 
-  def get_transaction_by_transaction_uid(transaction_uid) do
-    from(t in Transaction, where: t.transaction_uid == ^transaction_uid)
+  def get_transaction_by_transaction_uid(transaction_uid, preloads \\ []) do
+    from(t in Transaction, where: t.transaction_uid == ^transaction_uid, preload: ^preloads)
     |> Repo.one()
   end
 
@@ -355,6 +355,37 @@ defmodule TransigoAdmin.Credit do
   defp fetch_sign_url(sign_id) do
     {:ok, %{"embedded" => %{"sign_url" => sign_url}}} = @hs_api.get_sign_url(sign_id)
     "#{sign_url}&client_id=#{Application.get_env(:transigo_admin, :hs_client_id)}"
+  end
+
+  def get_tran_doc(transaction_uid) do
+    case get_transaction_by_transaction_uid(transaction_uid, [:exporter, :importer]) do
+      nil ->
+        {:error, "Offer not found"}
+
+      %{
+        exporter: %{exporter_transigo_uid: exporter_uid},
+        importer: %{importer_transigo_uid: importer_uid}
+      } ->
+        "exporter/#{exporter_uid}/#{importer_uid}/#{transaction_uid}/#{transaction_uid}_transaction.pdf"
+        |> @s3_api.get_file_presigned_url()
+    end
+  end
+
+  def upload_invoice(transaction_uid, params) do
+    invoice_date = Map.get(params, "invoiceDate")
+    invoice_ref = Map.get(params, "invoiceRef")
+    invoice = Map.get(params, "invoice")
+
+    cond do
+      is_nil(invoice_date) ->
+        {:error, "invoiceDate missing"}
+
+      is_nil(invoice_ref) ->
+        {:error, "invoiceRef missing"}
+
+      true ->
+        :ok
+    end
   end
 
   def create_quota(attrs \\ %{}) do

@@ -56,8 +56,26 @@ defmodule TransigoAdminWeb.Api.OfferController do
     end
   end
 
-  def get_tran_docs(conn, %{"transaction_uid" => transaction_uid}) do
+  def upload_invoice(conn, %{"transaction_uid" => transaction_uid} = params) do
+    IO.inspect(params)
+    %{"inovice" => %{path: path}} = params
+
+    case Credit.upload_invoice(transaction_uid, params) do
+      :ok ->
+        conn
+        |> put_status(200)
+        |> put_view(@offer_view)
+        |> render("uploaded.json", sign_urls: urls)
+
+      {:error, message} ->
+        conn
+        |> put_status(400)
+        |> put_view(@error_view)
+        |> render("errors.json", message: message)
+    end
   end
+
+  def upload_po(conn, %{"transaction_uid" => transaction_uid} = params), do: conn
 
   def sign_docs(conn, %{"transaction_uid" => transaction_uid}) do
     case Credit.sign_docs(transaction_uid) do
@@ -66,6 +84,20 @@ defmodule TransigoAdminWeb.Api.OfferController do
         |> put_status(200)
         |> put_view(@offer_view)
         |> render("sign_docs.json", sign_urls: urls)
+
+      {:error, message} ->
+        conn
+        |> put_status(400)
+        |> put_view(@error_view)
+        |> render("errors.json", message: message)
+    end
+  end
+
+  def get_tran_doc(conn, %{"transaction_uid" => transaction_uid}) do
+    case Credit.get_tran_doc(transaction_uid) do
+      {:ok, url} ->
+        conn
+        |> redirect(external: url)
 
       {:error, message} ->
         conn

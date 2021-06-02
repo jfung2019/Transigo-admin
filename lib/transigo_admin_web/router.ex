@@ -49,6 +49,9 @@ defmodule TransigoAdminWeb.Router do
     post "/trans/:transaction_uid/accept", OfferController, :accept_decline_offer
     post "/trans/:transaction_uid/confirm_downpayment", OfferController, :confirm_downpayment
     get "/trans/:transaction_uid/sign_docs", OfferController, :sign_docs
+    get "/trans/:transaction_uid/get_tran_docs", OfferController, :get_tran_doc
+    post "/invoices/:transaction_uid/upload_invoice", OfferController, :upload_invoice
+    post "/invoices/:transaction_uid/upload_PO", OfferController, :upload_po
   end
 
   # Other scopes may use custom stacks.

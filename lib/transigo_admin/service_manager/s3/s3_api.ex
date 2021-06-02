@@ -21,6 +21,11 @@ defmodule TransigoAdmin.ServiceManager.S3.S3Api do
       ),
       do: do_download_invoice_po(transaction_uid, exporter_uid, importer_uid, "po")
 
+  def get_file_presigned_url(key) do
+    ExAws.Config.new(:s3)
+    |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)
+  end
+
   defp do_download_invoice_po(transaction_uid, exporter_uid, importer_uid, type) do
     s3_key =
       "exporter/#{exporter_uid}/#{importer_uid}/#{transaction_uid}/#{transaction_uid}_#{type}.pdf"
