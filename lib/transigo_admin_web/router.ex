@@ -31,7 +31,6 @@ defmodule TransigoAdminWeb.Router do
   scope "/", TransigoAdminWeb do
     pipe_through :browser
 
-    get "/health-check", HealthCheckController, :health_check
     resources "/importers_signup", ImporterFormController, only: [:new, :create]
     resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
 
@@ -59,6 +58,10 @@ defmodule TransigoAdminWeb.Router do
       schema: TransigoAdminWeb.Api.Schema,
       socket: TransigoAdminWeb.UserSocket,
       context: %{pubsub: TransigoAdminWeb.Endpoint}
+  end
+
+  scope "/" do
+    get "/health-check", HealthCheckController, :health_check
   end
 
   # Enables LiveDashboard only for development

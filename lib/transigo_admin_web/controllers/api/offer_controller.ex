@@ -21,4 +21,8 @@ defmodule TransigoAdminWeb.Api.OfferController do
         |> render("errors.json", message: message)
     end
   end
+
+  def get_offer(conn, %{"transaction_uid" => transaction_uid}) do
+
+  end
 end

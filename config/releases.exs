@@ -9,8 +9,8 @@ config :transigo_admin, TransigoAdmin.Repo,
   pool_size: String.to_integer(System.get_env("POOL_SIZE", "10"))
 
 config :transigo_admin, TransigoAdminWeb.Endpoint,
+  url: [host: System.get_env("ENDPOINT_HOST")],
   http: [
-    host: System.get_env("ENDPOINT_HOST"),
     port: String.to_integer(System.get_env("PORT", "4000")),
     transport_options: [socket_opts: [:inet6]]
   ],
