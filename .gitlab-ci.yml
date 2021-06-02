@@ -3,7 +3,7 @@ stages:
   - build
 
 test:
-  image: plangora/alpine-elixir-phoenix:otp-23.2.3-elixir-1.11.3
+  image: plangora/alpine-elixir-phoenix:otp-24.0.1-elixir-1.12.0
   services:
     - postgres:latest
   variables:

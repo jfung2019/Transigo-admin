@@ -25,9 +25,15 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
   defp check_signature_overdue(%{hellosign_signature_request_id: hs_request_id} = exporter) do
     case @hs_api.get_signature_request(hs_request_id) do
       {:ok, %{"signature_request" => %{"created_at" => created_at}}} ->
-        DateTime.from_unix!(created_at, :second)
-        |> Timex.diff(Timex.now(), :month)
-        |> regenerate_msa(exporter)
+        result =
+          DateTime.from_unix!(created_at, :second)
+          |> Timex.diff(Timex.now(), :month)
+          |> regenerate_msa(exporter)
+
+        msa = "temp/#{exporter.exporter_transigo_uid}_msa.pdf"
+        if File.exists?(msa), do: File.rm(msa)
+
+        result
 
       _ ->
         nil

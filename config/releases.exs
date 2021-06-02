@@ -10,6 +10,7 @@ config :transigo_admin, TransigoAdmin.Repo,
 
 config :transigo_admin, TransigoAdminWeb.Endpoint,
   http: [
+    host: System.get_env("ENDPOINT_HOST"),
     port: String.to_integer(System.get_env("PORT", "4000")),
     transport_options: [socket_opts: [:inet6]]
   ],
@@ -44,6 +45,17 @@ config :ex_aws,
   region: "us-west-2",
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role]
+
+config :sentry,
+  dsn: System.get_env("SENTRY_ELIXIR_DNS"),
+  environment_name: :prod,
+  enable_source_code_context: true,
+  root_source_code_path: File.cwd!(),
+  tags: %{env: "production"},
+  included_environments: [:prod]
+
+config :logger,
+  backends: [:console, Sentry.LoggerBackend]
 
 # ## Using releases (Elixir v1.9+)
 #

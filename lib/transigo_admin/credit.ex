@@ -261,6 +261,16 @@ defmodule TransigoAdmin.Credit do
     {:ok, payload}
   end
 
+  defp delete_trans_docs(transaction_uid) do
+    ["invoice", "po", "transaction"]
+    |> Enum.each(fn type ->
+      file_path = "temp/#{transaction_uid}_#{type}.pdf"
+      if File.exists?(file_path), do: File.rm(file_path)
+    end)
+
+    :ok
+  end
+
   defp generate_sign_doc(
          %{transaction: %{transaction_uid: transaction_uid} = transaction} = offer
        ) do
@@ -275,13 +285,16 @@ defmodule TransigoAdmin.Credit do
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
            @hs_api.create_signature_request(trans_hs_payload),
          {:ok, _transaction} <-
-           update_transaction(offer.transaction, %{hellosign_signature_request_id: req_id}) do
+           update_transaction(offer.transaction, %{hellosign_signature_request_id: req_id}),
+         :ok <- delete_trans_docs(transaction_uid) do
       get_importer_exporter_sign_url(sign_req, offer.transaction)
     else
       {:error, _message} = error_tuple ->
+        delete_trans_docs(transaction_uid)
         error_tuple
 
       _ ->
+        delete_trans_docs(transaction_uid)
         {:error, "Failed to get transaction document"}
     end
   end
@@ -298,9 +311,6 @@ defmodule TransigoAdmin.Credit do
         {:error, "Failed to get transaction document"}
     end
   end
-
-  importer_email = "435c3755-b614-43cc-82cc-dec55aae6a49@email.webhook.site"
-  exporter_email = "sign@email.com"
 
   defp get_importer_exporter_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{
          exporter: %{signatory_email: exporter_email},

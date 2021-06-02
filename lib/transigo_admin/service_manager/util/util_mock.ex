@@ -10,6 +10,6 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilMock do
 
   def generate_exporter_msa(_payload, exporter_uid), do: {:ok, "temp/#{exporter_uid}_msa.pdf"}
 
-  def generate_exporter_msa(_payload, transaction_uid),
+  def generate_transaction_doc(_payload, transaction_uid),
     do: {:ok, "temp/#{transaction_uid}_transaction.pdf"}
 end
