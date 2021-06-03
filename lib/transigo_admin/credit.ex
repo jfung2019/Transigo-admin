@@ -1,7 +1,7 @@
 defmodule TransigoAdmin.Credit do
   import Ecto.Query, warn: false
 
-  alias TransigoAdmin.Repo
+  alias TransigoAdmin.{Repo, Account}
   alias Absinthe.Relay
   alias TransigoAdmin.Credit.{Transaction, Quota, Marketplace, Offer}
 
@@ -85,14 +85,14 @@ defmodule TransigoAdmin.Credit do
   def confirm_downpayment(transaction_uid, params) do
     transaction = get_transaction_by_transaction_uid(transaction_uid)
     downpayment_confirm = Map.get(params, "downpaymentConfirm")
-    sum_paid_usd = Map.get(params, "sumPaidUSD")
+    sum_paid_usd = Map.get(params, "sumPaidusd")
 
     cond do
       is_nil(downpayment_confirm) ->
         {:error, "downpaymentConfirm missing"}
 
       is_nil(sum_paid_usd) ->
-        {:error, "sumPaidUSD missing"}
+        {:error, "sumPaidusd missing"}
 
       is_nil(transaction) ->
         {:error, "Offer not found"}
@@ -205,7 +205,7 @@ defmodule TransigoAdmin.Credit do
       {"deal",
        Jason.encode!(%{
          credit_invoice_term: transaction.credit_term_days,
-         currency: "USD",
+         currency: "usd",
          downpayment: transaction.down_payment_usd |> Jason.encode!(),
          est_invoice_date: transaction.invoice_date |> Date.to_iso8601(),
          factoring_fee: offer.importer_fee |> Jason.encode!(),
@@ -299,8 +299,8 @@ defmodule TransigoAdmin.Credit do
        ) do
     with true <- sign_doc_validation(offer.transaction),
          {:ok, pg_cap} <- calculate_pg_cap(offer.transaction),
-         {:ok, invoice_path} <- @s3_api.download_invoice_po_file(transaction, :invoice),
-         {:ok, po_path} <- @s3_api.download_invoice_po_file(transaction, :po),
+         {:ok, invoice_path} <- @s3_api.download_file(transaction, :invoice),
+         {:ok, po_path} <- @s3_api.download_file(transaction, :po),
          {:ok, trans_doc_payload} <- get_trans_doc_payload(offer, pg_cap, invoice_path, po_path),
          {:ok, trans_doc_path} <-
            @util_api.generate_transaction_doc(trans_doc_payload, transaction_uid),
@@ -384,9 +384,62 @@ defmodule TransigoAdmin.Credit do
         {:error, "invoiceRef missing"}
 
       true ->
-        :ok
+        do_upload(invoice_date, invoice_ref, invoice, transaction_uid, :invoice)
     end
   end
+
+  def upload_po(transaction_uid, params) do
+    po_date = Map.get(params, "PODate")
+    po_ref = Map.get(params, "PORef")
+    po = Map.get(params, "po")
+
+    cond do
+      is_nil(po_date) ->
+        {:error, "PODate missing"}
+
+      is_nil(po_ref) ->
+        {:error, "PORef missing"}
+
+      true ->
+        do_upload(po_date, po_ref, po, transaction_uid, :po)
+    end
+  end
+
+  defp do_upload(
+         date,
+         ref,
+         %Plug.Upload{path: path, content_type: "application/pdf"},
+         transaction_uid,
+         type
+       ) do
+    with {:ok, temp} = Briefly.create(extname: ".pdf"),
+         :ok = File.cp(path, temp),
+         transaction <-
+           get_transaction_by_transaction_uid(transaction_uid, [:exporter, :importer]),
+         false <- is_nil(transaction),
+         {:ok, formatted_date} <- Timex.parse(date, "{YYYY}-{0M}-{0D}"),
+         {:ok, _upload} <- @s3_api.upload_file(transaction, temp, type) do
+      update_transaction_for_invoice_po(transaction, ref, formatted_date, type)
+    else
+      true ->
+        {:error, "Offer not found"}
+
+      {:error, _message} = error_tuple ->
+        error_tuple
+
+      _ ->
+        {:error, "Failed to upload"}
+    end
+  end
+
+  defp do_upload(_date, _ref, _file, _uid, _type),
+    do: {:error, "File not found or incorrect content type"}
+
+  defp update_transaction_for_invoice_po(transaction, invoice_ref, invoice_date, :invoice),
+    do: update_transaction(transaction, %{invoice_ref: invoice_ref, invoice_date: invoice_date})
+
+  defp update_transaction_for_invoice_po(transaction, po_ref, po_date, :po),
+    do: update_transaction(transaction, %{po_ref: po_ref, po_date: po_date})
 
   def create_quota(attrs \\ %{}) do
     %Quota{}
@@ -398,8 +451,7 @@ defmodule TransigoAdmin.Credit do
 
   def find_granted_quota(importer_id) do
     from(q in Quota,
-      left_join: i in assoc(q, :importer),
-      where: i.id == ^importer_id and q.credit_status in ["granted", "partial"]
+      where: q.importer_id == ^importer_id and q.credit_status in ["granted", "partial"]
     )
     |> Repo.one()
   end
@@ -439,6 +491,170 @@ defmodule TransigoAdmin.Credit do
       where: ilike(i.business_name, ^keyword) and ilike(q.credit_status, ^credit_status)
     )
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
+  end
+
+  def generate_offer(param) do
+    with {:ok, %{hs_signing_status: "all_signed"} = exporter} <-
+           check_exporter(Map.get(param, "exporterUID")),
+         {:ok, importer} <-
+           check_importer(Map.get(param, "importerUID")),
+         {:ok, transaction_sum_usd} <- check_transaction_sum(Map.get(param, "transactionSumUSD")),
+         {:ok, credit_days} <- check_credit_days(Map.get(param, "requestedCreditDays")),
+         {:ok, attrs} <-
+           calculate_transaction_offer(exporter, importer, transaction_sum_usd, credit_days) do
+      %Offer{}
+      |> Offer.create_with_transaction_changeset(attrs)
+      |> Repo.insert()
+    else
+      {:error, _message} = error_tuple ->
+        error_tuple
+
+      {:ok, %Account.Exporter{}} ->
+        {:error, "MSA not completed"}
+    end
+  end
+
+  defp check_exporter(nil), do: {:error, "Exporter not found"}
+
+  defp check_exporter(exporter_uid) do
+    case Account.get_exporter_by_exporter_uid(exporter_uid) do
+      nil -> {:error, "Exporter not found"}
+      exporter -> {:ok, exporter}
+    end
+  end
+
+  defp check_importer(nil), do: {:error, "Importer not found"}
+
+  defp check_importer(importer_uid) do
+    case Account.get_importer_by_importer_uid(importer_uid) do
+      nil ->
+        {:error, "Importer not found"}
+
+      %{shufti_pro_verified_json: shufti_json} = importer ->
+        cond do
+          is_nil(shufti_json) ->
+            {:error, "Importer is not verified through Shufti Pro"}
+
+          true ->
+            {:ok, importer}
+        end
+    end
+  end
+
+  defp check_credit_days(credit_days) do
+    cond do
+      is_nil(credit_days) ->
+        {:error, "requestedCreditDays not found"}
+
+      not is_integer(credit_days) ->
+        {:error, "requestedCreditDays has to be integer"}
+
+      credit_days != 60 ->
+        {:error, "requestedCreditDays has to be 60"}
+
+      true ->
+        {:ok, credit_days}
+    end
+  end
+
+  def check_transaction_sum(nil), do: {:error, "transactionSumUSD not found"}
+
+  def check_transaction_sum(transaction_sum)
+      when is_integer(transaction_sum) or is_float(transaction_sum),
+      do: {:ok, transaction_sum}
+
+  def check_transaction_sum(transaction_sum) do
+    if String.match?(
+         transaction_sum,
+         ~r"^[$]?[0-9]{1,3}(?:[0-9]*(?:[.,][0-9]{1})?|(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|(?:\.[0-9]{3})*(?:,[0-9]{1,2})?)[kK]?$"
+       ) do
+      transaction_sum = String.downcase(transaction_sum)
+      k_multiply = if String.last(transaction_sum) == "k", do: 1000, else: 1
+
+      {sum, _} =
+        transaction_sum
+        |> String.replace(",", "")
+        |> String.replace("$", "")
+        |> String.replace("k", "")
+        |> Float.parse()
+
+      {:ok, sum * k_multiply}
+    else
+      {:error, "transactionSumusd has incorrect format"}
+    end
+  end
+
+  defp check_quota_and_financed_sum(importer_id, financed_sum) do
+    granted_quota = find_granted_quota(importer_id)
+
+    total_financed_sum =
+      from(t in Transaction,
+        where: t.importer_id == ^importer_id,
+        select: coalesce(sum(t.financed_sum), 0)
+      )
+      |> Repo.one!()
+
+    cond do
+      is_nil(granted_quota) ->
+        {:error, "No quota available"}
+
+      Timex.diff(granted_quota.credit_granted_date, Timex.now(), :years) >= 1 ->
+        {:error,
+         "Quota was generated more than 1 year ago. Please revoke and request the quota again."}
+
+      total_financed_sum + financed_sum > granted_quota.quota_usd ->
+        {:error, "Insufficient quota"}
+
+      true ->
+        :ok
+    end
+  end
+
+  defp calculate_transaction_offer(
+         %{id: exporter_id},
+         %{id: importer_id},
+         transaction_sum_usd,
+         credit_days
+       ) do
+    standard_percentage_per_month = 2.5
+    standard_handling_fee = 200.0
+    standard_down_payment_percentage = 30.0
+
+    financed_sum =
+      ((1.0 - standard_down_payment_percentage / 100.0) * transaction_sum_usd)
+      |> Float.round(2)
+
+    linear_fee =
+      (financed_sum * standard_percentage_per_month * credit_days / 30.0 / 100.0 +
+         standard_handling_fee)
+      |> Float.round(2)
+
+    downpayment_usd = Float.round(transaction_sum_usd - financed_sum, 2)
+    second_installment_usd = financed_sum + linear_fee
+
+    case check_quota_and_financed_sum(importer_id, financed_sum) do
+      {:error, _error} = error_tuple ->
+        error_tuple
+
+      :ok ->
+        {:ok,
+         %{
+           transaction_usd: transaction_sum_usd,
+           advance_percentage: standard_down_payment_percentage,
+           advance_usd: downpayment_usd,
+           importer_fee: linear_fee,
+           transaction: %{
+             transaction_uid: @util_api.get_uid("tra"),
+             importer_id: importer_id,
+             exporter_id: exporter_id,
+             credit_term_days: credit_days,
+             financed_sum: financed_sum,
+             down_payment_usd: downpayment_usd,
+             factoring_fee_usd: linear_fee,
+             second_installment_usd: second_installment_usd
+           }
+         }}
+    end
   end
 
   def get_offer_by_transaction_uid(transaction_uid, preloads \\ []) do

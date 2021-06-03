@@ -7,7 +7,7 @@ defmodule TransigoAdmin.Job.Helper do
   def notify_api_users(result, event) do
     {:ok, webhook_event} =
       Account.create_webhook_event(%{
-        message_uid: @util_api.get_message_uid(),
+        message_uid: @util_api.get_uid("mes"),
         event: event,
         result: result
       })

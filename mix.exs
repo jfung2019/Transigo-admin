@@ -63,7 +63,8 @@ defmodule TransigoAdmin.MixProject do
       {:ex_aws_s3, "~> 2.0"},
       {:sweet_xml, "~> 0.6.6"},
       {:hackney, "~> 1.17"},
-      {:sentry, "~> 8.0"}
+      {:sentry, "~> 8.0"},
+      {:briefly, "~> 0.3"}
     ]
   end
 

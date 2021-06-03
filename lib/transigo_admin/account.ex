@@ -83,6 +83,11 @@ defmodule TransigoAdmin.Account do
     |> Repo.update()
   end
 
+  def get_exporter_by_exporter_uid(exporter_uid) do
+    from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid)
+    |> Repo.one()
+  end
+
   def delete_exporter(%Exporter{} = exporter), do: Repo.delete(exporter)
 
   def get_signing_url(signature_request_id) do
@@ -195,6 +200,11 @@ defmodule TransigoAdmin.Account do
   end
 
   def list_users, do: Repo.all(User)
+
+  def get_importer_by_importer_uid(importer_uid) do
+    from(i in Importer, where: i.importer_transigo_uid == ^importer_uid)
+    |> Repo.one()
+  end
 
   def create_user(attrs \\ %{}) do
     %User{}

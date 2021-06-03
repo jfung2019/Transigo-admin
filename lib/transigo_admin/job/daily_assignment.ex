@@ -58,7 +58,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
            hellosign_signature_request_id: hs_request_id
          } = transaction
        ) do
-    case @s3_api.download_invoice_po_file(transaction, :invoice) do
+    case @s3_api.download_file(transaction, :invoice) do
       {:ok, invoice_file} ->
         invoice_file_basename = Path.basename(invoice_file)
 

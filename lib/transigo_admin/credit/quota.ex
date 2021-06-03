@@ -8,6 +8,7 @@ defmodule TransigoAdmin.Credit.Quota do
     field :quota_transigo_uid, :string, source: :quota_transigoUID
     field :quota_usd, :float, source: :quota_USD
     field :credit_days_quota, :integer
+    field :credit_granted_date, :date
     field :credit_request_date, :date
     field :token, :string
     field :marketplace_transactions, :integer

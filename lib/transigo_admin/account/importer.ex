@@ -23,6 +23,7 @@ defmodule TransigoAdmin.Account.Importer do
     field :business_classification_id, :string
     field :bank_account, :string
     field :bank_name, :string
+    field :shufti_pro_verified_json, :map
 
     belongs_to :contact, TransigoAdmin.Account.Contact
 
@@ -49,7 +50,8 @@ defmodule TransigoAdmin.Account.Importer do
     :business_classification_id,
     :contact_id,
     :bank_account,
-    :bank_name
+    :bank_name,
+    :shufti_pro_verified_json
   ]
 
   @required_attrs [

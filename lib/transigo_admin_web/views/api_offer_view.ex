@@ -45,11 +45,7 @@ defmodule TransigoAdminWeb.ApiOfferView do
     }
   end
 
-  def render("confirm_downpayment.json", %{transaction: %{transaction_uid: transaction_uid}}) do
-    %{result: "#{transaction_uid} downpayment confirmed"}
-  end
-
-  def("uploaded.json", %{message: message}) do
+  def render("simple_message.json", %{message: message}) do
     %{result: message}
   end
 

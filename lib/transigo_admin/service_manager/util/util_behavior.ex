@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.ServiceManager.Util.UtilBehavior do
-  @callback get_message_uid :: String.t() | {:error, HTTPoison.Error.t()}
+  @callback get_uid(String.t()) :: String.t() | {:error, HTTPoison.Error.t()}
 
   @callback create_importer(map()) ::
               {:ok,

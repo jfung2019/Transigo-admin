@@ -45,13 +45,22 @@ defmodule TransigoAdminWeb.Router do
   scope "/v2", TransigoAdminWeb.Api do
     pipe_through [:api, :api_auth]
 
-    get "/trans/:transaction_uid/offer", OfferController, :get_offer
-    post "/trans/:transaction_uid/accept", OfferController, :accept_decline_offer
-    post "/trans/:transaction_uid/confirm_downpayment", OfferController, :confirm_downpayment
-    get "/trans/:transaction_uid/sign_docs", OfferController, :sign_docs
-    get "/trans/:transaction_uid/get_tran_docs", OfferController, :get_tran_doc
-    post "/invoices/:transaction_uid/upload_invoice", OfferController, :upload_invoice
-    post "/invoices/:transaction_uid/upload_PO", OfferController, :upload_po
+    scope "/trans" do
+      post "/generate_offer", OfferController, :generate_offer
+
+      scope "/:transaction_uid" do
+        get "/offer", OfferController, :get_offer
+        post "/accept", OfferController, :accept_decline_offer
+        post "/confirm_downpayment", OfferController, :confirm_downpayment
+        get "/sign_docs", OfferController, :sign_docs
+        get "/get_tran_docs", OfferController, :get_tran_doc
+      end
+    end
+
+    scope "/invoices/:transaction_uid" do
+      post "/upload_invoice", OfferController, :upload_invoice
+      post "/upload_PO", OfferController, :upload_po
+    end
   end
 
   # Other scopes may use custom stacks.

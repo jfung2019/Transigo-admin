@@ -5,9 +5,9 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
 
   alias TransigoAdmin.Repo
 
-  def get_message_uid do
-    case HTTPoison.get(Application.get_env(:transigo_admin, :uid_util_url)) do
-      {:ok, %{body: message_uid}} -> message_uid
+  def get_uid(type) do
+    case HTTPoison.get(Application.get_env(:transigo_admin, :uid_util_url) <> type) do
+      {:ok, %{body: uid}} -> uid
       {:error, _error} = error_tuple -> error_tuple
     end
   end
