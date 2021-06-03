@@ -45,6 +45,7 @@ defmodule TransigoAdmin.Credit.Quota do
     :quota_transigo_uid,
     :quota_usd,
     :credit_days_quota,
+    :credit_granted_date,
     :credit_request_date,
     :token,
     :marketplace_transactions,

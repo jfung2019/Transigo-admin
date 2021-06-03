@@ -64,6 +64,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :contact_id, references(:contact, on_delete: :delete_all, type: :binary_id)
       add :bank_account, :string
       add :bank_name, :string
+      add :shufti_pro_verified_json, :map
 
       timestamps(
         inserted_at: :created_datetime,
@@ -114,6 +115,7 @@ defmodule TransigoAdmin.Repo.Migrations.CreateTableInTestEnv do
       add :quota_transigoUID, :string
       add :quota_USD, :float
       add :credit_days_quota, :integer
+      add :credit_granted_date, :date
       add :credit_request_date, :date
       add :token, :string
       add :marketplace_transactions, :integer
