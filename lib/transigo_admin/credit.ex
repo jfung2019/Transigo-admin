@@ -9,6 +9,10 @@ defmodule TransigoAdmin.Credit do
   @util_api Application.compile_env(:transigo_admin, :util_api)
   @s3_api Application.compile_env(:transigo_admin, :s3_api)
 
+  @doc """
+  List transactions due in 3 days with transaction_state as assigned
+  """
+  @spec list_transactions_due_in_3_days :: [Transaction.t()]
   def list_transactions_due_in_3_days() do
     from(
       t in Transaction,
@@ -22,6 +26,10 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
+  @doc """
+  List transactions due today with transaction_state as ["assigned", "email_sent"]
+  """
+  @spec list_transactions_due_today :: [Transaction.t()]
   def list_transactions_due_today() do
     from(t in Transaction,
       where:
@@ -34,19 +42,19 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
-  def list_transactions_status_originated() do
-    from(t in Transaction,
-      where: t.transaction_state == "originated",
-      preload: [:exporter, importer: [:contact]]
-    )
+  @doc """
+  list transaction by state
+  """
+  @spec list_transactions_by_state(String.t(), [atom]) :: [Transaction.t()]
+  def list_transactions_by_state(state, preloads \\ []) do
+    from(t in Transaction, where: t.transaction_state == ^state, preload: ^preloads)
     |> Repo.all()
   end
 
-  def list_transactions_by_state(state) do
-    from(t in Transaction, where: t.transaction_state == ^state)
-    |> Repo.all()
-  end
-
+  @doc """
+  List transaction with paginated
+  """
+  @spec list_transactions_paginated(map) :: {:ok, map}
   def list_transactions_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
     hs_status = "%#{Map.get(pagination_args, :hs_signing_status)}%"
@@ -77,11 +85,21 @@ defmodule TransigoAdmin.Credit do
     |> Repo.update()
   end
 
+  @doc """
+  get transaction by transaction_uid
+  """
+  @spec get_transaction_by_transaction_uid(String.t(), [atom]) :: Transaction.t()
   def get_transaction_by_transaction_uid(transaction_uid, preloads \\ []) do
     from(t in Transaction, where: t.transaction_uid == ^transaction_uid, preload: ^preloads)
     |> Repo.one()
   end
 
+  @doc """
+  rest api
+  /trans/:transaction_uid/confirm_downpayment
+  confirm downpayement
+  """
+  @spec confirm_downpayment(String.t(), map) :: {:ok, Transaction.t()} | {:error, any}
   def confirm_downpayment(transaction_uid, params) do
     transaction = get_transaction_by_transaction_uid(transaction_uid)
     downpayment_confirm = Map.get(params, "downpaymentConfirm")
@@ -110,6 +128,12 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @doc """
+  rest api
+  /trans/:transaction_uid/sign_tran_docs
+  generate transaction document and HelloSign request
+  """
+  @spec sign_docs(String.t()) :: {:ok, map} | {:error, any}
   def sign_docs(transaction_uid) do
     preloads = [transaction: [exporter: [:contact], importer: [contact: [:us_place]]]]
 
@@ -125,6 +149,7 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @spec sign_doc_validation(Transaction.t()) :: true | {:error, String.t()}
   defp sign_doc_validation(%{invoice_ref: nil}), do: {:error, "Invoice not found"}
 
   defp sign_doc_validation(%{po_ref: nil}), do: {:error, "PO not found"}
@@ -139,6 +164,8 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # get total number of transaction made by importer
+  @spec get_transaction_count_of_importer(String.t()) :: Integer
   defp get_transaction_count_of_importer(importer_id) do
     from(
       t in Transaction,
@@ -148,6 +175,9 @@ defmodule TransigoAdmin.Credit do
     |> Repo.one!()
   end
 
+  # get pg_cap
+  # if this is the first transaction, pg_cap = quota_usd * 2
+  @spec calculate_pg_cap(Transaction.t()) :: {:ok, Integer}
   defp calculate_pg_cap(%{importer_id: importer_id}) do
     case get_transaction_count_of_importer(importer_id) do
       1 ->
@@ -159,6 +189,7 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @spec get_trans_doc_payload(Transaction.t(), Integer, String.t(), String.t()) :: {:ok, [tuple]}
   defp get_trans_doc_payload(
          %{transaction: %{exporter: exporter, importer: importer} = transaction} = offer,
          pg_cap,
@@ -261,6 +292,8 @@ defmodule TransigoAdmin.Credit do
     {:ok, payload}
   end
 
+  # get HelloSign payload to create signature request
+  @spec get_trans_hs_payload(String.t(), Transaction.t()) :: {:ok, [tuple]}
   defp get_trans_hs_payload(trans_doc_path, %{
          exporter: exporter,
          importer: %{contact: importer_contact}
@@ -284,44 +317,33 @@ defmodule TransigoAdmin.Credit do
     {:ok, payload}
   end
 
-  defp delete_trans_docs(transaction_uid) do
-    ["invoice", "po", "transaction"]
-    |> Enum.each(fn type ->
-      file_path = "temp/#{transaction_uid}_#{type}.pdf"
-      if File.exists?(file_path), do: File.rm(file_path)
-    end)
-
-    :ok
-  end
-
-  defp generate_sign_doc(
-         %{transaction: %{transaction_uid: transaction_uid} = transaction} = offer
-       ) do
+  # call when transaction need to generate a new signature request
+  @spec generate_sign_doc(Transaction.t()) :: {:ok, map} | {:error, any}
+  defp generate_sign_doc(%{transaction: transaction} = offer) do
     with true <- sign_doc_validation(offer.transaction),
          {:ok, pg_cap} <- calculate_pg_cap(offer.transaction),
          {:ok, invoice_path} <- @s3_api.download_file(transaction, :invoice),
          {:ok, po_path} <- @s3_api.download_file(transaction, :po),
          {:ok, trans_doc_payload} <- get_trans_doc_payload(offer, pg_cap, invoice_path, po_path),
          {:ok, trans_doc_path} <-
-           @util_api.generate_transaction_doc(trans_doc_payload, transaction_uid),
+           @util_api.generate_transaction_doc(trans_doc_payload),
          {:ok, trans_hs_payload} <- get_trans_hs_payload(trans_doc_path, offer.transaction),
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
            @hs_api.create_signature_request(trans_hs_payload),
          {:ok, _transaction} <-
-           update_transaction(offer.transaction, %{hellosign_signature_request_id: req_id}),
-         :ok <- delete_trans_docs(transaction_uid) do
+           update_transaction(offer.transaction, %{hellosign_signature_request_id: req_id}) do
       get_importer_exporter_sign_url(sign_req, offer.transaction)
     else
       {:error, _message} = error_tuple ->
-        delete_trans_docs(transaction_uid)
         error_tuple
 
       _ ->
-        delete_trans_docs(transaction_uid)
         {:error, "Failed to get transaction document"}
     end
   end
 
+  # call when the transaction already has a signature request
+  @spec get_sign_docs_urls_with_req_id(String.t(), Transaction.t()) :: {:ok, map} | {:error, any}
   defp get_sign_docs_urls_with_req_id(hs_sign_req_id, transaction) do
     case @hs_api.get_signature_request(hs_sign_req_id) do
       {:ok, sign_req} ->
@@ -335,6 +357,8 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # loop through signature_request to get url for exporter and importer
+  @spec get_importer_exporter_sign_url(map, Transaction.t()) :: {:ok, map}
   defp get_importer_exporter_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{
          exporter: %{signatory_email: exporter_email},
          importer: %{contact: %{email: importer_email}}
@@ -352,11 +376,19 @@ defmodule TransigoAdmin.Credit do
     {:ok, sign_urls}
   end
 
+  # get sign_url from HelloSign
+  @spec fetch_sign_url(String.t()) :: String.t()
   defp fetch_sign_url(sign_id) do
     {:ok, %{"embedded" => %{"sign_url" => sign_url}}} = @hs_api.get_sign_url(sign_id)
     "#{sign_url}&client_id=#{Application.get_env(:transigo_admin, :hs_client_id)}"
   end
 
+  @doc """
+  rest api
+  /trans/:transaction_uid/get_tran_docs
+  get the transaction document after it has been signed by all parties
+  """
+  @spec get_tran_doc(String.t()) :: {:ok, String.t()} | {:error, any}
   def get_tran_doc(transaction_uid) do
     case get_transaction_by_transaction_uid(transaction_uid, [:exporter, :importer]) do
       nil ->
@@ -371,6 +403,12 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @doc """
+  rest api
+  /invoices/:transaction_uid/upload_invoice
+  upload invoice and update transaction with invoice date and ref
+  """
+  @spec upload_invoice(String.t(), map) :: {:ok, Transaction.t()} | {:error, any}
   def upload_invoice(transaction_uid, params) do
     invoice_date = Map.get(params, "invoiceDate")
     invoice_ref = Map.get(params, "invoiceRef")
@@ -388,6 +426,12 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @doc """
+  rest api
+  /invoices/:transaction_uid/upload_po
+  upload po and update transaction with po date and ref
+  """
+  @spec upload_po(String.t(), map) :: {:ok, Transaction.t()} | {:error, any}
   def upload_po(transaction_uid, params) do
     po_date = Map.get(params, "PODate")
     po_ref = Map.get(params, "PORef")
@@ -405,6 +449,9 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # handle upload invoice or po
+  @spec do_upload(String.t(), String.t(), %Plug.Upload{}, String.t(), atom) ::
+          {:ok, Transaction.t()} | {:error, any}
   defp do_upload(
          date,
          ref,
@@ -435,6 +482,8 @@ defmodule TransigoAdmin.Credit do
   defp do_upload(_date, _ref, _file, _uid, _type),
     do: {:error, "File not found or incorrect content type"}
 
+  @spec update_transaction_for_invoice_po(Transaction.t(), String.t(), Date.t(), atom) ::
+          {:ok, Transaction.t()} | {:error, any}
   defp update_transaction_for_invoice_po(transaction, invoice_ref, invoice_date, :invoice),
     do: update_transaction(transaction, %{invoice_ref: invoice_ref, invoice_date: invoice_date})
 
@@ -449,6 +498,10 @@ defmodule TransigoAdmin.Credit do
 
   def get_quota!(id), do: Repo.get!(Importer, id)
 
+  @doc """
+  find granted quota of importer
+  """
+  @spec find_granted_quota(String.t()) :: Quota.t() | nil
   def find_granted_quota(importer_id) do
     from(q in Quota,
       where: q.importer_id == ^importer_id and q.credit_status in ["granted", "partial"]
@@ -470,6 +523,10 @@ defmodule TransigoAdmin.Credit do
 
   def delete_quota(%Quota{} = quota), do: Repo.delete(quota)
 
+  @doc """
+  list quota with pending eh_job to get eh_grade
+  """
+  @spec list_quota_with_pending_eh_job :: [Quota.t()]
   def list_quota_with_pending_eh_job() do
     from(q in Quota,
       where: not is_nil(q.eh_grade_job_url) and is_nil(q.eh_grade)
@@ -477,11 +534,19 @@ defmodule TransigoAdmin.Credit do
     |> Repo.all()
   end
 
+  @doc """
+  list quota with eh_cover
+  """
+  @spec list_quota_with_eh_cover :: [Quota.t()]
   def list_quota_with_eh_cover() do
     from(q in Quota, where: not is_nil(q.eh_cover))
     |> Repo.all()
   end
 
+  @doc """
+  list quota with pagination
+  """
+  @spec list_quotas_paginated(map) :: {:ok, map}
   def list_quotas_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
     credit_status = "%#{Map.get(pagination_args, :credit_status)}%"
@@ -493,6 +558,12 @@ defmodule TransigoAdmin.Credit do
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
+  @doc """
+  rest api
+  /trans/generate_offer
+  generate an offer with transaction
+  """
+  @spec generate_offer(map) :: {:ok, Offer.t()} | {:error, any}
   def generate_offer(param) do
     with {:ok, %{hs_signing_status: "all_signed"} = exporter} <-
            check_exporter(Map.get(param, "exporterUID")),
@@ -514,6 +585,8 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # check if exporter exist
+  @spec check_exporter(String.t()) :: {:ok, Account.Exporter.t()} | {:error, any}
   defp check_exporter(nil), do: {:error, "Exporter not found"}
 
   defp check_exporter(exporter_uid) do
@@ -523,6 +596,8 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # check if importer exist
+  @spec check_importer(String.t()) :: {:ok, Account.Importer.t()} | {:error, any}
   defp check_importer(nil), do: {:error, "Importer not found"}
 
   defp check_importer(importer_uid) do
@@ -541,6 +616,8 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # check if credit day is the correct format
+  @spec check_credit_days(String.t()) :: {:ok, Account.Importer.t()} | {:error, any}
   defp check_credit_days(credit_days) do
     cond do
       is_nil(credit_days) ->
@@ -557,6 +634,10 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @doc """
+  format the transaction sum
+  """
+  @spec check_transaction_sum(any) :: {:ok, number} | {:error, any}
   def check_transaction_sum(nil), do: {:error, "transactionSumUSD not found"}
 
   def check_transaction_sum(transaction_sum)
@@ -580,10 +661,11 @@ defmodule TransigoAdmin.Credit do
 
       {:ok, sum * k_multiply}
     else
-      {:error, "transactionSumusd has incorrect format"}
+      {:error, "transactionSumUSD has incorrect format"}
     end
   end
 
+  @spec check_quota_and_financed_sum(String.t(), number) :: :ok | {:error, any}
   defp check_quota_and_financed_sum(importer_id, financed_sum) do
     granted_quota = find_granted_quota(importer_id)
 
@@ -610,6 +692,9 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  # calculate fields for transaction and offer
+  @spec calculate_transaction_offer(Account.Exporter.t(), Account.Importer.t(), number, number) ::
+          {:ok, map}
   defp calculate_transaction_offer(
          %{id: exporter_id},
          %{id: importer_id},
@@ -657,6 +742,10 @@ defmodule TransigoAdmin.Credit do
     end
   end
 
+  @doc """
+  get offer by transaction_uid
+  """
+  @spec get_offer_by_transaction_uid(String.t(), [atom]) :: Offer.t() | nil
   def get_offer_by_transaction_uid(transaction_uid, preloads \\ []) do
     from(
       o in Offer,
@@ -678,6 +767,12 @@ defmodule TransigoAdmin.Credit do
     |> Repo.one()
   end
 
+  @doc """
+  rest api
+  /trans/:transaction_uid/accept
+  accept or decline the offer
+  """
+  @spec accept_decline_offer(String.t(), boolean) :: {:ok, Offer.t()} | {:error, any}
   def accept_decline_offer(_transaction_uid, nil), do: {:error, "acceptDecline missing"}
 
   def accept_decline_offer(transaction_uid, true),
@@ -696,6 +791,10 @@ defmodule TransigoAdmin.Credit do
     {:ok, get_offer(offer_id, [:transaction])}
   end
 
+  @doc """
+  list offer with pagination
+  """
+  @spec list_offers_paginated(map) :: {:ok, map}
   def list_offers_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
 
@@ -718,6 +817,7 @@ defmodule TransigoAdmin.Credit do
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
+  @spec check_accept_decline(boolean) :: nil | boolean
   defp check_accept_decline(nil), do: nil
 
   defp check_accept_decline(true), do: "A"

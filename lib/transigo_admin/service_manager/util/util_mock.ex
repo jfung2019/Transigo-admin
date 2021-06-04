@@ -5,11 +5,11 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilMock do
 
   def create_importer(_param), do: {:ok, %HTTPoison.Response{body: ""}}
 
-  def generate_assignment_notice(_payload, transaction_uid),
-    do: {:ok, "temp/#{transaction_uid}_assignment_notice.pdf"}
+  def generate_assignment_notice(_payload),
+    do: {:ok, "assignment_notice.pdf"}
 
-  def generate_exporter_msa(_payload, exporter_uid), do: {:ok, "temp/#{exporter_uid}_msa.pdf"}
+  def generate_exporter_msa(_payload), do: {:ok, "msa.pdf"}
 
-  def generate_transaction_doc(_payload, transaction_uid),
-    do: {:ok, "temp/#{transaction_uid}_transaction.pdf"}
+  def generate_transaction_doc(_payload),
+    do: {:ok, "transaction.pdf"}
 end

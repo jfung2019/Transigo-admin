@@ -56,7 +56,7 @@ defmodule TransigoAdminWeb.Api.OfferController do
 
   def confirm_downpayment(conn, %{"transaction_uid" => transaction_uid} = params) do
     case Credit.confirm_downpayment(transaction_uid, params) do
-      {:ok, transaction} ->
+      {:ok, _transaction} ->
         conn
         |> put_status(200)
         |> put_view(@offer_view)

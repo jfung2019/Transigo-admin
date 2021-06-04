@@ -52,21 +52,19 @@ defmodule TransigoAdmin.ServiceManager.S3.S3Api do
     s3_key =
       "exporter/#{exporter_uid}/#{importer_uid}/#{transaction_uid}/#{transaction_uid}_#{type}.pdf"
 
-    file = "temp/#{transaction_uid}_#{type}.pdf"
-
-    File.mkdir_p("temp")
+    {:ok, temp} = Briefly.create(extname: ".pdf")
 
     download =
       ExAws.S3.download_file(
         Application.get_env(:transigo_admin, :s3_bucket_name),
         s3_key,
-        file
+        temp
       )
       |> ExAws.request()
 
     case download do
       {:ok, :done} ->
-        {:ok, file}
+        {:ok, temp}
 
       _ ->
         {:error, "Fail to download invoice"}

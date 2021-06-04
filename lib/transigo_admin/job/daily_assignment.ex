@@ -10,7 +10,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
-    Credit.list_transactions_status_originated()
+    Credit.list_transactions_by_state("originated", [:exporter, importer: [:contact]])
     |> Enum.each(&send_assignment_notice(&1))
 
     :ok
@@ -62,36 +62,31 @@ defmodule TransigoAdmin.Job.DailyAssignment do
       {:ok, invoice_file} ->
         invoice_file_basename = Path.basename(invoice_file)
 
-        result =
-          [
-            {"closing_date", get_hs_doc_create_date(hs_request_id)},
-            {"document_signature_date", Timex.now() |> Timex.format!("{ISOdate}")},
-            {"financier", "Transigo"},
-            {"fname", "#{transaction_uid}_assignment"},
-            {"importer",
-             Jason.encode!(%{
-               address: get_importer_address(importer),
-               contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
-               email: importer.contact.email,
-               name: importer.business_name
-             })},
-            {"invoice",
-             Jason.encode!(%{
-               invoice_date: invoice_date,
-               invoice_fname: invoice_file_basename,
-               invoice_num: invoice_ref,
-               second_installment_date: Timex.shift(invoice_date, days: credit_term_days)
-             })},
-            {:file, invoice_file,
-             {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
-            {"tags", "true"},
-            {"transigo", Helper.get_transigo_doc_info()}
-          ]
-          |> @util_api.generate_assignment_notice(transaction_uid)
-
-        File.rm(invoice_file)
-
-        result
+        [
+          {"closing_date", get_hs_doc_create_date(hs_request_id)},
+          {"document_signature_date", Timex.now() |> Timex.format!("{ISOdate}")},
+          {"financier", "Transigo"},
+          {"fname", "#{transaction_uid}_assignment"},
+          {"importer",
+           Jason.encode!(%{
+             address: get_importer_address(importer),
+             contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
+             email: importer.contact.email,
+             name: importer.business_name
+           })},
+          {"invoice",
+           Jason.encode!(%{
+             invoice_date: invoice_date,
+             invoice_fname: invoice_file_basename,
+             invoice_num: invoice_ref,
+             second_installment_date: Timex.shift(invoice_date, days: credit_term_days)
+           })},
+          {:file, invoice_file,
+           {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
+          {"tags", "true"},
+          {"transigo", Helper.get_transigo_doc_info()}
+        ]
+        |> @util_api.generate_assignment_notice()
 
       {:error, _} ->
         :error

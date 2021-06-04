@@ -13,6 +13,7 @@ defmodule TransigoAdmin.Application do
       TransigoAdminWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: TransigoAdmin.PubSub},
+      TransigoAdmin.PostgresListener,
       # Start the Endpoint (http/https)
       TransigoAdminWeb.Endpoint,
       # Start a worker by calling: TransigoAdmin.Worker.start_link(arg)

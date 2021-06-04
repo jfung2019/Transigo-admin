@@ -6,12 +6,12 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilBehavior do
                HTTPoison.Response.t() | HTTPoison.AsyncResponse.t() | HTTPoison.MaybeRedirect.t()}
               | {:error, HTTPoison.Error.t()}
 
-  @callback generate_assignment_notice([tuple()], String.t()) ::
+  @callback generate_assignment_notice([tuple()]) ::
               {:ok, String.t()} | {:errror, any()}
 
-  @callback generate_exporter_msa([tuple()], String.t()) ::
+  @callback generate_exporter_msa([tuple()]) ::
               {:ok, String.t()} | {:errror, any()}
 
-  @callback generate_transaction_doc([tuple()], String.t()) ::
+  @callback generate_transaction_doc([tuple()]) ::
               {:ok, String.t()} | {:error, any()}
 end

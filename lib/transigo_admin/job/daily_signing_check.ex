@@ -30,9 +30,6 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
           |> Timex.diff(Timex.now(), :month)
           |> regenerate_msa(exporter)
 
-        msa = "temp/#{exporter.exporter_transigo_uid}_msa.pdf"
-        if File.exists?(msa), do: File.rm(msa)
-
         result
 
       _ ->
@@ -65,7 +62,7 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
            })},
           {"transigo", Helper.get_transigo_doc_info()}
         ]
-        |> @util_api.generate_exporter_msa(exporter.exporter_transigo_uid)
+        |> @util_api.generate_exporter_msa()
         |> create_hs_request(exporter)
 
       true ->
