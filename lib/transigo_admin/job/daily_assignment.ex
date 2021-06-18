@@ -72,7 +72,9 @@ defmodule TransigoAdmin.Job.DailyAssignment do
              address: get_importer_address(importer),
              contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
              email: importer.contact.email,
-             name: importer.business_name
+             name: importer.business_name,
+             bank_account: importer.bank_account,
+             bank_name: importer.bank_name
            })},
           {"invoice",
            Jason.encode!(%{
