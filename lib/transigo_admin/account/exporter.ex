@@ -18,6 +18,7 @@ defmodule TransigoAdmin.Account.Exporter do
     field :hellosign_signature_request_id, :string
     field :hs_signing_status, :string, default: "awaiting_signature"
     field :sign_msa_datetime, :date, source: :sign_MSA_datetime
+    field :cn_msa, :boolean, default: false
 
     belongs_to :contact, TransigoAdmin.Account.Contact, source: :MSA_contact_id
     belongs_to :marketplace, TransigoAdmin.Credit.Marketplace
@@ -43,7 +44,8 @@ defmodule TransigoAdmin.Account.Exporter do
     :hellosign_signature_request_id,
     :hs_signing_status,
     :marketplace_id,
-    :contact_id
+    :contact_id,
+    :cn_msa
   ]
 
   @required_attrs [

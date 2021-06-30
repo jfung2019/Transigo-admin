@@ -17,6 +17,7 @@ defmodule TransigoAdmin.Account do
 
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
   @hs_api Application.compile_env(:transigo_admin, :hs_api)
+  @util_api Application.compile_env(:transigo_admin, :util_api)
 
   @states_list Code.eval_string("""
                  [
@@ -125,11 +126,78 @@ defmodule TransigoAdmin.Account do
   @doc """
   Get exporter by exporter_transigo_uid
   """
-  @spec get_exporter_by_exporter_uid(String.t()) :: Exporter.t() | nil
-  def get_exporter_by_exporter_uid(exporter_uid) do
-    from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid)
+  @spec get_exporter_by_exporter_uid(String.t(), list) :: Exporter.t() | nil
+  def get_exporter_by_exporter_uid(exporter_uid, preloads \\ []) do
+    from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
     |> Repo.one()
   end
+
+  @doc """
+  generate msa or get sign url of generated msa
+  """
+  @spec sign_msa(String.t(), bool) :: {:ok, String.t()} | {:error, any}
+  def sign_msa(exporter_uid, cn_msa) do
+    preloads = [:contact, :marketplace]
+
+    case get_exporter_by_exporter_uid(exporter_uid, preloads) do
+      %Exporter{hellosign_signature_request_id: nil} = exporter ->
+        generate_sign_msa(exporter, cn_msa)
+
+      %Exporter{hellosign_signature_request_id: hs_sign_req_id} = exporter ->
+        get_sign_msa_url_with_req_id(hs_sign_req_id, exporter)
+
+      _ ->
+        {:error, "Incorrect exporter_uid"}
+    end
+  end
+
+  defp generate_sign_msa(exporter, cn_msa) do
+    with {:ok, msa_payload} <- get_msa_payload(exporter, cn_msa),
+         {:ok, msa_path} <- @util_api.generate_exporter_msa(msa_payload),
+         {:ok, _exporter} <- update_exporter(exporter, %{cn_msa: cn_msa}) do
+      {:ok, ""}
+    else
+      {:error, _message} = error_tuple ->
+        error_tuple
+
+      _ ->
+        {:error, "Failed to get MSA"}
+    end
+  end
+
+  defp get_sign_msa_url_with_req_id(hs_sign_req_id, exporter) do
+    {:error, "ss"}
+  end
+
+  def get_msa_payload(%{contact: contact, marketplace: marketplace} = exporter, cn_msa) do
+    now = Timex.now() |> Timex.format!("{ISOdate}")
+
+    [
+      {"marketplace", marketplace.marketplace},
+      {"document_signature_date", now},
+      {"fname", "#{exporter.exporter_transigo_uid}_msa"},
+      {"tags", "true"},
+      {"exporter",
+        Jason.encode!(%{
+          MSA_date: now,
+          address: exporter.address,
+          company_name: exporter.business_name,
+          contact: "#{contact.first_name} #{contact.last_name}",
+          email: contact.email,
+          phone: contact.mobile,
+          title: contact.role,
+          signatory_email: exporter.signatory_email,
+          signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+          signatory_title: exporter.signatory_title
+        })},
+      {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()},
+      {"cn", get_cn_tag(cn_msa)}
+    ]
+  end
+
+  defp get_cn_tag(true), do: "true"
+
+  defp get_cn_tag(_), do: "false"
 
   @doc """
   get signing url for Transigo

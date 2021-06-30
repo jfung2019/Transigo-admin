@@ -45,6 +45,13 @@ defmodule TransigoAdminWeb.Router do
   scope "/v2", TransigoAdminWeb.Api do
     pipe_through [:api, :api_auth]
 
+    scope "/exporters" do
+
+      scope "/:exporter_uid" do
+        get "/sign_msa", ExporterController, :sign_msa
+      end
+    end
+
     scope "/trans" do
       post "/generate_offer", OfferController, :generate_offer
 

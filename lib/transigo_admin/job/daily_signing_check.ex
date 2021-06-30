@@ -37,31 +37,10 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
     end
   end
 
-  def regenerate_msa(created_diff, %{contact: contact, marketplace: marketplace} = exporter) do
+  def regenerate_msa(created_diff, %{contact: _c, marketplace: _m} = exporter) do
     cond do
       created_diff <= -1 ->
-        now = Timex.now() |> Timex.format!("{ISOdate}")
-
-        [
-          {"marketplace", marketplace.marketplace},
-          {"document_signature_date", now},
-          {"fname", "#{exporter.exporter_transigo_uid}_msa"},
-          {"tags", "true"},
-          {"exporter",
-           Jason.encode!(%{
-             MSA_date: now,
-             address: exporter.address,
-             company_name: exporter.business_name,
-             contact: "#{contact.first_name} #{contact.last_name}",
-             email: contact.email,
-             phone: contact.mobile,
-             title: contact.role,
-             signatory_email: exporter.signatory_email,
-             signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
-             signatory_title: exporter.signatory_title
-           })},
-          {"transigo", Helper.get_transigo_doc_info()}
-        ]
+        Account.get_msa_payload(exporter, exporter.cn_msa)
         |> @util_api.generate_exporter_msa()
         |> create_hs_request(exporter)
 
