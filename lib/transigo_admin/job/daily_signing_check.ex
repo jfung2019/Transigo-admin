@@ -40,7 +40,8 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
   def regenerate_msa(created_diff, %{contact: _c, marketplace: _m} = exporter) do
     cond do
       created_diff <= -1 ->
-        Account.get_msa_payload(exporter, exporter.cn_msa)
+        {:ok, payload} = Account.get_msa_payload(exporter, exporter.cn_msa)
+        payload
         |> @util_api.generate_exporter_msa()
         |> create_hs_request(exporter)
 

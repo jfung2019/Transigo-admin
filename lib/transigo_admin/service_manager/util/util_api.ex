@@ -46,7 +46,8 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
     HTTPoison.post(
       "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_msa",
       {:multipart, payload},
-      []
+      [],
+      recv_timeout: 60_000
     )
     |> save_file()
   end

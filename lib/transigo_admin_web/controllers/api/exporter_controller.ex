@@ -7,8 +7,8 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   @error_view TransigoAdminWeb.ApiErrorView
 
   def sign_msa(conn, %{"exporter_uid" => exporter_uid} = param) do
-    case Account.sign_msa(exporter_uid, Map.get(param, "cn")) do
-      {:ok, sign_url} ->
+    case Account.sign_msa(exporter_uid, Map.get(param, "cn_msa")) do
+      {:ok, %{msa_url: sign_url}} ->
         conn
         |> put_status(200)
         |> put_view(@exporter_view)

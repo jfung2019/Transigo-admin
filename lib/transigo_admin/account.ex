@@ -154,8 +154,11 @@ defmodule TransigoAdmin.Account do
   defp generate_sign_msa(exporter, cn_msa) do
     with {:ok, msa_payload} <- get_msa_payload(exporter, cn_msa),
          {:ok, msa_path} <- @util_api.generate_exporter_msa(msa_payload),
-         {:ok, _exporter} <- update_exporter(exporter, %{cn_msa: cn_msa}) do
-      {:ok, ""}
+         {:ok, msa_hs_payload} <- get_msa_hs_payload(msa_path, exporter),
+         {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
+           @hs_api.create_signature_request(msa_hs_payload),
+         {:ok, _exporter} <- update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
+      get_msa_sign_url(sign_req, exporter)
     else
       {:error, _message} = error_tuple ->
         error_tuple
@@ -166,13 +169,23 @@ defmodule TransigoAdmin.Account do
   end
 
   defp get_sign_msa_url_with_req_id(hs_sign_req_id, exporter) do
-    {:error, "ss"}
+    case @hs_api.get_signature_request(hs_sign_req_id) do
+      {:ok, sign_req} ->
+        get_msa_sign_url(sign_req, exporter)
+
+      {:error, _message} = error_tuple ->
+        error_tuple
+
+      _ ->
+        {:error, "Failed to get msa"}
+    end
   end
 
+  @spec get_msa_payload(Exporter.t(), boolean) :: {:ok, list}
   def get_msa_payload(%{contact: contact, marketplace: marketplace} = exporter, cn_msa) do
     now = Timex.now() |> Timex.format!("{ISOdate}")
 
-    [
+    payload = [
       {"marketplace", marketplace.marketplace},
       {"document_signature_date", now},
       {"fname", "#{exporter.exporter_transigo_uid}_msa"},
@@ -193,12 +206,48 @@ defmodule TransigoAdmin.Account do
       {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()},
       {"cn", get_cn_tag(cn_msa)}
     ]
+
+    {:ok, payload}
   end
+
+  defp get_cn_tag("true"), do: "true"
 
   defp get_cn_tag(true), do: "true"
 
   defp get_cn_tag(_), do: "false"
 
+  @spec get_msa_hs_payload(String.t(), Exporter.t()) :: {:ok, list}
+  defp get_msa_hs_payload(msa_path, exporter) do
+    msa_basename = Path.basename(msa_path)
+
+    payload = [
+      {"client_id", Application.get_env(:transigo_admin, :hs_client_id)},
+      {"test_mode", "1"},
+      {"use_text_tags", "1"},
+      {"hide_text_tags", "1"},
+      {:file, msa_path, {"form-data", [name: "file[0]", filename: msa_basename]}, []},
+      {"signers[0][name]", "Nir Tal"},
+      {"signers[0][email_address]", "nir.tal@transigo.io"},
+      {"signers[1][name]", "#{exporter.signatory_first_name} #{exporter.signatory_last_name}"},
+      {"signers[1][email_address]", exporter.signatory_email}
+    ]
+
+    {:ok, payload}
+  end
+
+  @spec get_msa_sign_url(map, Exporter.t()) :: String.t()
+  defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{signatory_email: exporter_email}) do
+    sign_url =
+      Enum.flat_map(signatures, fn %{"signer_email_address" => email, "signature_id" => sign_id} ->
+        case email do
+          ^exporter_email -> %{msa_url: @hs_api.fetch_sign_url(sign_id)}
+          _ -> []
+        end
+      end)
+      |> Enum.into(%{})
+
+    {:ok, sign_url}
+  end
   @doc """
   get signing url for Transigo
   """

@@ -79,4 +79,9 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsApi do
         {:error, "Fail to create signature request"}
     end
   end
+
+  def fetch_sign_url(sign_id) do
+    {:ok, %{"embedded" => %{"sign_url" => sign_url}}} = get_sign_url(sign_id)
+    "#{sign_url}&client_id=#{Application.get_env(:transigo_admin, :hs_client_id)}"
+  end
 end

@@ -366,21 +366,14 @@ defmodule TransigoAdmin.Credit do
     sign_urls =
       Enum.flat_map(signatures, fn %{"signer_email_address" => email, "signature_id" => sign_id} ->
         case email do
-          ^importer_email -> %{importer_url: fetch_sign_url(sign_id)}
-          ^exporter_email -> %{exporter_url: fetch_sign_url(sign_id)}
+          ^importer_email -> %{importer_url: @hs_api.fetch_sign_url(sign_id)}
+          ^exporter_email -> %{exporter_url: @hs_api.fetch_sign_url(sign_id)}
           _ -> []
         end
       end)
       |> Enum.into(%{})
 
     {:ok, sign_urls}
-  end
-
-  # get sign_url from HelloSign
-  @spec fetch_sign_url(String.t()) :: String.t()
-  defp fetch_sign_url(sign_id) do
-    {:ok, %{"embedded" => %{"sign_url" => sign_url}}} = @hs_api.get_sign_url(sign_id)
-    "#{sign_url}&client_id=#{Application.get_env(:transigo_admin, :hs_client_id)}"
   end
 
   @doc """
