@@ -12,6 +12,7 @@ defmodule TransigoAdminWeb.Api.Schema do
     field :login, non_null(:admin) do
       arg :email, non_null(:string)
       arg :password, non_null(:string)
+      arg :totp, non_null(:string)
       resolve &Resolvers.Account.login/3
     end
   end
