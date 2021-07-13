@@ -14,13 +14,6 @@ defmodule TransigoAdminWeb.Api.Schema do
       arg :password, non_null(:string)
       resolve &Resolvers.Account.login/3
     end
-
-    @desc "check totp"
-    field :verify_totp, non_null(:admin_session) do
-      arg :admin_id, non_null(:id)
-      arg :totp, non_null(:string)
-      resolve &Resolvers.Account.verify_totp/3
-    end
   end
 
   query do
