@@ -15,13 +15,14 @@ defmodule TransigoAdmin.Account.Admin do
     field :password, :string, virtual: true
     field :password_hash, :string
     field :last_login, :naive_datetime
+    field :totp_secret, :string
 
     timestamps()
   end
 
   @doc false
-  def changeset(user, attrs) do
-    user
+  def changeset(admin, attrs) do
+    admin
     |> cast(attrs, [
       :firstname,
       :lastname,
@@ -49,6 +50,13 @@ defmodule TransigoAdmin.Account.Admin do
     |> unique_constraint(:username)
     |> validate_format(:email, ~r/\A([\w+\-].?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i)
     |> put_pass_hash()
+  end
+
+  def totp_secret_changeset(admin, attrs \\ %{}) do
+    admin
+    |> cast(attrs, [])
+    |> put_change(:totp_secret, NimbleTOTP.secret())
+    |> validate_required([:totp_secret])
   end
 
   defp put_pass_hash(changeset) do

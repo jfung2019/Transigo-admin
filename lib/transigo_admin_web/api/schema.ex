@@ -9,10 +9,17 @@ defmodule TransigoAdminWeb.Api.Schema do
 
   mutation do
     @desc "login"
-    field :login, non_null(:admin_session) do
+    field :login, non_null(:admin) do
       arg :email, non_null(:string)
       arg :password, non_null(:string)
       resolve &Resolvers.Account.login/3
+    end
+
+    @desc "check totp"
+    field :verify_totp, non_null(:admin_session) do
+      arg :admin_id, non_null(:id)
+      arg :totp, non_null(:string)
+      resolve &Resolvers.Account.verify_totp/3
     end
   end
 

@@ -57,10 +57,45 @@ defmodule TransigoAdmin.Account do
   @doc """
   check if the given password and the saved password are the same
   """
-  @spec check_password(Admin.t(), Stirng.t()) :: boolean
+  @spec check_password(Admin.t(), String.t()) :: boolean
   def check_password(nil, _password), do: no_user_verify()
 
   def check_password(admin, password), do: verify_pass(password, admin.password_hash)
+
+  @doc """
+  verify totp for admin
+  """
+  @spec validate_totp(Admin.t(), String.t()) :: atom
+  def validate_totp(%{totp_secret: secret}, totp) do
+    case NimbleTOTP.valid?(secret, totp) do
+      true -> :valid
+      _ -> :invalid
+    end
+  end
+
+  @doc """
+  generate totp secret and save to admin
+  return uri if successful
+  """
+  @spec generate_totp_secret(Admin.t()) :: {:ok, String.t()} | {:error, any}
+  def generate_totp_secret(%Admin{} = admin) do
+    admin
+    |> Admin.totp_secret_changeset()
+    |> Repo.update()
+    |> then(fn result ->
+      case result do
+        {:ok, admin} -> get_totp_uri(admin)
+        result -> result
+      end
+    end)
+  end
+
+  @doc """
+  get totp uri
+  """
+  @spec generate_totp_secret(Admin.t()) :: {:ok, String.t()}
+  def get_totp_uri(%{totp_secret: secret, username: username}),
+    do: {:ok, NimbleTOTP.otpauth_uri("Transigo:#{username}", secret, issuer: "Transigo")}
 
   @doc """
   Get all exporters with MSA not signed by both parties
@@ -157,7 +192,8 @@ defmodule TransigoAdmin.Account do
          {:ok, msa_hs_payload} <- get_msa_hs_payload(msa_path, exporter),
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
            @hs_api.create_signature_request(msa_hs_payload),
-         {:ok, _exporter} <- update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
+         {:ok, _exporter} <-
+           update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
       get_msa_sign_url(sign_req, exporter)
     else
       {:error, _message} = error_tuple ->
@@ -191,18 +227,18 @@ defmodule TransigoAdmin.Account do
       {"fname", "#{exporter.exporter_transigo_uid}_msa"},
       {"tags", "true"},
       {"exporter",
-        Jason.encode!(%{
-          MSA_date: now,
-          address: exporter.address,
-          company_name: exporter.business_name,
-          contact: "#{contact.first_name} #{contact.last_name}",
-          email: contact.email,
-          phone: contact.mobile,
-          title: contact.role,
-          signatory_email: exporter.signatory_email,
-          signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
-          signatory_title: exporter.signatory_title
-        })},
+       Jason.encode!(%{
+         MSA_date: now,
+         address: exporter.address,
+         company_name: exporter.business_name,
+         contact: "#{contact.first_name} #{contact.last_name}",
+         email: contact.email,
+         phone: contact.mobile,
+         title: contact.role,
+         signatory_email: exporter.signatory_email,
+         signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+         signatory_title: exporter.signatory_title
+       })},
       {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()},
       {"cn", get_cn_tag(cn_msa)}
     ]
@@ -236,7 +272,9 @@ defmodule TransigoAdmin.Account do
   end
 
   @spec get_msa_sign_url(map, Exporter.t()) :: String.t()
-  defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{signatory_email: exporter_email}) do
+  defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{
+         signatory_email: exporter_email
+       }) do
     sign_url =
       Enum.flat_map(signatures, fn %{"signer_email_address" => email, "signature_id" => sign_id} ->
         case email do
@@ -248,6 +286,7 @@ defmodule TransigoAdmin.Account do
 
     {:ok, sign_url}
   end
+
   @doc """
   get signing url for Transigo
   """

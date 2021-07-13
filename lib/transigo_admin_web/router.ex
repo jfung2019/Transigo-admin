@@ -46,7 +46,6 @@ defmodule TransigoAdminWeb.Router do
     pipe_through [:api, :api_auth]
 
     scope "/exporters" do
-
       scope "/:exporter_uid" do
         get "/sign_msa", ExporterController, :sign_msa
       end

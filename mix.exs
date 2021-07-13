@@ -64,7 +64,8 @@ defmodule TransigoAdmin.MixProject do
       {:sweet_xml, "~> 0.6.6"},
       {:hackney, "~> 1.17"},
       {:sentry, "~> 8.0"},
-      {:briefly, "~> 0.3"}
+      {:briefly, "~> 0.3"},
+      {:nimble_totp, "~> 0.1.2"}
     ]
   end
 
