@@ -15,7 +15,7 @@ defmodule TransigoAdmin.Account.Admin do
     field :password, :string, virtual: true
     field :password_hash, :string
     field :last_login, :naive_datetime
-    field :totp_secret, :string
+    field :totp_secret, :binary
 
     timestamps()
   end

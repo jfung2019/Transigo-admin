@@ -3,7 +3,7 @@ defmodule TransigoAdmin.Repo.Migrations.AddTotpSecret do
 
   def change do
     alter table("admins") do
-      add :totp_secret, :text
+      add :totp_secret, :bytea
     end
   end
 end

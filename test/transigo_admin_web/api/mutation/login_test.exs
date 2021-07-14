@@ -4,7 +4,7 @@ defmodule TransigoAdminWeb.Api.Mutation.LoginTest do
   alias TransigoAdmin.Account
 
   @login """
-  mutation($email: String!, $password: String!, %totp: String!) {
+  mutation($email: String!, $password: String!, $totp: String!) {
     login(email: $email, password: $password, totp: $totp) {
       admin {
         id

@@ -9,7 +9,7 @@ defmodule TransigoAdminWeb.Api.Schema do
 
   mutation do
     @desc "login"
-    field :login, non_null(:admin) do
+    field :login, non_null(:admin_session) do
       arg :email, non_null(:string)
       arg :password, non_null(:string)
       arg :totp, non_null(:string)
