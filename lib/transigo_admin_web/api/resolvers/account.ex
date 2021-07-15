@@ -14,4 +14,16 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
   def list_exporters(_root, args, _context), do: Account.list_exporters_paginated(args)
 
   def list_importers(_root, args, _context), do: Account.list_importers_paginated(args)
+
+  def check_document(_root, %{exporter_uid: exporter_uid}, _context) do
+    Account.get_exporter_by_exporter_uid(exporter_uid)
+    |> Account.check_document()
+    # transigo not signed -> send sign url
+    # transigo signed but not exporter / all signed -> download file from hellosign
+  end
+
+  def check_document(_root, %{transaction_uid: transaction_uid}, _context) do
+    # transigo not signed -> send sign url
+    # transigo signed but not exporter / all signed -> download file from hellosign
+  end
 end

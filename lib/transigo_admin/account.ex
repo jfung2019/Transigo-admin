@@ -151,6 +151,12 @@ defmodule TransigoAdmin.Account do
     end
   end
 
+  def check_document(%{hellosign_signature_request_id: nil}), do: {:error, :document_not_found}
+
+  def check_document(%{hellosign_signature_request_id: signature_request_id}) do
+
+  end
+
   defp generate_sign_msa(exporter, cn_msa) do
     with {:ok, msa_payload} <- get_msa_payload(exporter, cn_msa),
          {:ok, msa_path} <- @util_api.generate_exporter_msa(msa_payload),
@@ -253,25 +259,18 @@ defmodule TransigoAdmin.Account do
   """
   @spec get_signing_url(String.t()) :: {:ok, String.t()} | {:error, any}
   def get_signing_url(signature_request_id) do
-    case @hs_api.get_signature_request(signature_request_id) do
-      {:ok, %{"signature_request" => %{"signatures" => signatures}}} ->
-        case get_transigo_signature(signatures) do
-          %{"signature_id" => transigo_signature_id} ->
-            case @hs_api.get_sign_url(transigo_signature_id) do
-              {:ok, embedded} ->
-                %{"embedded" => %{"sign_url" => sign_url}} = embedded
-                {:ok, sign_url}
-
-              {:error, _error} = error_tuple ->
-                error_tuple
-            end
-
-          _ ->
-            {:error, "Fail to get signature id"}
-        end
-
+    with {:ok, %{"signature_request" => %{"signatures" => signatures}}} <-
+           @hs_api.get_signature_request(signature_request_id),
+         %{"signature_id" => transigo_signature_id} <- get_transigo_signature(signatures),
+         {:ok, %{"embedded" => %{"sign_url" => sign_url}}} <-
+           @hs_api.get_sign_url(transigo_signature_id) do
+      {:ok, sign_url}
+    else
       {:error, _error} = error_tuple ->
         error_tuple
+
+      _ ->
+        {:error, "Fail to get sign url"}
     end
   end
 

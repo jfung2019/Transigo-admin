@@ -4,8 +4,8 @@ defmodule TransigoAdminWeb.Api.Mutation.LoginTest do
   alias TransigoAdmin.Account
 
   @login """
-  mutation($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+  mutation($email: String!, $password: String!, $totp: String!) {
+    login(email: $email, password: $password, totp: $totp) {
       admin {
         id
         email
@@ -28,12 +28,20 @@ defmodule TransigoAdminWeb.Api.Mutation.LoginTest do
         password: "123456"
       })
 
+    {:ok, _uri} = Account.generate_totp_secret(admin)
+
     {:ok, admin: admin, conn: conn}
   end
 
   test "can login", %{admin: %{id: admin_id, email: email}, conn: conn} do
+    %{totp_secret: secret} = Account.get_admin!(admin_id)
+    totp = NimbleTOTP.verification_code(secret)
+
     response =
-      post(conn, "/api", %{query: @login, variables: %{email: email, password: "123456"}})
+      post(conn, "/api", %{
+        query: @login,
+        variables: %{email: email, password: "123456", totp: totp}
+      })
 
     assert %{
              "data" => %{
