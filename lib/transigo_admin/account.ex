@@ -59,10 +59,45 @@ defmodule TransigoAdmin.Account do
   @doc """
   check if the given password and the saved password are the same
   """
-  @spec check_password(Admin.t(), Stirng.t()) :: boolean
+  @spec check_password(Admin.t(), String.t()) :: boolean
   def check_password(nil, _password), do: no_user_verify()
 
   def check_password(admin, password), do: verify_pass(password, admin.password_hash)
+
+  @doc """
+  verify totp for admin
+  """
+  @spec validate_totp(Admin.t(), String.t()) :: atom
+  def validate_totp(%{totp_secret: secret}, totp) do
+    case NimbleTOTP.valid?(secret, totp) do
+      true -> :valid
+      _ -> :invalid
+    end
+  end
+
+  @doc """
+  generate totp secret and save to admin
+  return uri if successful
+  """
+  @spec generate_totp_secret(Admin.t()) :: {:ok, String.t()} | {:error, any}
+  def generate_totp_secret(%Admin{} = admin) do
+    admin
+    |> Admin.totp_secret_changeset()
+    |> Repo.update()
+    |> then(fn result ->
+      case result do
+        {:ok, admin} -> get_totp_uri(admin)
+        result -> result
+      end
+    end)
+  end
+
+  @doc """
+  get totp uri
+  """
+  @spec generate_totp_secret(Admin.t()) :: {:ok, String.t()}
+  def get_totp_uri(%{totp_secret: secret, username: username}),
+    do: {:ok, NimbleTOTP.otpauth_uri("Transigo:#{username}", secret, issuer: "Transigo")}
 
   @doc """
   Get all exporters with MSA not signed by both parties

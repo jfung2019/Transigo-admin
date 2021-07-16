@@ -1,12 +1,14 @@
 defmodule TransigoAdminWeb.Api.Resolvers.Account do
   alias TransigoAdmin.{Account, Account.Guardian, Credit}
 
-  def login(_root, %{email: email, password: password}, _context) do
-    with admin <- Account.find_admin(email),
-         true <- Account.check_password(admin, password) do
-      {:ok, token, _} = Guardian.encode_and_sign(admin)
+  def login(_root, %{email: email, password: password, totp: totp}, _context) do
+    with %{} = admin <- Account.find_admin(email),
+         true <- Account.check_password(admin, password),
+         :valid <- Account.validate_totp(admin, totp),
+         {:ok, token, _} <- Guardian.encode_and_sign(admin) do
       {:ok, %{admin: admin, token: token}}
     else
+      :invalid -> {:error, :totp_invalid}
       _ -> {:error, :unauthorized}
     end
   end
