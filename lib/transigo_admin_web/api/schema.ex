@@ -62,7 +62,7 @@ defmodule TransigoAdminWeb.Api.Schema do
     field :check_document, :document_result do
       arg :exporter_uid, :string
       arg :transaction_uid, :string
-#      middleware Middleware.Authenticate
+      middleware Middleware.Authenticate
       resolve &Resolvers.Account.check_document/3
     end
   end
