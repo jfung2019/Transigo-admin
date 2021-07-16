@@ -1,5 +1,5 @@
 defmodule TransigoAdminWeb.Api.Resolvers.Account do
-  alias TransigoAdmin.{Account, Account.Guardian}
+  alias TransigoAdmin.{Account, Account.Guardian, Credit}
 
   def login(_root, %{email: email, password: password}, _context) do
     with admin <- Account.find_admin(email),
@@ -18,12 +18,10 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
   def check_document(_root, %{exporter_uid: exporter_uid}, _context) do
     Account.get_exporter_by_exporter_uid(exporter_uid)
     |> Account.check_document()
-    # transigo not signed -> send sign url
-    # transigo signed but not exporter / all signed -> download file from hellosign
   end
 
   def check_document(_root, %{transaction_uid: transaction_uid}, _context) do
-    # transigo not signed -> send sign url
-    # transigo signed but not exporter / all signed -> download file from hellosign
+    Credit.get_transaction_by_transaction_uid(transaction_uid)
+    |> Account.check_document()
   end
 end

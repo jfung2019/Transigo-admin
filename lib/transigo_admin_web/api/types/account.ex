@@ -80,4 +80,8 @@ defmodule TransigoAdminWeb.Api.Types.Account do
     field :address, :string
     field :date_of_birth, :date
   end
+
+  object :document_result do
+    field :url, non_null(:id)
+  end
 end

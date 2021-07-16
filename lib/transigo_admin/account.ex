@@ -4,6 +4,8 @@ defmodule TransigoAdmin.Account do
 
   alias TransigoAdmin.Repo
   alias Absinthe.Relay
+  alias TransigoAdminWeb.Router.Helpers, as: Routes
+  alias TransigoAdminWeb.Endpoint
 
   alias TransigoAdmin.Account.{
     Admin,
@@ -151,11 +153,36 @@ defmodule TransigoAdmin.Account do
     end
   end
 
-  def check_document(%{hellosign_signature_request_id: nil}), do: {:error, :document_not_found}
+  @doc """
+
+  """
+  @spec check_document(map) :: tuple
+  def check_document(%{hellosign_signature_request_id: nil}),
+    do: {:error, message: "document not found"}
 
   def check_document(%{hellosign_signature_request_id: signature_request_id}) do
-
+    with {:ok, %{"signature_request" => %{"signatures" => signatures}}} <-
+           @hs_api.get_signature_request(signature_request_id),
+         transigo_signature <- get_transigo_signature(signatures) do
+      get_document(transigo_signature, signature_request_id)
+    else
+      _ -> {:error, message: "failed to fetch signature request"}
+    end
   end
+
+  @spec get_document(map, String.t()) :: tuple
+  defp get_document(%{"status_code" => "signed"}, signature_request_id) do
+    case @hs_api.get_signature_file_url(signature_request_id) do
+      {:ok, sign_url} ->
+        {:ok, %{url: sign_url}}
+
+      _ ->
+        {:error, message: "failed to get file"}
+    end
+  end
+
+  defp get_document(%{"signature_id" => sign_id}, _sign_request_id),
+       do: {:ok, %{url: Routes.hellosign_url(Endpoint, :index, signature_id: sign_id)}}
 
   defp generate_sign_msa(exporter, cn_msa) do
     with {:ok, msa_payload} <- get_msa_payload(exporter, cn_msa),
@@ -163,7 +190,8 @@ defmodule TransigoAdmin.Account do
          {:ok, msa_hs_payload} <- get_msa_hs_payload(msa_path, exporter),
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
            @hs_api.create_signature_request(msa_hs_payload),
-         {:ok, _exporter} <- update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
+         {:ok, _exporter} <-
+           update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
       get_msa_sign_url(sign_req, exporter)
     else
       {:error, _message} = error_tuple ->
@@ -197,18 +225,18 @@ defmodule TransigoAdmin.Account do
       {"fname", "#{exporter.exporter_transigo_uid}_msa"},
       {"tags", "true"},
       {"exporter",
-        Jason.encode!(%{
-          MSA_date: now,
-          address: exporter.address,
-          company_name: exporter.business_name,
-          contact: "#{contact.first_name} #{contact.last_name}",
-          email: contact.email,
-          phone: contact.mobile,
-          title: contact.role,
-          signatory_email: exporter.signatory_email,
-          signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
-          signatory_title: exporter.signatory_title
-        })},
+       Jason.encode!(%{
+         MSA_date: now,
+         address: exporter.address,
+         company_name: exporter.business_name,
+         contact: "#{contact.first_name} #{contact.last_name}",
+         email: contact.email,
+         phone: contact.mobile,
+         title: contact.role,
+         signatory_email: exporter.signatory_email,
+         signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+         signatory_title: exporter.signatory_title
+       })},
       {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()},
       {"cn", get_cn_tag(cn_msa)}
     ]
@@ -242,7 +270,9 @@ defmodule TransigoAdmin.Account do
   end
 
   @spec get_msa_sign_url(map, Exporter.t()) :: String.t()
-  defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{signatory_email: exporter_email}) do
+  defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{
+         signatory_email: exporter_email
+       }) do
     sign_url =
       Enum.flat_map(signatures, fn %{"signer_email_address" => email, "signature_id" => sign_id} ->
         case email do
@@ -254,6 +284,7 @@ defmodule TransigoAdmin.Account do
 
     {:ok, sign_url}
   end
+
   @doc """
   get signing url for Transigo
   """
@@ -266,6 +297,23 @@ defmodule TransigoAdmin.Account do
            @hs_api.get_sign_url(transigo_signature_id) do
       {:ok, sign_url}
     else
+      {:error, _error} = error_tuple ->
+        error_tuple
+
+      _ ->
+        {:error, "Fail to get sign url"}
+    end
+  end
+
+  @doc """
+  get signing url from signature_id
+  """
+  @spec get_signing_url_by_sign_id(String.t()) :: tuple
+  def get_signing_url_by_sign_id(signature_id) do
+    case @hs_api.get_sign_url(signature_id) do
+      {:ok, %{"embedded" => %{"sign_url" => sign_url}}} ->
+        {:ok, sign_url}
+
       {:error, _error} = error_tuple ->
         error_tuple
 

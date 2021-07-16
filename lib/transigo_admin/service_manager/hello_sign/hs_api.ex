@@ -84,4 +84,20 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsApi do
     {:ok, %{"embedded" => %{"sign_url" => sign_url}}} = get_sign_url(sign_id)
     "#{sign_url}&client_id=#{Application.get_env(:transigo_admin, :hs_client_id)}"
   end
+
+  def get_signature_file_url(signature_request_id) do
+    HTTPoison.get(
+      "https://api.hellosign.com/v3/signature_request/files/#{signature_request_id}?file_type=pdf&get_url=true",
+      [],
+      hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]
+    )
+    |> then(fn response ->
+      with {:ok, %{body: body}} <- response, {:ok, %{"file_url" => file_url}} <- Jason.decode(body) do
+        {:ok, file_url}
+      else
+        _ ->
+          {:error, "failed to get file url"}
+      end
+    end)
+  end
 end

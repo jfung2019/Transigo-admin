@@ -71,7 +71,8 @@ defmodule TransigoAdmin.Account.Exporter do
     |> validate_required(@required_attrs)
   end
 
-  defp change_cn_msa(%{changes: %{cn_msa: nil}} = changeset), do: put_change(changeset, :cn_msa, false)
+  defp change_cn_msa(%{changes: %{cn_msa: nil}} = changeset),
+    do: put_change(changeset, :cn_msa, false)
 
   defp change_cn_msa(changeset), do: changeset
 end

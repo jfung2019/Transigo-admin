@@ -9,4 +9,6 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsMock do
   def create_signature_request([]), do: {:ok, %{}}
 
   def fetch_sign_url(_sign_id), do: ""
+
+  def get_signature_file_url(_sign_request_id), do: {:ok, ""}
 end

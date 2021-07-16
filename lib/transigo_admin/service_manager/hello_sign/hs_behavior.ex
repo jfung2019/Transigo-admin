@@ -6,4 +6,6 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsBehavior do
   @callback create_signature_request([tuple()]) :: {:ok, map()} | {:error, any()}
 
   @callback fetch_sign_url(String.t()) :: String.t()
+
+  @callback get_signature_file_url(String.t()) :: {:ok, String.t()}
 end

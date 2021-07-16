@@ -56,6 +56,14 @@ defmodule TransigoAdminWeb.Api.Schema do
       middleware Middleware.Authenticate
       resolve &Resolvers.Credit.list_offers/3
     end
+
+    @desc "get document's url"
+    field :check_document, :document_result do
+      arg :exporter_uid, :string
+      arg :transaction_uid, :string
+#      middleware Middleware.Authenticate
+      resolve &Resolvers.Account.check_document/3
+    end
   end
 
   def context(ctx) do
