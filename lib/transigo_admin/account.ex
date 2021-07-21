@@ -73,7 +73,6 @@ defmodule TransigoAdmin.Account do
       true -> :valid
       _ -> :invalid
     end
-    :valid
   end
 
   @doc """
