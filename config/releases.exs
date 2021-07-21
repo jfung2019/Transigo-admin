@@ -15,7 +15,7 @@ config :transigo_admin, TransigoAdminWeb.Endpoint,
     transport_options: [socket_opts: [:inet6]]
   ],
   secret_key_base: System.get_env("SECRET_KEY_BASE"),
-  force_ssl: [hsts: true]
+  force_ssl: [hsts: true, host: nil]
 
 config :transigo_admin,
   hs_api: TransigoAdmin.ServiceManager.HelloSign.HsApi,
