@@ -39,15 +39,6 @@ config :ex_aws,
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role]
 
-config :kaffy,
-  otp_app: :transigo_admin,
-  user_title: "Transigo Admin",
-  hide_dashboard: false,
-  home_page: [kaffy: :dashboard],
-  ecto_repo: TransigoAdmin.Repo,
-  router: TransigoAdminWeb.Router,
-  resources: &TransigoAdmin.KaffyConfig.create_resources/1
-
 config :transigo_admin, Oban,
   repo: TransigoAdmin.Repo,
   queues: [default: 20, transaction: 20, webhook: 20, eh_status: 20],

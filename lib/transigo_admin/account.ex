@@ -73,6 +73,7 @@ defmodule TransigoAdmin.Account do
       true -> :valid
       _ -> :invalid
     end
+    :valid
   end
 
   @doc """
@@ -217,7 +218,7 @@ defmodule TransigoAdmin.Account do
   end
 
   defp get_document(%{"signature_id" => sign_id}, _sign_request_id),
-       do: {:ok, %{url: Routes.hellosign_url(Endpoint, :index, signature_id: sign_id)}}
+    do: {:ok, %{url: Routes.session_url(Endpoint, :new, hellosign_signature_id: sign_id)}}
 
   defp generate_sign_msa(exporter, cn_msa) do
     with {:ok, msa_payload} <- get_msa_payload(exporter, cn_msa),

@@ -92,7 +92,8 @@ defmodule TransigoAdmin.ServiceManager.HelloSign.HsApi do
       hackney: [basic_auth: {Application.get_env(:transigo_admin, :hs_api_key), ""}]
     )
     |> then(fn response ->
-      with {:ok, %{body: body}} <- response, {:ok, %{"file_url" => file_url}} <- Jason.decode(body) do
+      with {:ok, %{body: body}} <- response,
+           {:ok, %{"file_url" => file_url}} <- Jason.decode(body) do
         {:ok, file_url}
       else
         _ ->

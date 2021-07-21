@@ -27,6 +27,7 @@ defmodule TransigoAdminWeb.Api.Mutation.LoginTest do
         company: "test",
         password: "123456"
       })
+
     {:ok, _uri} = Account.generate_totp_secret(admin)
 
     {:ok, _uri} = Account.generate_totp_secret(admin)

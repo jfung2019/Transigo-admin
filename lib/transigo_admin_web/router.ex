@@ -1,6 +1,5 @@
 defmodule TransigoAdminWeb.Router do
   use TransigoAdminWeb, :router
-  use Kaffy.Routes, scope: "/admin", pipe_through: [:admin_authenticated]
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -32,13 +31,13 @@ defmodule TransigoAdminWeb.Router do
     pipe_through :browser
 
     resources "/importers_signup", ImporterFormController, only: [:new, :create]
-    resources "/sessions", SessionController, only: [:new, :create, :delete], singleton: true
+    resources "/sessions", SessionController, only: [:new, :create], singleton: true
 
     scope "/admin" do
       pipe_through :admin_authenticated
 
-      resources "/signing", HellosignController, only: [:index]
-      resources "/jobs", ObanJobController, only: [:index]
+      get "/sessions", SessionController, :index, as: :logged_in_session
+      get "/signing", HellosignController, :index
     end
   end
 

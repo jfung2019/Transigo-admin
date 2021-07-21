@@ -7,7 +7,7 @@ defmodule TransigoAdminWeb.Api.Middleware.Authenticate do
         resolution
 
       _ ->
-        Absinthe.Resolution.put_result(resolution, {:error, message: "not_authorized"})
+        Absinthe.Resolution.put_result(resolution, {:error, message: "unauthorized"})
     end
   end
 end

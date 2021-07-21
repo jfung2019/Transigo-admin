@@ -1,1 +1,0 @@
-<iframe class="col-12 border-0 p-0" style="height: 100vh;" src="<%= Routes.url(@conn) <> Routes.oban_job_path(@conn, :index) %>"></iframe>
