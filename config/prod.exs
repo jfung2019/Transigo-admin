@@ -12,7 +12,8 @@ import Config
 config :transigo_admin, TransigoAdminWeb.Endpoint,
   url: [host: System.get_env("ENDPOINT_HOST"), port: 443, scheme: "https"],
   server: true,
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  force_ssl: [hsts: true]
 
 # Do not print debug messages in production
 config :logger, level: :info
