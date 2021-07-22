@@ -8,7 +8,7 @@ defmodule TransigoAdminWeb.HellosignController do
     |> render_page(conn)
   end
 
-  def index(conn, %{"signature_id" => signature_id} = _param) do
+  def index(conn, %{"hellosign_signature_id" => signature_id} = _param) do
     Account.get_signing_url_by_sign_id(signature_id)
     |> render_page(conn)
   end
