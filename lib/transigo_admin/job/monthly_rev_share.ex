@@ -1,4 +1,7 @@
 defmodule TransigoAdmin.Job.MonthlyRevShare do
+  @moduledoc """
+  for transactions that is repaid, move them to rev_share_to_be_paid and notify webhook user
+  """
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Job.Helper}

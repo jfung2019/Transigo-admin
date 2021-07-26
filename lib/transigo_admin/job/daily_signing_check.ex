@@ -1,4 +1,7 @@
 defmodule TransigoAdmin.Job.DailySigningCheck do
+  @moduledoc """
+  Generate new msa if the msa was not fully signed for more than 1 month
+  """
   use Oban.Worker, queue: :default, max_attempts: 1
 
   alias TransigoAdmin.{Account, Job.Helper}

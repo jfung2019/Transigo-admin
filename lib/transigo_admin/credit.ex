@@ -810,7 +810,7 @@ defmodule TransigoAdmin.Credit do
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
-  @spec check_accept_decline(boolean) :: nil | boolean
+  @spec check_accept_decline(boolean) :: nil | String.t()
   defp check_accept_decline(nil), do: nil
 
   defp check_accept_decline(true), do: "A"

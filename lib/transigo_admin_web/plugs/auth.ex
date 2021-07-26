@@ -16,7 +16,12 @@ defmodule TransigoAdminWeb.Auth do
       _ ->
         conn
         |> Plug.Conn.halt()
-        |> Phoenix.Controller.redirect(to: Routes.session_path(conn, :new, hellosign_signature_id: Map.get(conn.query_params, "hellosign_signature_id")))
+        |> Phoenix.Controller.redirect(
+          to:
+            Routes.session_path(conn, :new,
+              hellosign_signature_id: Map.get(conn.query_params, "hellosign_signature_id")
+            )
+        )
     end
   end
 

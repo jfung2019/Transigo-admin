@@ -1,4 +1,8 @@
 defmodule TransigoAdmin.Job.DailyBalance do
+  @moduledoc """
+  list transaction with state down_payment_done and update those to moved_to_payment
+  send the sum and transaction uids that are updated to registered webhook users
+  """
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Job.Helper}

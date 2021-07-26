@@ -1,4 +1,8 @@
 defmodule TransigoAdmin.Job.DailyAssignment do
+  @moduledoc """
+  List the transaction that has  the state of originated
+  generate assignment notice and send it to importer
+  """
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}

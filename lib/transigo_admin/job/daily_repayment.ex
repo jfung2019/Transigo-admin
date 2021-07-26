@@ -1,4 +1,9 @@
 defmodule TransigoAdmin.Job.DailyRepayment do
+  @moduledoc """
+  send transaction due email to importers with transaction due in 3 days
+  create dwolla transfer for transaction due today
+  for transaction that had dwolla transfer created, send webhook event to users
+  """
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   import Ecto.Query, warn: false

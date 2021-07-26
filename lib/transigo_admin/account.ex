@@ -189,7 +189,7 @@ defmodule TransigoAdmin.Account do
   end
 
   @doc """
-
+  get a link to the HelloSign document
   """
   @spec check_document(map) :: tuple
   def check_document(%{hellosign_signature_request_id: nil}),
@@ -237,6 +237,7 @@ defmodule TransigoAdmin.Account do
     end
   end
 
+  @spec get_sign_msa_url_with_req_id(String.t(), Exporter.t()) :: tuple
   defp get_sign_msa_url_with_req_id(hs_sign_req_id, exporter) do
     case @hs_api.get_signature_request(hs_sign_req_id) do
       {:ok, sign_req} ->
@@ -279,6 +280,7 @@ defmodule TransigoAdmin.Account do
     {:ok, payload}
   end
 
+  @spec get_cn_tag(any) :: String.t()
   defp get_cn_tag("true"), do: "true"
 
   defp get_cn_tag(true), do: "true"
@@ -421,6 +423,10 @@ defmodule TransigoAdmin.Account do
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
+  @doc """
+  business_types for importer
+  value for dwolla
+  """
   def importer_business_types do
     [
       {"Sole Proprietorship", "soleProprietorship"},
@@ -453,6 +459,10 @@ defmodule TransigoAdmin.Account do
 
   def list_users, do: Repo.all(User)
 
+  @doc """
+  get importer by importer_transigoUID
+  """
+  @spec get_importer_by_importer_uid(String.t()) :: Importer.t() | nil
   def get_importer_by_importer_uid(importer_uid) do
     from(i in Importer, where: i.importer_transigo_uid == ^importer_uid)
     |> Repo.one()
@@ -472,6 +482,9 @@ defmodule TransigoAdmin.Account do
 
   def get_user!(id), do: Repo.get!(User, id)
 
+  @doc """
+  list all oban jobs and order by inserted at in descending order
+  """
   def list_oban_jobs() do
     from(oj in Oban.Job, order_by: [desc: oj.inserted_at])
     |> Repo.all()
@@ -504,6 +517,10 @@ defmodule TransigoAdmin.Account do
     |> Repo.update()
   end
 
+  @doc """
+  check if token exist in database
+  """
+  @spec get_token_id(String.t()) :: String.t()
   def get_token_id(token) do
     from(t in "tokens",
       where: t.access_token == ^token,

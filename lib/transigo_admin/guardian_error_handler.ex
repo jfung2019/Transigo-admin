@@ -5,6 +5,11 @@ defmodule TransigoAdmin.GuardianErrorHandler do
   def auth_error(conn, _error_tuple, _opts) do
     conn
     |> put_flash(:info, "Please login")
-    |> redirect(to: Routes.session_path(conn, :new, hellosign_signature_id: Map.get(conn.query_params, "hellosign_signature_id")))
+    |> redirect(
+      to:
+        Routes.session_path(conn, :new,
+          hellosign_signature_id: Map.get(conn.query_params, "hellosign_signature_id")
+        )
+    )
   end
 end

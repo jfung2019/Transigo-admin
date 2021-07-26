@@ -1,4 +1,7 @@
 defmodule TransigoAdmin.PlaidRequest do
+  @moduledoc """
+  worker for getting all the information after the plaid form is completed
+  """
   use Oban.Worker, queue: :default, max_attempts: 1
 
   @impl Oban.Worker

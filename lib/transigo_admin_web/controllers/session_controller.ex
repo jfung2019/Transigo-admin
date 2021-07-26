@@ -7,7 +7,7 @@ defmodule TransigoAdminWeb.SessionController do
     signature_id = Map.get(params, "hellosign_signature_id")
 
     case Guardian.Plug.current_resource(conn) do
-      %Admin{} = admin ->
+      %Admin{} ->
         conn
         |> redirect_index_or_sign(signature_id)
 
@@ -50,5 +50,6 @@ defmodule TransigoAdminWeb.SessionController do
     do: redirect(conn, to: Routes.logged_in_session_path(conn, :index))
 
   defp redirect_index_or_sign(conn, signature_id),
-    do: redirect(conn, to: Routes.hellosign_path(conn, :index, hellosign_signature_id: signature_id))
+    do:
+      redirect(conn, to: Routes.hellosign_path(conn, :index, hellosign_signature_id: signature_id))
 end

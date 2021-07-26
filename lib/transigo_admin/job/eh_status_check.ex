@@ -1,4 +1,7 @@
 defmodule TransigoAdmin.Job.EhStatusCheck do
+  @moduledoc """
+  check in quota for pending Euler Hermes jobs and save result if the job is finished by EH
+  """
   use Oban.Worker, queue: :eh_status, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Credit.Quota}

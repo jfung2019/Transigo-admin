@@ -1,4 +1,7 @@
 defmodule TransigoAdmin.Job.WebhookResend do
+  @moduledoc """
+  webhook resend mechanism to resend the webhook event if the event was not responded with a 200 status code
+  """
   use Oban.Worker, queue: :webhook, max_attempts: 1
 
   alias TransigoAdmin.{Account, Account.WebhookUserEvent, Job.Helper}
