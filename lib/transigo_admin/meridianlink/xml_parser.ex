@@ -11,6 +11,14 @@ defmodule TransigoAdmin.Meridianlink.XMLParser do
 
   @status_code_description_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/STATUSES/STATUS/StatusDescription/text()"
 
+  # @credit_source_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/CREDIT/CREDIT_RESPONSE/CREDIT_TRADE_REFERENCES/CREDIT_TRADE_REFERENCE/CREDIT_REPOSITORIES/CREDIT_REPOSITORY/CreditRepositorySourceType/text()"l
+  @credit_source_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/CREDIT/CREDIT_RESPONSE/CREDIT_SCORES/CREDIT_SCORE/CREDIT_SCORE_DETAIL/CreditScoreModelNameType/text()"l
+  # @credit_source_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/CREDIT/CREDIT_RESPONSE/CREDIT_SCORES/CREDIT_SCORE"l
+
+  @credit_score_rank_percentile_value_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/CREDIT/CREDIT_RESPONSE/CREDIT_SCORES/CREDIT_SCORE/CREDIT_SCORE_DETAIL/CreditScoreRankPercentileValue/text()"l
+
+  @credit_score_value_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/CREDIT/CREDIT_RESPONSE/CREDIT_SCORES/CREDIT_SCORE/CREDIT_SCORE_DETAIL/CreditScoreValue/text()"l
+
   def get_new_order_response_data(xml) do
     parsed_xml = parse(xml)
 
@@ -35,5 +43,22 @@ defmodule TransigoAdmin.Meridianlink.XMLParser do
       status_code: to_string(status_code),
       status_code_description: to_string(status_code_description)
     }
+  end
+
+  def get_credit_score_fields(xml) do
+    parsed_xml = parse(xml)
+
+    credit_source = xpath(parsed_xml, @credit_source_x_path)
+    credit_score_rank_percentile = xpath(parsed_xml, @credit_score_rank_percentile_value_x_path)
+    credit_score_value = xpath(parsed_xml, @credit_score_value_x_path)
+
+    Enum.zip([credit_source, credit_score_rank_percentile, credit_score_value])
+    |> Enum.map(fn {source, percentile, score} ->
+      %{
+        credit_source: to_string(source),
+        credit_score_rank_percentile: to_string(percentile),
+        credit_score_value: to_string(score)
+      }
+    end)
   end
 end
