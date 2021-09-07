@@ -1,5 +1,5 @@
 defmodule TransigoAdmin.Meridianlink.XMLParserTest do
-  use TransigoAdmin.DataCase, async: false
+  use TransigoAdmin.DataCase, async: true
 
   alias TransigoAdmin.Meridianlink.XMLParser
 
@@ -26,5 +26,23 @@ defmodule TransigoAdmin.Meridianlink.XMLParserTest do
                credit_source: "EquifaxBeacon5.0"
              }
            ]
+  end
+
+  test "can parse desired fields from new consumer credit response" do
+    {:ok, xml} =
+      ["test", "support", "meridianlink", "consumer_credit_new_response.xml"]
+      |> Path.join()
+      |> File.read()
+
+    assert XMLParser.get_new_order_response_data(xml) == %{
+             taxpayer_identifier_type: "SocialSecurityNumber",
+             taxpayer_identifier_value: "000000015",
+             vendor_order_identifier: "1227056"
+           }
+
+    assert XMLParser.check_retrive_status_code(xml) == %{
+             status_code: "New",
+             status_code_description: "NOT READY"
+           }
   end
 end
