@@ -5,6 +5,9 @@ defmodule TransigoAdmin.Meridianlink.API do
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
   alias TransigoAdmin.Meridianlink.XMLParser
 
+  @new_consumer_credit_report_retries 3
+  @retrieve_consumer_credit_report_retries 90
+
   @status_codes %{new: "New", processing: "Processing", completed: "Completed", error: "Error"}
 
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
@@ -28,6 +31,15 @@ defmodule TransigoAdmin.Meridianlink.API do
   }
 
   def get_consumer_credit_report(%ConsumerCreditNew{} = body_params \\ @test_case) do
+    do_get_consumer_credit_report(body_params, 0)
+  end
+
+  def do_get_consumer_credit_report(_, @new_consumer_credit_report_retries) do
+    Logger.error("Unable to order a consumer credit report. Trying again...")
+    {:error, "Unable to order a consumer credit report. Meridianlink error."}
+  end
+
+  def do_get_consumer_credit_report(body_params, step) do
     Logger.info("ordering a new consumer credit report")
 
     case order_new_consumer_credit_report(body_params) do
@@ -50,9 +62,10 @@ defmodule TransigoAdmin.Meridianlink.API do
           {:error, "Consumers do not match! Meridianlink error."}
         end
 
-      {:error, message} ->
-        Logger.error("Unable to order a consumer credit report")
-        {:error, message}
+      {:error, _message} ->
+        Logger.error("Unable to order a consumer credit report. Trying again...")
+        Process.sleep(1000)
+        do_get_consumer_credit_report(body_params, step + 1)
     end
   end
 
@@ -60,7 +73,7 @@ defmodule TransigoAdmin.Meridianlink.API do
     do_loop_retrive_credit_report(res, vendor_order_identifier, 0)
   end
 
-  def do_loop_retrieve_credit_report(_res, _vendor_order_identifier, 90) do
+  def do_loop_retrieve_credit_report(_res, _vendor_order_identifier, @retrieve_consumer_credit_report_retries) do
     Logger.info("Unable to retrive consumer credit report. Too many attempts.")
     :error
   end
