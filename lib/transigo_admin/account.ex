@@ -95,7 +95,7 @@ defmodule TransigoAdmin.Account do
   @doc """
   get totp uri
   """
-  @spec generate_totp_secret(Admin.t()) :: {:ok, String.t()}
+  @spec get_totp_uri(Admin.t()) :: {:ok, String.t()}
   def get_totp_uri(%{totp_secret: secret, username: username}),
     do: {:ok, NimbleTOTP.otpauth_uri("Transigo:#{username}", secret, issuer: "Transigo")}
 
@@ -297,10 +297,10 @@ defmodule TransigoAdmin.Account do
       {"use_text_tags", "1"},
       {"hide_text_tags", "1"},
       {:file, msa_path, {"form-data", [name: "file[0]", filename: msa_basename]}, []},
-      {"signers[0][name]", "Nir Tal"},
-      {"signers[0][email_address]", "nir.tal@transigo.io"},
       {"signers[1][name]", "#{exporter.signatory_first_name} #{exporter.signatory_last_name}"},
-      {"signers[1][email_address]", exporter.signatory_email}
+      {"signers[1][email_address]", exporter.signatory_email},
+      {"signers[2][name]", "Nir Tal"},
+      {"signers[2][email_address]", "nir.tal@transigo.io"}
     ]
 
     {:ok, payload}

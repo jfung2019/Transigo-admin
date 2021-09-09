@@ -1,4 +1,4 @@
-FROM plangora/alpine-elixir-phoenix:otp-24.0.1-elixir-1.12.0 as phx-builder
+FROM plangora/alpine-elixir-phoenix:otp-24.0.5-elixir-1.12.2 as phx-builder
 
 ENV PORT=4000 MIX_ENV=prod
 
@@ -11,7 +11,7 @@ RUN mix deps.get && cd assets/ && \
     cd - && \
     mix do compile, phx.digest, release
 
-FROM plangora/alpine-erlang:24.0.1
+FROM plangora/alpine-erlang:24.0.5
 
 EXPOSE 4000
 ENV PORT=4000 MIX_ENV=prod
