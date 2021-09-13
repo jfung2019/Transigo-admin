@@ -64,7 +64,8 @@ defmodule TransigoAdmin.MixProject do
       {:hackney, "~> 1.17"},
       {:sentry, "~> 8.0"},
       {:briefly, "~> 0.3"},
-      {:nimble_totp, "~> 0.1.2"}
+      {:nimble_totp, "~> 0.1.2"},
+      {:puid, "~> 1.0"}
     ]
   end
 
