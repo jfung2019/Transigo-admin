@@ -6,6 +6,9 @@ defmodule TransigoAdmin.Account do
   alias Absinthe.Relay
   alias TransigoAdminWeb.Router.Helpers, as: Routes
   alias TransigoAdminWeb.Endpoint
+  alias Ecto.Multi
+  alias TransigoAdmin.DataLayer
+  alias TransigoAdmin.Credit.Marketplace
 
   alias TransigoAdmin.Account.{
     Admin,
@@ -145,9 +148,71 @@ defmodule TransigoAdmin.Account do
   """
   @spec create_exporter(map) :: {:ok, Exporter.t()} | {:error, %Ecto.Changeset{}}
   def create_exporter(attrs \\ %{}) do
-    %Exporter{}
-    |> Exporter.changeset(attrs)
-    |> Repo.insert()
+    marketplace =
+      from(m in Marketplace,
+        where: m.origin == "DH"
+      )
+      |> Repo.one!()
+
+    contact =
+      attrs
+      |> get_exporter_contact_from_params()
+      |> Map.put(:contact_transigo_uid, DataLayer.generate_uid("con"))
+
+    exporter =
+      attrs
+      |> get_exporter_from_params()
+      |> Map.put(:exporter_transigo_uid, DataLayer.generate_uid("exp"))
+      |> Map.put(:marketplace_id, marketplace.id)
+
+    Multi.new()
+    |> Multi.insert(Exporter, Exporter.changeset(exporter))
+    |> Multi.insert(Contact, Contact.changeset(contact))
+    |> Repo.transaction()
+  end
+
+  defp get_exporter_from_params(%{
+         "businessName" => business_name,
+         "address" => address,
+         "buisinessAddressCountry" => business_address_country,
+         "registrationNumber" => registration_number,
+         "signatoryFirstName" => signatory_first_name,
+         "signatoryLastName" => signatory_last_name,
+         "signatoryMobile" => signatory_mobile,
+         "signatoryEmail" => signatory_email,
+         "signatoryTitle" => signatory_title
+       }) do
+    %{
+      business_name: business_name,
+      address: address,
+      business_address_country: business_address_country,
+      registration_number: registration_number,
+      signatory_first_name: signatory_first_name,
+      signatory_last_name: signatory_last_name,
+      signatory_mobile: signatory_mobile,
+      signatory_email: signatory_email,
+      signatory_title: signatory_title
+    }
+  end
+
+  defp get_exporter_contact_from_params(%{
+         "contactFirstName" => first_name,
+         "contactLastName" => last_name,
+         "contactMobile" => mobile,
+         "workPhone" => work_phone,
+         "contactEmail" => email,
+         "contactTitle" => role,
+         "contactAddress" => address
+       }) do
+    %{
+      first_name: first_name,
+      last_name: last_name,
+      mobile: mobile,
+      work_phone: work_phone,
+      email: email,
+      role: role,
+      address: address
+    }
   end
 
   @doc """
