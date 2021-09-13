@@ -6,6 +6,22 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   @exporter_view TransigoAdminWeb.ApiExporterView
   @error_view TransigoAdminWeb.ApiErrorView
 
+  def create_exporter(conn, params) do
+     case Account.create_exporter(params) do
+      {:ok, exporter} ->
+        conn
+        |> put_status(200)
+        |> put_view(@exporter_view)
+        |> render("create.json", exporter: exporter)
+
+      {:error, message} ->
+        conn
+        |> put_status(400)
+        |> put_view(@error_view)
+        |> render("errors.json", message: message)
+     end
+  end
+
   def sign_msa(conn, %{"exporter_uid" => exporter_uid} = param) do
     case Account.sign_msa(exporter_uid, Map.get(param, "cn_msa")) do
       {:ok, %{msa_url: sign_url}} ->
