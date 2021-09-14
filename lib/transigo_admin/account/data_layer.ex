@@ -30,13 +30,23 @@ defmodule TransigoAdmin.DataLayer do
     "#{uuid}-#{mac}"
   end
 
+  def generate_uid(_), do: {:error, "invalid code"}
+
   def generate_hash(uuid) do
     :crypto.hash(:sha256, uuid)
     |> Base.encode16()
     |> String.downcase()
   end
 
-  def generate_uid(_), do: {:error, "invalid code"}
+
+  def check_uid(uid, code) do
+    with true <- String.slice(uid, 1, 3) == code,
+         true <- String.slice(uid, 0, 24) |> generate_hash() == String.slice(uid, -64..-1) do
+           true
+         else
+          _ -> false
+         end
+  end
 end
 
 defmodule(HexGen, do: use(Puid, bits: 64, charset: :hex))
