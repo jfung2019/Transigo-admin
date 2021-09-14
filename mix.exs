@@ -65,7 +65,8 @@ defmodule TransigoAdmin.MixProject do
       {:sentry, "~> 8.0"},
       {:briefly, "~> 0.3"},
       {:nimble_totp, "~> 0.1.2"},
-      {:puid, "~> 1.0"}
+      {:puid, "~> 1.0"},
+      {:google_maps, "~> 0.11"}
     ]
   end
 
