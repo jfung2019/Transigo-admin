@@ -58,4 +58,9 @@ defmodule TransigoAdmin.Account.Contact do
     |> cast(attrs, @available_attrs)
     |> validate_required(@required_attrs)
   end
+
+  def update_changeset(attrs, contact \\ %__MODULE__{}) do
+    contact
+    |> cast(attrs, @available_attrs)
+  end
 end

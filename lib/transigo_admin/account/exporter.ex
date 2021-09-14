@@ -64,11 +64,30 @@ defmodule TransigoAdmin.Account.Exporter do
   ]
 
   @doc false
-  def changeset(attrs, exporter \\ %__MODULE__{} ) do
+  def changeset(attrs, exporter \\ %__MODULE__{}) do
     exporter
     |> cast(attrs, @available_attrs)
     |> change_cn_msa()
     |> validate_required(@required_attrs)
+    |> validate_format(:signatory_email, ~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/)
+    |> check_valid_address()
+  end
+
+  def update_changeset(attrs, exporter \\ %__MODULE__{}) do
+    exporter
+    |> cast(attrs, @available_attrs)
+    |> change_cn_msa()
+    |> validate_format(:signatory_email, ~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/)
+    |> check_valid_address()
+  end
+
+  defp check_valid_address(changeset, options \\ []) do
+    validate_change(changeset, :address, fn _, address ->
+      case GoogleMaps.geocode(address) do
+        {:ok, _} -> []
+        {:error, _} -> [{:address, options[:message] || "invalid address"}]
+      end
+    end)
   end
 
   defp change_cn_msa(%{changes: %{cn_msa: nil}} = changeset),
