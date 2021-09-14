@@ -150,31 +150,61 @@ defmodule TransigoAdmin.Account do
   def create_exporter(attrs \\ %{}) do
     marketplace =
       from(m in Marketplace,
-        where: m.origin == "DH"
+        where: m.origin == ^attrs["marketplaceOrigin"]
       )
-      |> Repo.one!()
+      |> Repo.one()
 
-    contact =
-      attrs
-      |> get_exporter_contact_from_params()
-      |> Map.put(:contact_transigo_uid, DataLayer.generate_uid("con"))
+    if not is_nil(marketplace) do
+      contact =
+        attrs
+        |> get_exporter_contact_from_params()
+        |> Map.put(:contact_transigo_uid, DataLayer.generate_uid("con"))
 
-    exporter =
-      attrs
-      |> get_exporter_from_params()
-      |> Map.put(:exporter_transigo_uid, DataLayer.generate_uid("exp"))
-      |> Map.put(:marketplace_id, marketplace.id)
+      exporter =
+        attrs
+        |> get_exporter_from_params()
+        |> Map.put(:exporter_transigo_uid, DataLayer.generate_uid("exp"))
+        |> Map.put(:marketplace_id, marketplace.id)
 
-    Multi.new()
-    |> Multi.insert(Exporter, Exporter.changeset(exporter))
-    |> Multi.insert(Contact, Contact.changeset(contact))
-    |> Repo.transaction()
+      Multi.new()
+      |> Multi.insert(Contact, Contact.changeset(contact))
+      |> Multi.insert(
+        Exporter,
+        fn %{
+             Contact => %Contact{
+               id: contact_id
+             }
+           } ->
+          Exporter.changeset(
+            exporter
+            |> Map.put(:contact_id, contact_id)
+          )
+        end
+      )
+      |> Repo.transaction()
+    else
+      {:error, "Could not insert exporter"}
+    end
+  end
+
+  defp get_exporter_params(params) do
+    %{
+      business_name: Map.get(params, "businessName"),
+      address: Map.get(params, "address"),
+      business_address_country: Map.get(params, "businessAddressCountry"),
+      registration_number: Map.get(params, "registrationNumber"),
+      signatory_first_name: Map.get(params, "signatoryFirstName"),
+      signatory_last_name: Map.get(params, "signatoryLastName"),
+      signatory_mobile: Map.get(params, "signatoryMobile"),
+      signatory_email: Map.get(params, "signatoryEmail"),
+      signatory_title: Map.get(params, "signatoryTitle")
+    }
   end
 
   defp get_exporter_from_params(%{
          "businessName" => business_name,
          "address" => address,
-         "buisinessAddressCountry" => business_address_country,
+         "businessAddressCountry" => business_address_country,
          "registrationNumber" => registration_number,
          "signatoryFirstName" => signatory_first_name,
          "signatoryLastName" => signatory_last_name,
@@ -192,6 +222,18 @@ defmodule TransigoAdmin.Account do
       signatory_mobile: signatory_mobile,
       signatory_email: signatory_email,
       signatory_title: signatory_title
+    }
+  end
+
+  defp get_contact_params(params) do
+    %{
+      first_name: Map.get(params, "contactFirstName"),
+      last_name: Map.get(params, "contactLastName"),
+      mobile: Map.get(params, "contacMobile"),
+      work_phone: Map.get(params, "workPhone"),
+      email: Map.get(params, "contactEmail"),
+      role: Map.get(params, "contactTitle"),
+      address: Map.get(params, "contactAddress")
     }
   end
 
@@ -218,11 +260,23 @@ defmodule TransigoAdmin.Account do
   @doc """
   Update exporter
   """
-  @spec update_exporter(Exporter.t(), map) :: {:ok, Exporter.t()} | {:error, %Ecto.Changeset{}}
-  def update_exporter(exporter, attrs \\ %{}) do
-    exporter
-    |> Exporter.changeset(attrs)
-    |> Repo.update()
+  def update_exporter(%{"exporter_transigo_uid" => uid} = attrs) do
+    with {:ok, exporter} <- get_exporter_by_exporter_uid(uid, [:contact]) do
+      contact_attrs =
+        attrs
+        |> get_contact_params()
+
+      exporter_attrs =
+        attrs
+        |> get_exporter_params()
+
+      Multi.new()
+      |> Multi.update(Exporter, Exporter.update_changeset(exporter_attrs, exporter))
+      |> Multi.update(Contact, Contact.update_changeset(contact_attrs, exporter.contact))
+      |> Repo.transaction()
+    else
+      _ -> {:error, "Could not update exporter"}
+    end
   end
 
   @doc """
@@ -230,8 +284,13 @@ defmodule TransigoAdmin.Account do
   """
   @spec get_exporter_by_exporter_uid(String.t(), list) :: Exporter.t() | nil
   def get_exporter_by_exporter_uid(exporter_uid, preloads \\ []) do
-    from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
-    |> Repo.one()
+    if DataLayer.check_uid(exporter_uid, "exp") do
+      {:ok,
+       from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
+       |> Repo.one()}
+    else
+      {:error, "Invalid UID"}
+    end
   end
 
   @doc """
@@ -251,6 +310,23 @@ defmodule TransigoAdmin.Account do
       _ ->
         {:error, "Incorrect exporter_uid"}
     end
+  end
+
+  def get_msa(%{"exporter_uid" => exporter_uid}) do
+    # TODO test this function
+    key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
+    if check_obj_exists?(key) do
+      {:ok,
+      ExAws.Config.new(:s3)
+      |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)}
+    else
+      {:error, "Object does not exists"}
+    end
+  end
+
+  def check_obj_exists?(_key) do
+    # TODO implement this check
+    true
   end
 
   @doc """
@@ -291,7 +367,7 @@ defmodule TransigoAdmin.Account do
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
            @hs_api.create_signature_request(msa_hs_payload),
          {:ok, _exporter} <-
-           update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
+           update_exporter_msa(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
       get_msa_sign_url(sign_req, exporter)
     else
       {:error, _message} = error_tuple ->
@@ -300,6 +376,19 @@ defmodule TransigoAdmin.Account do
       _ ->
         {:error, "Failed to get MSA"}
     end
+  end
+
+  def update_exporter_msa(exporter, attrs \\ %{}) do
+    exporter
+    |> Exporter.changeset(attrs)
+    |> Repo.update()
+  end
+
+
+  def update_exporter_hs_request(exporter, attrs \\ %{}) do
+    exporter
+    |> Exporter.changeset(attrs)
+    |> Repo.update()
   end
 
   @spec get_sign_msa_url_with_req_id(String.t(), Exporter.t()) :: tuple
