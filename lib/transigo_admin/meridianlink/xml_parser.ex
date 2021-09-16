@@ -61,4 +61,19 @@ defmodule TransigoAdmin.Meridianlink.XMLParser do
       }
     end)
   end
+
+  def get_equifax_credit_score_fields(xml) do
+    res =
+      xml
+      |> get_credit_score_fields()
+      |> Enum.filter(fn x ->
+        FuzzyCompare.similarity(x.credit_source, "equifax") == 1.0
+      end)
+
+    if length(res) == 1 do
+      {:ok, List.first(res)}
+    else
+      {:error, "Could not find equifax credit score fields"}
+    end
+  end
 end
