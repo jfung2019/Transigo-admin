@@ -2,6 +2,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
   use TransigoAdminWeb.ConnCase, async: true
 
   alias TransigoAdmin.{Account, Credit}
+  alias TransigoAdmin.Account.Exporter
 
   @list_quotas """
   query($first: Integer!) {
@@ -54,9 +55,6 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
 
     {:ok, token, _} = Account.Guardian.encode_and_sign(admin)
 
-    {:ok, %{id: marketplace_id}} =
-      TransigoAdmin.Credit.create_marketplace(%{origin: "test", marketplace: "test"})
-
     {:ok, %{id: contact_id}} =
       Account.create_contact(%{
         contact_transigo_uid: "importer_contact",
@@ -69,20 +67,25 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
         country: "us"
       })
 
-    {:ok, exporter} =
+    {:ok, %{Exporter => exporter}} =
       Account.create_exporter(%{
-        exporter_transigo_uid: "demo_exporter",
-        business_name: "test",
-        address: "100 address",
-        business_address_country: "country",
-        registration_number: "123",
-        marketplace_id: marketplace_id,
-        signatory_first_name: "first",
-        signatory_last_name: "last",
-        signatory_mobile: "12345678",
-        signatory_email: "test@email.com",
-        signatory_title: "owner",
-        MSA_contact_id: contact_id
+        "businessName" => "Best Business",
+        "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+        "businessAddressCountry" => "USA",
+        "registrationNumber" => "123456",
+        "signatoryFirstName" => "David",
+        "signatoryLastName" => "Silva",
+        "signatoryMobile" => "7077321415",
+        "signatoryEmail" => "david@bbiz.com",
+        "signatoryTitle" => "Founder",
+        "contactFirstName" => "Elliot",
+        "contactLastName" => "Winden",
+        "contactMobile" => "7071749274",
+        "workPhone" => "7075023748",
+        "contactEmail" => "elliot@bbiz.com",
+        "contactTitle" => "President",
+        "contactAddress" => "Stockton St.",
+        "marketplaceOrigin" => "DH"
       })
 
     {:ok, importer} =
