@@ -315,10 +315,11 @@ defmodule TransigoAdmin.Account do
   def get_msa(%{"exporter_uid" => exporter_uid}) do
     # TODO test this function
     key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
+
     if check_obj_exists?(key) do
       {:ok,
-      ExAws.Config.new(:s3)
-      |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)}
+       ExAws.Config.new(:s3)
+       |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)}
     else
       {:error, "Object does not exists"}
     end
@@ -383,7 +384,6 @@ defmodule TransigoAdmin.Account do
     |> Exporter.changeset(attrs)
     |> Repo.update()
   end
-
 
   def update_exporter_hs_request(exporter, attrs \\ %{}) do
     exporter
@@ -541,9 +541,27 @@ defmodule TransigoAdmin.Account do
   def get_contact!(id), do: Repo.get!(Contact, id)
 
   def create_contact(attrs \\ %{}) do
-    %Contact{}
-    |> Contact.changeset(attrs)
+    attrs
+    |> Contact.changeset()
     |> Repo.insert()
+  end
+
+  def get_contact_by_id(contact_id) do
+    from(
+      c in Contact,
+      where: c.id == ^contact_id
+    )
+    |> Repo.one()
+  end
+
+  def insert_contact_consumer_credit_report(%Contact{} = contact, %{
+        consumer_credit_score: _,
+        consumer_credit_score_percentile: _,
+        consumer_credit_report_meridianlink: _
+      } = params) do
+    params
+    |> Contact.consumer_credit_changeset(contact)
+    |> Repo.update
   end
 
   def delete_contact(%Contact{} = contact), do: Repo.delete(contact)
