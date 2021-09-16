@@ -16,6 +16,9 @@ defmodule TransigoAdmin.Account.Contact do
     field :ssn, :string
     field :address, :string
     field :date_of_birth, :date
+    field :consumer_credit_score, :integer
+    field :consumer_credit_score_percentile, :integer
+    field :consumer_credit_report_meridianlink, :string
 
     belongs_to :us_place, TransigoAdmin.Account.UsPlace, source: :personal_US_address_id
 
@@ -38,7 +41,16 @@ defmodule TransigoAdmin.Account.Contact do
     :ssn,
     :address,
     :date_of_birth,
-    :us_place_id
+    :us_place_id,
+    :consumer_credit_score,
+    :consumer_credit_score_percentile,
+    :consumer_credit_report_meridianlink
+  ]
+
+  @consumer_credit_attrs [
+    :consumer_credit_score,
+    :consumer_credit_score_percentile,
+    :consumer_credit_report_meridianlink
   ]
 
   @required_attrs [
@@ -57,6 +69,11 @@ defmodule TransigoAdmin.Account.Contact do
     contact
     |> cast(attrs, @available_attrs)
     |> validate_required(@required_attrs)
+  end
+
+  def consumer_credit_changeset(attrs, contact \\ %__MODULE__{}) do
+    contact
+    |> cast(attrs, @consumer_credit_attrs)
   end
 
   def update_changeset(attrs, contact \\ %__MODULE__{}) do
