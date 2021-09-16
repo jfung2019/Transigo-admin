@@ -66,7 +66,9 @@ defmodule TransigoAdmin.MixProject do
       {:briefly, "~> 0.3"},
       {:nimble_totp, "~> 0.1.2"},
       {:puid, "~> 1.0"},
-      {:google_maps, "~> 0.11"}
+      {:google_maps, "~> 0.11"},
+      {:fuzzy_compare, "~> 1.0"},
+      {:address_us, git: "https://github.com/smashedtoatoms/address_us.git"}
     ]
   end
 
