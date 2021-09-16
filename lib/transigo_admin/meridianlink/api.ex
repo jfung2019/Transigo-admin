@@ -1,6 +1,8 @@
 defmodule TransigoAdmin.Meridianlink.API do
   require Logger
 
+  alias TransigoAdmin.Account
+  alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
   alias TransigoAdmin.Meridianlink.XMLParser
@@ -30,16 +32,58 @@ defmodule TransigoAdmin.Meridianlink.API do
     taxpayer_identifier_value: "000000015"
   }
 
-  def get_consumer_credit_report(%ConsumerCreditNew{} = body_params \\ @test_case) do
-    do_get_consumer_credit_report(body_params, 0)
+  def update_contact_consumer_credit_report(contact_id) do
+    contact = Account.get_contact_by_id(contact_id)
+    request_fields = get_consumer_credit_fields_from_contact(contact)
+    get_consumer_credit_report(contact, request_fields)
   end
 
-  def do_get_consumer_credit_report(_, @new_consumer_credit_report_retries) do
+  def get_consumer_credit_fields_from_contact(contact) do
+    %Address{
+      city: city,
+      plus_4: _,
+      postal: postal,
+      state: state,
+      street: %Street{
+        name: street_name,
+        pmb: _,
+        post_direction: _,
+        pre_direction: _,
+        primary_number: number,
+        secondary_designator: _,
+        secondary_value: _,
+        suffix: suf
+      }
+    } = AddressUS.Parser.parse_address(contact.address)
+
+    %ConsumerCreditNew{
+      first_name: Map.get(contact, :first_name),
+      last_name: Map.get(contact, :last_name),
+      middle_name: "C",
+      suffix_name: "JR",
+      address_line_text: "#{number} #{street_name} #{suf}",
+      city_name: city,
+      country_code: Map.get(contact, :country),
+      postal_code: postal,
+      state_code: state,
+      taxpayer_identifier_type: "SocialSecurityNumber",
+      taxpayer_identifier_value: Map.get(contact, :ssn)
+    }
+  end
+
+  def get_consumer_credit_report(
+        %Contact{} = contact,
+        %ConsumerCreditNew{} = body_params \\ @test_case
+      ) do
+    do_get_consumer_credit_report(contact, body_params, 0)
+  end
+
+  defp do_get_consumer_credit_report(_, _, @new_consumer_credit_report_retries) do
     Logger.error("Unable to order a consumer credit report. Trying again...")
     {:error, "Unable to order a consumer credit report. Meridianlink error."}
   end
 
-  def do_get_consumer_credit_report(body_params, step) do
+  defp do_get_consumer_credit_report(contact, body_params, step) do
     Logger.info("ordering a new consumer credit report")
 
     case order_new_consumer_credit_report(body_params) do
@@ -56,7 +100,7 @@ defmodule TransigoAdmin.Meridianlink.API do
 
         if same_consumer?(response_data, body_params) do
           Logger.info("consumers match!")
-          loop_retrive_credit_report(res.body, vendor_order_identifier)
+          loop_retrive_credit_report(contact, res.body, vendor_order_identifier)
         else
           Logger.error("Consumers do not match! Meridianlink error")
           {:error, "Consumers do not match! Meridianlink error."}
@@ -65,20 +109,25 @@ defmodule TransigoAdmin.Meridianlink.API do
       {:error, _message} ->
         Logger.error("Unable to order a consumer credit report. Trying again...")
         Process.sleep(1000)
-        do_get_consumer_credit_report(body_params, step + 1)
+        do_get_consumer_credit_report(contact, body_params, step + 1)
     end
   end
 
-  def loop_retrive_credit_report(res, vendor_order_identifier) do
-    do_loop_retrive_credit_report(res, vendor_order_identifier, 0)
+  defp loop_retrive_credit_report(contact, res, vendor_order_identifier) do
+    do_loop_retrive_credit_report(contact, res, vendor_order_identifier, 0)
   end
 
-  def do_loop_retrieve_credit_report(_res, _vendor_order_identifier, @retrieve_consumer_credit_report_retries) do
+  defp do_loop_retrieve_credit_report(
+         _contact,
+         _res,
+         _vendor_order_identifier,
+         @retrieve_consumer_credit_report_retries
+       ) do
     Logger.info("Unable to retrive consumer credit report. Too many attempts.")
     :error
   end
 
-  def do_loop_retrive_credit_report(res, vendor_order_identifier, step) do
+  defp do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step) do
     Logger.info("Polling...")
     Process.sleep(1000)
 
@@ -94,8 +143,28 @@ defmodule TransigoAdmin.Meridianlink.API do
         case status_code do
           code when code == @status_codes.completed ->
             Logger.info("Successfully retrived consumer credit report")
-            # TODO integrate into application flow
-            :ok
+
+            case XMLParser.get_equifax_credit_score_fields(res.body) do
+              {:ok,
+               %{
+                 credit_score_rank_percentile: credit_score_percentile,
+                 credit_score_value: credit_score
+               }} ->
+                case Account.insert_contact_consumer_credit_report(contact, %{
+                       consumer_credit_score: credit_score,
+                       consumer_credit_score_percentile: credit_score_percentile,
+                       consumer_credit_report_meridianlink: res.body
+                     }) do
+                  {:ok, _contact} ->
+                    :ok
+
+                  {:error, _changeset} ->
+                    {:error, "Could not update contact with fields"}
+                end
+
+              {:error, message} ->
+                {:error, message}
+            end
 
           code when code == @status_codes.error ->
             Logger.error("Unable to order a consumer credit report. Meridianlink error.")
@@ -103,22 +172,22 @@ defmodule TransigoAdmin.Meridianlink.API do
 
           code when code in [@status_codes.new, @status_codes.processing] ->
             Logger.info("Consumer credit report not ready yet trying again")
-            do_loop_retrive_credit_report(res, vendor_order_identifier, step + 1)
+            do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step + 1)
         end
 
       {:error, _message} ->
-        do_loop_retrive_credit_report(res, vendor_order_identifier, step + 1)
+        do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step + 1)
     end
   end
 
-  def same_consumer?(
-        %{taxpayer_identifier_value: id_val, taxpayer_identifier_type: id_type},
-        %ConsumerCreditNew{} = req
-      ) do
+  defp same_consumer?(
+         %{taxpayer_identifier_value: id_val, taxpayer_identifier_type: id_type},
+         %ConsumerCreditNew{} = req
+       ) do
     id_val == req.taxpayer_identifier_value and id_type == req.taxpayer_identifier_type
   end
 
-  def retrieve_existing_credit_report(vendor_order_identifier) do
+  defp retrieve_existing_credit_report(vendor_order_identifier) do
     case ConsumerCreditRetrieve.get_request_body(vendor_order_identifier) do
       {:ok, body} ->
         HTTPoison.post(@base_url, body, @headers)
@@ -128,7 +197,7 @@ defmodule TransigoAdmin.Meridianlink.API do
     end
   end
 
-  def order_new_consumer_credit_report(%ConsumerCreditNew{} = body_params \\ @test_case) do
+  defp order_new_consumer_credit_report(%ConsumerCreditNew{} = body_params) do
     case ConsumerCreditNew.get_request_body(body_params) do
       {:ok, body} ->
         HTTPoison.post(@base_url, body, @headers)
