@@ -28,6 +28,20 @@ defmodule TransigoAdmin.Meridianlink.XMLParserTest do
            ]
   end
 
+  test "can get Equifax credit score and percentil" do
+    {:ok, xml} =
+      ["test", "support", "meridianlink", "consumer_credit_retrieve_response.xml"]
+      |> Path.join()
+      |> File.read()
+
+    assert {:ok,
+            %{
+              credit_score_value: "00658",
+              credit_score_rank_percentile: "29",
+              credit_source: _
+            }} = XMLParser.get_equifax_credit_score_fields(xml)
+  end
+
   test "can parse desired fields from new consumer credit response" do
     {:ok, xml} =
       ["test", "support", "meridianlink", "consumer_credit_new_response.xml"]
