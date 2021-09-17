@@ -15,8 +15,8 @@ defmodule TransigoAdmin.Meridianlink.API do
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
   # TODO move these to config file and get from environment variables
   @headers [
-    "MCL-Interface": "SmartAPITestingIdentifier",
-    Authorization: "Basic dHJhbnNpZ286dGVtcDk0NjgxNA=="
+    "MCL-Interface": System.get_env("MERIDIANLINK_MCL_INTERFACE"),
+    Authorization: "Basic  #{System.get_env("MERIDIANLINK_AUTHORIZATION")}"
   ]
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
