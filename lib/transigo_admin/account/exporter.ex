@@ -69,7 +69,7 @@ defmodule TransigoAdmin.Account.Exporter do
     |> cast(attrs, @available_attrs)
     |> change_cn_msa()
     |> validate_required(@required_attrs)
-    |> validate_format(:signatory_email, ~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/)
+    |> EctoCommons.EmailValidator.validate_email(:signatory_email)
     |> check_valid_address()
   end
 
@@ -77,7 +77,7 @@ defmodule TransigoAdmin.Account.Exporter do
     exporter
     |> cast(attrs, @available_attrs)
     |> change_cn_msa()
-    |> validate_format(:signatory_email, ~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/)
+    |> EctoCommons.EmailValidator.validate_email(:signatory_email)
     |> check_valid_address()
   end
 
