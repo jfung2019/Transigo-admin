@@ -301,10 +301,10 @@ defmodule TransigoAdmin.Account do
     preloads = [:contact, :marketplace]
 
     case get_exporter_by_exporter_uid(exporter_uid, preloads) do
-      %Exporter{hellosign_signature_request_id: nil} = exporter ->
+      {:ok, %Exporter{hellosign_signature_request_id: nil} = exporter}->
         generate_sign_msa(exporter, cn_msa)
 
-      %Exporter{hellosign_signature_request_id: hs_sign_req_id} = exporter ->
+      {:ok, %Exporter{hellosign_signature_request_id: hs_sign_req_id} = exporter} ->
         get_sign_msa_url_with_req_id(hs_sign_req_id, exporter)
 
       _ ->
@@ -380,14 +380,14 @@ defmodule TransigoAdmin.Account do
   end
 
   def update_exporter_msa(exporter, attrs \\ %{}) do
-    exporter
-    |> Exporter.changeset(attrs)
+    attrs
+    |> Exporter.changeset(exporter)
     |> Repo.update()
   end
 
   def update_exporter_hs_request(exporter, attrs \\ %{}) do
-    exporter
-    |> Exporter.changeset(attrs)
+    attrs
+    |> Exporter.changeset(exporter)
     |> Repo.update()
   end
 
@@ -460,7 +460,7 @@ defmodule TransigoAdmin.Account do
     {:ok, payload}
   end
 
-  @spec get_msa_sign_url(map, Exporter.t()) :: String.t()
+  @spec get_msa_sign_url(map, Exporter.t()) :: {:ok, String.t()}
   defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{
          signatory_email: exporter_email
        }) do
@@ -513,7 +513,7 @@ defmodule TransigoAdmin.Account do
     end
   end
 
-  @spec get_transigo_signature(map) :: map
+  @spec get_transigo_signature([]) :: map
   defp get_transigo_signature(signatures) do
     Enum.flat_map(signatures, fn %{"signer_email_address" => email} = signature ->
       case email do
