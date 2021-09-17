@@ -32,7 +32,7 @@ defmodule TransigoAdmin.DataLayer do
 
   def generate_uid(_), do: {:error, "invalid code"}
 
-  def generate_hash(uuid) do
+  defp generate_hash(uuid) do
     :crypto.hash(:sha256, uuid)
     |> Base.encode16()
     |> String.downcase()
@@ -40,7 +40,7 @@ defmodule TransigoAdmin.DataLayer do
 
 
   def check_uid(uid, code) do
-    with true <- String.slice(uid, 1, 3) == code,
+    with ^code <- String.slice(uid, 1, 3),
          true <- String.slice(uid, 0, 24) |> generate_hash() == String.slice(uid, -64..-1) do
            true
          else
