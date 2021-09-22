@@ -2,10 +2,13 @@ defmodule TransigoAdmin.Meridianlink.API do
   require Logger
 
   alias TransigoAdmin.Account
+  alias TransigoAdmin.Credit.Quota
   alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
   alias TransigoAdmin.Meridianlink.XMLParser
+  alias TransigoAdmin.Repo
+  import Ecto.Query
 
   @new_consumer_credit_report_retries 3
   @retrieve_consumer_credit_report_retries 90
@@ -15,8 +18,8 @@ defmodule TransigoAdmin.Meridianlink.API do
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
   # TODO move these to config file and get from environment variables
   @headers [
-    "MCL-Interface": System.get_env("MERIDIANLINK_MCL_INTERFACE"),
-    Authorization: "Basic  #{System.get_env("MERIDIANLINK_AUTHORIZATION")}"
+    "MCL-Interface": Application.get_env(:meridianlink, :mcl_interface),
+    Authorization: Application.get_env(:meridianlink, :authorization)
   ]
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
@@ -31,6 +34,20 @@ defmodule TransigoAdmin.Meridianlink.API do
     taxpayer_identifier_type: "SocialSecurityNumber",
     taxpayer_identifier_value: "000000015"
   }
+
+  def update_contact_consumer_credit_report_by_quota_id(quota_id) do
+    contact =
+      from(q in Quota,
+        where: q.id == ^quota_id,
+        join: i in assoc(q, :importer),
+        join: c in assoc(i, :contact),
+        select: c
+      )
+      |> Repo.one()
+
+    request_fields = get_consumer_credit_fields_from_contact(contact)
+    get_consumer_credit_report(contact, request_fields)
+  end
 
   def update_contact_consumer_credit_report(contact_id) do
     contact = Account.get_contact_by_id(contact_id)
