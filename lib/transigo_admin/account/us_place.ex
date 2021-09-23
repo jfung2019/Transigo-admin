@@ -5,7 +5,6 @@ defmodule TransigoAdmin.Account.UsPlace do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "US_place" do
-    field :us_place_uid, :string, source: :US_place_uid
     field :street_address, :string
     field :city, :string
     field :state, :string
@@ -25,7 +24,6 @@ defmodule TransigoAdmin.Account.UsPlace do
   end
 
   @available_attrs [
-    :us_place_uid,
     :street_address,
     :city,
     :state,
@@ -39,7 +37,6 @@ defmodule TransigoAdmin.Account.UsPlace do
   ]
 
   @required_attrs [
-    :us_place_uid,
     :street_address,
     :city,
     :state,
