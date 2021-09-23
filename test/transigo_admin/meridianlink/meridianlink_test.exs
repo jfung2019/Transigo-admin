@@ -1,7 +1,7 @@
-defmodule TransigoAdmin.Meridianlink.APITest do
+defmodule TransigoAdmin.MeridianlinkTest do
   use TransigoAdmin.DataCase, async: true
 
-  alias TransigoAdmin.Meridianlink.API
+  alias TransigoAdmin.Meridianlink
   alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.Repo
 
@@ -10,6 +10,6 @@ defmodule TransigoAdmin.Meridianlink.APITest do
       Repo.all(Contact)
       |> List.first()
 
-    assert :ok = API.update_contact_consumer_credit_report(contact.id)
+    assert :ok = Meridianlink.update_contact_consumer_credit_report(contact.id)
   end
 end

@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.Meridianlink.API do
+defmodule TransigoAdmin.Meridianlink do
   require Logger
 
   alias TransigoAdmin.Account
@@ -18,8 +18,8 @@ defmodule TransigoAdmin.Meridianlink.API do
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
   # TODO move these to config file and get from environment variables
   @headers [
-    "MCL-Interface": Application.get_env(:meridianlink, :mcl_interface),
-    Authorization: Application.get_env(:meridianlink, :authorization)
+    "MCL-Interface": Application.get_env(:transigo_admin, :meridianlink_mcl_interface),
+    Authorization: Application.get_env(:transigo_admin, :meridianlink_authorization)
   ]
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
