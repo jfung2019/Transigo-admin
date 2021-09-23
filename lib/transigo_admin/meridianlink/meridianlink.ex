@@ -4,6 +4,7 @@ defmodule TransigoAdmin.Meridianlink do
   alias TransigoAdmin.Account
   alias TransigoAdmin.Credit.Quota
   alias TransigoAdmin.Account.Contact
+  alias TransigoAdmin.Account.UsPlace
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
   alias TransigoAdmin.Meridianlink.XMLParser
@@ -36,53 +37,28 @@ defmodule TransigoAdmin.Meridianlink do
   }
 
   def update_contact_consumer_credit_report_by_quota_id(quota_id) do
-    contact =
-      from(q in Quota,
-        where: q.id == ^quota_id,
-        join: i in assoc(q, :importer),
-        join: c in assoc(i, :contact),
-        select: c
-      )
-      |> Repo.one()
-
+    contact = Account.get_contact_by_quota_id(quota_id)
     request_fields = get_consumer_credit_fields_from_contact(contact)
     get_consumer_credit_report(contact, request_fields)
   end
 
   def update_contact_consumer_credit_report(contact_id) do
-    contact = Account.get_contact_by_id(contact_id)
+    contact = Account.get_contact_by_id(contact_id, [:us_place])
     request_fields = get_consumer_credit_fields_from_contact(contact)
     get_consumer_credit_report(contact, request_fields)
   end
 
-  def get_consumer_credit_fields_from_contact(contact) do
-    %Address{
-      city: city,
-      plus_4: _,
-      postal: postal,
-      state: state,
-      street: %Street{
-        name: street_name,
-        pmb: _,
-        post_direction: _,
-        pre_direction: _,
-        primary_number: number,
-        secondary_designator: _,
-        secondary_value: _,
-        suffix: suf
-      }
-    } = AddressUS.Parser.parse_address(contact.address)
-
+  def get_consumer_credit_fields_from_contact(contact = %Contact{}) do
     %ConsumerCreditNew{
       first_name: Map.get(contact, :first_name),
       last_name: Map.get(contact, :last_name),
-      middle_name: "C",
-      suffix_name: "JR",
-      address_line_text: "#{number} #{street_name} #{suf}",
-      city_name: city,
-      country_code: Map.get(contact, :country),
-      postal_code: postal,
-      state_code: state,
+      middle_name: "",
+      suffix_name: "",
+      address_line_text: contact.us_place.street_address,
+      city_name: contact.us_place.city,
+      country_code: contact.us_place.country,
+      postal_code: contact.us_place.zip_code,
+      state_code: contact.us_place.state,
       taxpayer_identifier_type: "SocialSecurityNumber",
       taxpayer_identifier_value: Map.get(contact, :ssn)
     }
