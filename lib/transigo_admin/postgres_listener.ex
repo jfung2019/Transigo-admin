@@ -39,7 +39,7 @@ defmodule TransigoAdmin.PostgresListener do
         %{pid: pid, quota_created_ref: ref} = state
       ) do
     %{"message" => %{"id" => quota_id}} = Jason.decode!(payload)
-    TransigoAdmin.Meridianlink.API.update_contact_consumer_credit_report_by_quota_id(quota_id)
+    TransigoAdmin.Meridianlink.update_contact_consumer_credit_report_by_quota_id(quota_id)
     {:noreply, state}
   end
 
