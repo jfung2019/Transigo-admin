@@ -2,14 +2,10 @@ defmodule TransigoAdmin.Meridianlink do
   require Logger
 
   alias TransigoAdmin.Account
-  alias TransigoAdmin.Credit.Quota
   alias TransigoAdmin.Account.Contact
-  alias TransigoAdmin.Account.UsPlace
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew
   alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
   alias TransigoAdmin.Meridianlink.XMLParser
-  alias TransigoAdmin.Repo
-  import Ecto.Query
 
   @new_consumer_credit_report_retries 3
   @retrieve_consumer_credit_report_retries 90
@@ -19,8 +15,8 @@ defmodule TransigoAdmin.Meridianlink do
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
   # TODO move these to config file and get from environment variables
   @headers [
-    "MCL-Interface": Application.get_env(:transigo_admin, :meridianlink_mcl_interface),
-    Authorization: Application.get_env(:transigo_admin, :meridianlink_authorization)
+    "MCL-Interface": Application.compile_env(:transigo_admin, :meridianlink_mcl_interface),
+    Authorization: Application.compile_env(:transigo_admin, :meridianlink_authorization)
   ]
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
