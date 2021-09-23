@@ -64,11 +64,30 @@ defmodule TransigoAdmin.Account.Exporter do
   ]
 
   @doc false
-  def changeset(exporter, attrs) do
+  def changeset(attrs, exporter \\ %__MODULE__{}) do
     exporter
     |> cast(attrs, @available_attrs)
     |> change_cn_msa()
     |> validate_required(@required_attrs)
+    |> EctoCommons.EmailValidator.validate_email(:signatory_email)
+    |> check_valid_address()
+  end
+
+  def update_changeset(attrs, exporter \\ %__MODULE__{}) do
+    exporter
+    |> cast(attrs, @available_attrs)
+    |> change_cn_msa()
+    |> EctoCommons.EmailValidator.validate_email(:signatory_email)
+    |> check_valid_address()
+  end
+
+  defp check_valid_address(changeset, options \\ []) do
+    validate_change(changeset, :address, fn _, address ->
+      case GoogleMaps.geocode(address) do
+        {:ok, _} -> []
+        {:error, _} -> [{:address, options[:message] || "invalid address"}]
+      end
+    end)
   end
 
   defp change_cn_msa(%{changes: %{cn_msa: nil}} = changeset),

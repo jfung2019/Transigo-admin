@@ -6,6 +6,9 @@ defmodule TransigoAdmin.Account do
   alias Absinthe.Relay
   alias TransigoAdminWeb.Router.Helpers, as: Routes
   alias TransigoAdminWeb.Endpoint
+  alias Ecto.Multi
+  alias TransigoAdmin.DataLayer
+  alias TransigoAdmin.Credit.Marketplace
 
   alias TransigoAdmin.Account.{
     Admin,
@@ -145,19 +148,135 @@ defmodule TransigoAdmin.Account do
   """
   @spec create_exporter(map) :: {:ok, Exporter.t()} | {:error, %Ecto.Changeset{}}
   def create_exporter(attrs \\ %{}) do
-    %Exporter{}
-    |> Exporter.changeset(attrs)
-    |> Repo.insert()
+    marketplace =
+      from(m in Marketplace,
+        where: m.origin == ^attrs["marketplaceOrigin"]
+      )
+      |> Repo.one()
+
+    if not is_nil(marketplace) do
+      contact =
+        attrs
+        |> get_exporter_contact_from_params()
+        |> Map.put(:contact_transigo_uid, DataLayer.generate_uid("con"))
+
+      exporter =
+        attrs
+        |> get_exporter_from_params()
+        |> Map.put(:exporter_transigo_uid, DataLayer.generate_uid("exp"))
+        |> Map.put(:marketplace_id, marketplace.id)
+
+      Multi.new()
+      |> Multi.insert(Contact, Contact.changeset(contact))
+      |> Multi.insert(
+        Exporter,
+        fn %{
+             Contact => %Contact{
+               id: contact_id
+             }
+           } ->
+          Exporter.changeset(
+            exporter
+            |> Map.put(:contact_id, contact_id)
+          )
+        end
+      )
+      |> Repo.transaction()
+    else
+      {:error, "Could not insert exporter"}
+    end
+  end
+
+  defp get_exporter_params(params) do
+    %{
+      business_name: Map.get(params, "businessName"),
+      address: Map.get(params, "address"),
+      business_address_country: Map.get(params, "businessAddressCountry"),
+      registration_number: Map.get(params, "registrationNumber"),
+      signatory_first_name: Map.get(params, "signatoryFirstName"),
+      signatory_last_name: Map.get(params, "signatoryLastName"),
+      signatory_mobile: Map.get(params, "signatoryMobile"),
+      signatory_email: Map.get(params, "signatoryEmail"),
+      signatory_title: Map.get(params, "signatoryTitle")
+    }
+  end
+
+  defp get_exporter_from_params(%{
+         "businessName" => business_name,
+         "address" => address,
+         "businessAddressCountry" => business_address_country,
+         "registrationNumber" => registration_number,
+         "signatoryFirstName" => signatory_first_name,
+         "signatoryLastName" => signatory_last_name,
+         "signatoryMobile" => signatory_mobile,
+         "signatoryEmail" => signatory_email,
+         "signatoryTitle" => signatory_title
+       }) do
+    %{
+      business_name: business_name,
+      address: address,
+      business_address_country: business_address_country,
+      registration_number: registration_number,
+      signatory_first_name: signatory_first_name,
+      signatory_last_name: signatory_last_name,
+      signatory_mobile: signatory_mobile,
+      signatory_email: signatory_email,
+      signatory_title: signatory_title
+    }
+  end
+
+  defp get_contact_params(params) do
+    %{
+      first_name: Map.get(params, "contactFirstName"),
+      last_name: Map.get(params, "contactLastName"),
+      mobile: Map.get(params, "contacMobile"),
+      work_phone: Map.get(params, "workPhone"),
+      email: Map.get(params, "contactEmail"),
+      role: Map.get(params, "contactTitle"),
+      address: Map.get(params, "contactAddress")
+    }
+  end
+
+  defp get_exporter_contact_from_params(%{
+         "contactFirstName" => first_name,
+         "contactLastName" => last_name,
+         "contactMobile" => mobile,
+         "workPhone" => work_phone,
+         "contactEmail" => email,
+         "contactTitle" => role,
+         "contactAddress" => address
+       }) do
+    %{
+      first_name: first_name,
+      last_name: last_name,
+      mobile: mobile,
+      work_phone: work_phone,
+      email: email,
+      role: role,
+      address: address
+    }
   end
 
   @doc """
   Update exporter
   """
-  @spec update_exporter(Exporter.t(), map) :: {:ok, Exporter.t()} | {:error, %Ecto.Changeset{}}
-  def update_exporter(exporter, attrs \\ %{}) do
-    exporter
-    |> Exporter.changeset(attrs)
-    |> Repo.update()
+  def update_exporter(%{"exporter_transigo_uid" => uid} = attrs) do
+    with {:ok, exporter} <- get_exporter_by_exporter_uid(uid, [:contact]) do
+      contact_attrs =
+        attrs
+        |> get_contact_params()
+
+      exporter_attrs =
+        attrs
+        |> get_exporter_params()
+
+      Multi.new()
+      |> Multi.update(Exporter, Exporter.update_changeset(exporter_attrs, exporter))
+      |> Multi.update(Contact, Contact.update_changeset(contact_attrs, exporter.contact))
+      |> Repo.transaction()
+    else
+      _ -> {:error, "Could not update exporter"}
+    end
   end
 
   @doc """
@@ -165,8 +284,13 @@ defmodule TransigoAdmin.Account do
   """
   @spec get_exporter_by_exporter_uid(String.t(), list) :: Exporter.t() | nil
   def get_exporter_by_exporter_uid(exporter_uid, preloads \\ []) do
-    from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
-    |> Repo.one()
+    if DataLayer.check_uid(exporter_uid, "exp") do
+      {:ok,
+       from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
+       |> Repo.one()}
+    else
+      {:error, "Invalid UID"}
+    end
   end
 
   @doc """
@@ -177,15 +301,33 @@ defmodule TransigoAdmin.Account do
     preloads = [:contact, :marketplace]
 
     case get_exporter_by_exporter_uid(exporter_uid, preloads) do
-      %Exporter{hellosign_signature_request_id: nil} = exporter ->
+      {:ok, %Exporter{hellosign_signature_request_id: nil} = exporter}->
         generate_sign_msa(exporter, cn_msa)
 
-      %Exporter{hellosign_signature_request_id: hs_sign_req_id} = exporter ->
+      {:ok, %Exporter{hellosign_signature_request_id: hs_sign_req_id} = exporter} ->
         get_sign_msa_url_with_req_id(hs_sign_req_id, exporter)
 
       _ ->
         {:error, "Incorrect exporter_uid"}
     end
+  end
+
+  def get_msa(%{"exporter_uid" => exporter_uid}) do
+    # TODO test this function
+    key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
+
+    if check_obj_exists?(key) do
+      {:ok,
+       ExAws.Config.new(:s3)
+       |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)}
+    else
+      {:error, "Object does not exists"}
+    end
+  end
+
+  def check_obj_exists?(_key) do
+    # TODO implement this check
+    true
   end
 
   @doc """
@@ -226,7 +368,7 @@ defmodule TransigoAdmin.Account do
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = sign_req} <-
            @hs_api.create_signature_request(msa_hs_payload),
          {:ok, _exporter} <-
-           update_exporter(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
+           update_exporter_msa(exporter, %{cn_msa: cn_msa, hellosign_signature_request_id: req_id}) do
       get_msa_sign_url(sign_req, exporter)
     else
       {:error, _message} = error_tuple ->
@@ -235,6 +377,18 @@ defmodule TransigoAdmin.Account do
       _ ->
         {:error, "Failed to get MSA"}
     end
+  end
+
+  def update_exporter_msa(exporter, attrs \\ %{}) do
+    attrs
+    |> Exporter.changeset(exporter)
+    |> Repo.update()
+  end
+
+  def update_exporter_hs_request(exporter, attrs \\ %{}) do
+    attrs
+    |> Exporter.changeset(exporter)
+    |> Repo.update()
   end
 
   @spec get_sign_msa_url_with_req_id(String.t(), Exporter.t()) :: tuple
@@ -306,7 +460,7 @@ defmodule TransigoAdmin.Account do
     {:ok, payload}
   end
 
-  @spec get_msa_sign_url(map, Exporter.t()) :: String.t()
+  @spec get_msa_sign_url(map, Exporter.t()) :: {:ok, String.t()}
   defp get_msa_sign_url(%{"signature_request" => %{"signatures" => signatures}}, %{
          signatory_email: exporter_email
        }) do
@@ -359,7 +513,7 @@ defmodule TransigoAdmin.Account do
     end
   end
 
-  @spec get_transigo_signature(map) :: map
+  @spec get_transigo_signature([]) :: map
   defp get_transigo_signature(signatures) do
     Enum.flat_map(signatures, fn %{"signer_email_address" => email} = signature ->
       case email do
@@ -387,9 +541,27 @@ defmodule TransigoAdmin.Account do
   def get_contact!(id), do: Repo.get!(Contact, id)
 
   def create_contact(attrs \\ %{}) do
-    %Contact{}
-    |> Contact.changeset(attrs)
+    attrs
+    |> Contact.changeset()
     |> Repo.insert()
+  end
+
+  def get_contact_by_id(contact_id) do
+    from(
+      c in Contact,
+      where: c.id == ^contact_id
+    )
+    |> Repo.one()
+  end
+
+  def insert_contact_consumer_credit_report(%Contact{} = contact, %{
+        consumer_credit_score: _,
+        consumer_credit_score_percentile: _,
+        consumer_credit_report_meridianlink: _
+      } = params) do
+    params
+    |> Contact.consumer_credit_changeset(contact)
+    |> Repo.update
   end
 
   def delete_contact(%Contact{} = contact), do: Repo.delete(contact)

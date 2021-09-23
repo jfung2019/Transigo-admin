@@ -46,6 +46,11 @@ defmodule TransigoAdminWeb.Router do
 
     scope "/exporters" do
       scope "/:exporter_uid" do
+        post "/", ExporterController, :create_exporter
+        get "/:exporter_uid", ExporterController, :show_exporter
+        put "/:exporter_uid", ExporterController, :update_exporter
+        get "/:exporter_uid/get_msa", ExporterController, :get_msa
+        get "/:exporter_uid/sign_transaction/:transaction_uid", ExporterController, :sign_transaction
         get "/sign_msa", ExporterController, :sign_msa
       end
     end
