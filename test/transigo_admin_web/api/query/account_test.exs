@@ -114,7 +114,7 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
 
     assert %{
              "data" => %{
-               "listImporters" => %{"edges" => [%{"node" => %{"id" => ^importer_id}}]}
+               "listImporters" => %{"edges" => [%{"node" => %{"id" => _}}, %{"node" => %{"id" => ^importer_id}}]}
              }
            } = json_response(response, 200)
   end
