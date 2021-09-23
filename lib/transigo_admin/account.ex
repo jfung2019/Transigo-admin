@@ -301,7 +301,7 @@ defmodule TransigoAdmin.Account do
     preloads = [:contact, :marketplace]
 
     case get_exporter_by_exporter_uid(exporter_uid, preloads) do
-      {:ok, %Exporter{hellosign_signature_request_id: nil} = exporter}->
+      {:ok, %Exporter{hellosign_signature_request_id: nil} = exporter} ->
         generate_sign_msa(exporter, cn_msa)
 
       {:ok, %Exporter{hellosign_signature_request_id: hs_sign_req_id} = exporter} ->
@@ -546,22 +546,37 @@ defmodule TransigoAdmin.Account do
     |> Repo.insert()
   end
 
-  def get_contact_by_id(contact_id) do
+  def get_contact_by_id(contact_id, preloads \\ []) do
     from(
       c in Contact,
-      where: c.id == ^contact_id
+      where: c.id == ^contact_id,
+      preload: ^preloads
     )
     |> Repo.one()
   end
 
-  def insert_contact_consumer_credit_report(%Contact{} = contact, %{
-        consumer_credit_score: _,
-        consumer_credit_score_percentile: _,
-        consumer_credit_report_meridianlink: _
-      } = params) do
+  def get_contact_by_quota_id(quota_id) do
+    from(q in Quota,
+      where: q.id == ^quota_id,
+      join: i in assoc(q, :importer),
+      join: c in assoc(i, :contact),
+      preload: [:us_place],
+      select: c
+    )
+    |> Repo.one()
+  end
+
+  def insert_contact_consumer_credit_report(
+        %Contact{} = contact,
+        %{
+          consumer_credit_score: _,
+          consumer_credit_score_percentile: _,
+          consumer_credit_report_meridianlink: _
+        } = params
+      ) do
     params
     |> Contact.consumer_credit_changeset(contact)
-    |> Repo.update
+    |> Repo.update()
   end
 
   def delete_contact(%Contact{} = contact), do: Repo.delete(contact)
