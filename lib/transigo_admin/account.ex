@@ -167,7 +167,7 @@ defmodule TransigoAdmin.Account do
         |> Map.put(:marketplace_id, marketplace.id)
 
       Multi.new()
-      |> Multi.insert(Contact, Contact.changeset(contact))
+      |> Multi.insert(Contact, Contact.changeset(%Contact{}, contact))
       |> Multi.insert(
         Exporter,
         fn %{
@@ -176,6 +176,7 @@ defmodule TransigoAdmin.Account do
              }
            } ->
           Exporter.changeset(
+            %Exporter{},
             exporter
             |> Map.put(:contact_id, contact_id)
           )
@@ -271,8 +272,8 @@ defmodule TransigoAdmin.Account do
         |> get_exporter_params()
 
       Multi.new()
-      |> Multi.update(Exporter, Exporter.update_changeset(exporter_attrs, exporter))
-      |> Multi.update(Contact, Contact.update_changeset(contact_attrs, exporter.contact))
+      |> Multi.update(Exporter, Exporter.update_changeset(exporter, exporter_attrs))
+      |> Multi.update(Contact, Contact.update_changeset(exporter.contact, contact_attrs))
       |> Repo.transaction()
     else
       _ -> {:error, "Could not update exporter"}
@@ -380,14 +381,14 @@ defmodule TransigoAdmin.Account do
   end
 
   def update_exporter_msa(exporter, attrs \\ %{}) do
-    attrs
-    |> Exporter.changeset(exporter)
+    exporter
+    |> Exporter.changeset(attrs)
     |> Repo.update()
   end
 
   def update_exporter_hs_request(exporter, attrs \\ %{}) do
-    attrs
-    |> Exporter.changeset(exporter)
+    exporter
+    |> Exporter.changeset(attrs)
     |> Repo.update()
   end
 
@@ -541,8 +542,8 @@ defmodule TransigoAdmin.Account do
   def get_contact!(id), do: Repo.get!(Contact, id)
 
   def create_contact(attrs \\ %{}) do
-    attrs
-    |> Contact.changeset()
+    %Contact{}
+    |> Contact.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -574,8 +575,8 @@ defmodule TransigoAdmin.Account do
           consumer_credit_report_meridianlink: _
         } = params
       ) do
-    params
-    |> Contact.consumer_credit_changeset(contact)
+    contact
+    |> Contact.consumer_credit_changeset(params)
     |> Repo.update()
   end
 
