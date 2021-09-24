@@ -14,10 +14,7 @@ defmodule TransigoAdmin.Meridianlink do
 
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
   # TODO move these to config file and get from environment variables
-  @headers [
-    "MCL-Interface": Application.compile_env(:transigo_admin, :meridianlink_mcl_interface),
-    Authorization: Application.compile_env(:transigo_admin, :meridianlink_authorization)
-  ]
+
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
     last_name: "Testcase",
@@ -176,10 +173,17 @@ defmodule TransigoAdmin.Meridianlink do
     id_val == req.taxpayer_identifier_value and id_type == req.taxpayer_identifier_type
   end
 
+  defp get_headers do
+    [
+      "MCL-Interface": Application.get_env(:transigo_admin, :meridianlink_mcl_interface),
+      Authorization: Application.get_env(:transigo_admin, :meridianlink_authorization)
+    ]
+  end
+
   defp retrieve_existing_credit_report(vendor_order_identifier) do
     case ConsumerCreditRetrieve.get_request_body(vendor_order_identifier) do
       {:ok, body} ->
-        HTTPoison.post(@base_url, body, @headers)
+        HTTPoison.post(@base_url, body, get_headers())
 
       {:error, message} ->
         {:error, message}
@@ -189,7 +193,7 @@ defmodule TransigoAdmin.Meridianlink do
   defp order_new_consumer_credit_report(%ConsumerCreditNew{} = body_params) do
     case ConsumerCreditNew.get_request_body(body_params) do
       {:ok, body} ->
-        HTTPoison.post(@base_url, body, @headers)
+        HTTPoison.post(@base_url, body, get_headers())
 
       {:error, message} ->
         {:error, message}
