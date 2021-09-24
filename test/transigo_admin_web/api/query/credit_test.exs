@@ -3,6 +3,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
 
   alias TransigoAdmin.{Account, Credit}
   alias TransigoAdmin.Account.Exporter
+  alias TransigoAdmin.Repo
 
   @list_quotas """
   query($first: Integer!) {
@@ -41,6 +42,11 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
   """
 
   setup %{conn: conn} do
+    Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+      origin: "DH",
+      marketplace: "DHGate"
+    })
+
     {:ok, admin} =
       Account.create_admin(%{
         firstname: "test",
