@@ -64,7 +64,7 @@ defmodule TransigoAdmin.Account.Exporter do
   ]
 
   @doc false
-  def changeset(attrs, exporter \\ %__MODULE__{}) do
+  def changeset(exporter, attrs) do
     exporter
     |> cast(attrs, @available_attrs)
     |> change_cn_msa()
@@ -73,7 +73,7 @@ defmodule TransigoAdmin.Account.Exporter do
     |> check_valid_address()
   end
 
-  def update_changeset(attrs, exporter \\ %__MODULE__{}) do
+  def update_changeset(exporter, attrs) do
     exporter
     |> cast(attrs, @available_attrs)
     |> change_cn_msa()

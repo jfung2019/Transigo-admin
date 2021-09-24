@@ -65,18 +65,18 @@ defmodule TransigoAdmin.Account.Contact do
   ]
 
   @doc false
-  def changeset(attrs, contact \\ %__MODULE__{}) do
+  def changeset(contact, attrs) do
     contact
     |> cast(attrs, @available_attrs)
     |> validate_required(@required_attrs)
   end
 
-  def consumer_credit_changeset(attrs, contact \\ %__MODULE__{}) do
+  def consumer_credit_changeset(contact, attrs) do
     contact
     |> cast(attrs, @consumer_credit_attrs)
   end
 
-  def update_changeset(attrs, contact \\ %__MODULE__{}) do
+  def update_changeset(contact, attrs) do
     contact
     |> cast(attrs, @available_attrs)
   end

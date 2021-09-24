@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.Meridianlink.API do
+defmodule TransigoAdmin.Meridianlink do
   require Logger
 
   alias TransigoAdmin.Account
@@ -14,10 +14,7 @@ defmodule TransigoAdmin.Meridianlink.API do
 
   @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
   # TODO move these to config file and get from environment variables
-  @headers [
-    "MCL-Interface": System.get_env("MERIDIANLINK_MCL_INTERFACE"),
-    Authorization: "Basic  #{System.get_env("MERIDIANLINK_AUTHORIZATION")}"
-  ]
+
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
     last_name: "Testcase",
@@ -32,40 +29,29 @@ defmodule TransigoAdmin.Meridianlink.API do
     taxpayer_identifier_value: "000000015"
   }
 
-  def update_contact_consumer_credit_report(contact_id) do
-    contact = Account.get_contact_by_id(contact_id)
+  def update_contact_consumer_credit_report_by_quota_id(quota_id) do
+    contact = Account.get_contact_by_quota_id(quota_id)
     request_fields = get_consumer_credit_fields_from_contact(contact)
     get_consumer_credit_report(contact, request_fields)
   end
 
-  def get_consumer_credit_fields_from_contact(contact) do
-    %Address{
-      city: city,
-      plus_4: _,
-      postal: postal,
-      state: state,
-      street: %Street{
-        name: street_name,
-        pmb: _,
-        post_direction: _,
-        pre_direction: _,
-        primary_number: number,
-        secondary_designator: _,
-        secondary_value: _,
-        suffix: suf
-      }
-    } = AddressUS.Parser.parse_address(contact.address)
+  def update_contact_consumer_credit_report(contact_id) do
+    contact = Account.get_contact_by_id(contact_id, [:us_place])
+    request_fields = get_consumer_credit_fields_from_contact(contact)
+    get_consumer_credit_report(contact, request_fields)
+  end
 
+  def get_consumer_credit_fields_from_contact(contact = %Contact{}) do
     %ConsumerCreditNew{
       first_name: Map.get(contact, :first_name),
       last_name: Map.get(contact, :last_name),
-      middle_name: "C",
-      suffix_name: "JR",
-      address_line_text: "#{number} #{street_name} #{suf}",
-      city_name: city,
-      country_code: Map.get(contact, :country),
-      postal_code: postal,
-      state_code: state,
+      middle_name: "",
+      suffix_name: "",
+      address_line_text: contact.us_place.street_address,
+      city_name: contact.us_place.city,
+      country_code: contact.us_place.country,
+      postal_code: contact.us_place.zip_code,
+      state_code: contact.us_place.state,
       taxpayer_identifier_type: "SocialSecurityNumber",
       taxpayer_identifier_value: Map.get(contact, :ssn)
     }
@@ -187,10 +173,17 @@ defmodule TransigoAdmin.Meridianlink.API do
     id_val == req.taxpayer_identifier_value and id_type == req.taxpayer_identifier_type
   end
 
+  defp get_headers do
+    [
+      "MCL-Interface": Application.get_env(:transigo_admin, :meridianlink_mcl_interface),
+      Authorization: Application.get_env(:transigo_admin, :meridianlink_authorization)
+    ]
+  end
+
   defp retrieve_existing_credit_report(vendor_order_identifier) do
     case ConsumerCreditRetrieve.get_request_body(vendor_order_identifier) do
       {:ok, body} ->
-        HTTPoison.post(@base_url, body, @headers)
+        HTTPoison.post(@base_url, body, get_headers())
 
       {:error, message} ->
         {:error, message}
@@ -200,7 +193,7 @@ defmodule TransigoAdmin.Meridianlink.API do
   defp order_new_consumer_credit_report(%ConsumerCreditNew{} = body_params) do
     case ConsumerCreditNew.get_request_body(body_params) do
       {:ok, body} ->
-        HTTPoison.post(@base_url, body, @headers)
+        HTTPoison.post(@base_url, body, get_headers())
 
       {:error, message} ->
         {:error, message}
