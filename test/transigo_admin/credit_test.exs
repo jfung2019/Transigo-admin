@@ -6,6 +6,11 @@ defmodule TransigoAdmin.CreditTest do
 
   describe "transaction" do
     setup do
+      Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+        origin: "DH",
+        marketplace: "DHGate"
+      })
+
       {:ok, %{Exporter => exporter}} =
         Account.create_exporter(%{
           "businessName" => "Best Business",

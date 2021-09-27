@@ -46,6 +46,16 @@ defmodule TransigoAdmin.AccountTest do
   end
 
   describe "create exporter" do
+    setup do
+      marketplace =
+        Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+          origin: "DH",
+          marketplace: "DHGate"
+        })
+
+      %{marketplace: marketplace}
+    end
+
     test "creates exporter with valid params" do
       assert {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter()
       assert contact.first_name == @valid_exporter_params["contactFirstName"]
@@ -68,6 +78,15 @@ defmodule TransigoAdmin.AccountTest do
   end
 
   describe "get exporter" do
+    setup do
+      marketplace =
+        Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+          origin: "DH",
+          marketplace: "DHGate"
+        })
+
+      %{marketplace: marketplace}
+    end
     test "can retrive an exporter with valid params" do
       {:ok, %{Contact => _contact, Exporter => exporter}} = create_exporter()
 
@@ -83,6 +102,15 @@ defmodule TransigoAdmin.AccountTest do
   end
 
   describe "update exporter" do
+    setup do
+      marketplace =
+        Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+          origin: "DH",
+          marketplace: "DHGate"
+        })
+
+      %{marketplace: marketplace}
+    end
     test "can update exporter with valid params" do
       {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter()
 

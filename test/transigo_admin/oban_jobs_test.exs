@@ -5,6 +5,11 @@ defmodule TransigoAdmin.ObanJobsTest do
   alias TransigoAdmin.Account.Exporter
 
   setup do
+    Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+      origin: "DH",
+      marketplace: "DHGate"
+    })
+
     {:ok, %{Exporter => exporter}} =
       Account.create_exporter(%{
         "businessName" => "Best Business",

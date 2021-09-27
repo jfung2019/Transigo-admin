@@ -1,0 +1,31 @@
+defmodule TransigoAdmin.CreateQuotaPubsubTest do
+  use TransigoAdmin.DataCase
+
+  alias TransigoAdmin.Repo
+  alias TransigoAdmin.Credit.Quota
+  alias TransigoAdmin.Account
+
+  test "can receive pubsub message in quota table insert" do
+    q =
+      Quota.changeset(
+        %Quota{},
+        %{
+          quota_transigo_uid: "alsdkfj",
+          quota_usd: 123.4,
+          credit_request_date: Date.utc_today(),
+          token: "sldkjfldksjf",
+          marketplace_transactions: 5,
+          marketplace_total_transaction_sum_usd: 1252.9,
+          marketplace_transactions_last_year: 3,
+          marketplace_total_transaction_sum_usd_last_year: 412.43,
+          marketplace_number_disputes: 1,
+          marketplace_number_adverse_disputes: 0,
+          credit_status: "good",
+          funding_source_url: "http://someurl",
+          credit_terms: "open_account",
+          importer_id: "1cd1a935-c8d2-4c35-aa7e-ecc5033a3df2"
+        }
+      )
+      |> Repo.insert!()
+  end
+end

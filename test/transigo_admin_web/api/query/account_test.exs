@@ -3,6 +3,7 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
 
   alias TransigoAdmin.Account
   alias TransigoAdmin.Account.Exporter
+  alias TransigoAdmin.Repo
 
   @list_exporters """
   query($first: Integer!) {
@@ -29,6 +30,11 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   """
 
   setup %{conn: conn} do
+    Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+      origin: "DH",
+      marketplace: "DHGate"
+    })
+
     {:ok, admin} =
       Account.create_admin(%{
         firstname: "test",
@@ -114,7 +120,9 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
 
     assert %{
              "data" => %{
-               "listImporters" => %{"edges" => [%{"node" => %{"id" => _}}, %{"node" => %{"id" => ^importer_id}}]}
+               "listImporters" => %{
+                 "edges" => [%{"node" => %{"id" => ^importer_id}}]
+               }
              }
            } = json_response(response, 200)
   end
