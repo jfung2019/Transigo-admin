@@ -146,7 +146,7 @@ defmodule TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew do
      """}
   end
 
-  def get_request_body( _) do
+  def get_request_body(_) do
     {:error, "cannot form a valid request body, are your inputs well formed?"}
   end
 end

@@ -8,6 +8,8 @@ defmodule TransigoAdmin.Credit.Marketplace do
     field :origin, :string
     field :marketplace, :string
 
+    has_many :exporters, TransigoAdmin.Account.Exporter
+
     timestamps(
       inserted_at_source: :created_datetime,
       updated_at_source: :last_modified_datetime,

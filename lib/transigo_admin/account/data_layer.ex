@@ -38,14 +38,13 @@ defmodule TransigoAdmin.DataLayer do
     |> String.downcase()
   end
 
-
   def check_uid(uid, code) do
     with ^code <- String.slice(uid, 1, 3),
          true <- String.slice(uid, 0, 24) |> generate_hash() == String.slice(uid, -64..-1) do
-           true
-         else
-          _ -> false
-         end
+      true
+    else
+      _ -> false
+    end
   end
 end
 
