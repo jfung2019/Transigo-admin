@@ -55,6 +55,6 @@ defmodule TransigoAdmin.Meridianlink.XMLRequestTest do
               "Cannot form a valid request body. Input must be a string containing an integer"}
 
     assert ConsumerCreditRetrieve.get_request_body(123) ==
-    {:error, "Cannot form a valid request body. Input must be a string"}
+             {:error, "Cannot form a valid request body. Input must be a string"}
   end
 end

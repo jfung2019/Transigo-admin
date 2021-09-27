@@ -73,6 +73,7 @@ defmodule TransigoAdmin.AccountTest do
 
       assert {:ok, get_exporter} =
                Account.get_exporter_by_exporter_uid(exporter.exporter_transigo_uid)
+
       assert exporter.id == get_exporter.id
     end
 
@@ -90,12 +91,15 @@ defmodule TransigoAdmin.AccountTest do
                  @valid_update_exporter_params
                  |> Map.put("exporter_transigo_uid", exporter.exporter_transigo_uid)
                )
+
       assert contact.id == updated_contact.id
       assert exporter.id == updated_exporter.id
       assert contact.first_name == @valid_exporter_params["contactFirstName"]
       assert updated_contact.first_name == @valid_update_exporter_params["contactFirstName"]
       assert exporter.signatory_first_name == @valid_exporter_params["signatoryFirstName"]
-      assert updated_exporter.signatory_first_name == @valid_update_exporter_params["signatoryFirstName"]
+
+      assert updated_exporter.signatory_first_name ==
+               @valid_update_exporter_params["signatoryFirstName"]
     end
 
     test "shows error when invalid update params given" do

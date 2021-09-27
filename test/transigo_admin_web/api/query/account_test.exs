@@ -55,26 +55,26 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
         country: "us"
       })
 
-      {:ok, %{Exporter => exporter}} =
-        Account.create_exporter(%{
-          "businessName" => "Best Business",
-          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-          "businessAddressCountry" => "USA",
-          "registrationNumber" => "123456",
-          "signatoryFirstName" => "David",
-          "signatoryLastName" => "Silva",
-          "signatoryMobile" => "7077321415",
-          "signatoryEmail" => "david@bbiz.com",
-          "signatoryTitle" => "Founder",
-          "contactFirstName" => "Elliot",
-          "contactLastName" => "Winden",
-          "contactMobile" => "7071749274",
-          "workPhone" => "7075023748",
-          "contactEmail" => "elliot@bbiz.com",
-          "contactTitle" => "President",
-          "contactAddress" => "Stockton St.",
-          "marketplaceOrigin" => "DH"
-        })
+    {:ok, %{Exporter => exporter}} =
+      Account.create_exporter(%{
+        "businessName" => "Best Business",
+        "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+        "businessAddressCountry" => "USA",
+        "registrationNumber" => "123456",
+        "signatoryFirstName" => "David",
+        "signatoryLastName" => "Silva",
+        "signatoryMobile" => "7077321415",
+        "signatoryEmail" => "david@bbiz.com",
+        "signatoryTitle" => "Founder",
+        "contactFirstName" => "Elliot",
+        "contactLastName" => "Winden",
+        "contactMobile" => "7071749274",
+        "workPhone" => "7075023748",
+        "contactEmail" => "elliot@bbiz.com",
+        "contactTitle" => "President",
+        "contactAddress" => "Stockton St.",
+        "marketplaceOrigin" => "DH"
+      })
 
     {:ok, importer} =
       Account.create_importer(%{

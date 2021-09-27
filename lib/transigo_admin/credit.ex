@@ -95,6 +95,15 @@ defmodule TransigoAdmin.Credit do
   end
 
   @doc """
+  Gets marketplace using exported_id.
+  """
+  @spec get_marketplace_by_exported_id!(String.t()) :: Marketplace.t()
+  def get_marketplace_by_exported_id!(exporter_id) do
+    from(m in Marketplace, left_join: e in assoc(m, :exporters), where: e.id == ^exporter_id)
+    |> Repo.one!()
+  end
+
+  @doc """
   rest api
   /trans/:transaction_uid/confirm_downpayment
   confirm downpayement

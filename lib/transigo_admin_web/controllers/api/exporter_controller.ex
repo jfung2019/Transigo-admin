@@ -8,7 +8,6 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   @exporter_view TransigoAdminWeb.ApiExporterView
   @error_view TransigoAdminWeb.ApiErrorView
 
-
   def update_exporter(conn, %{"exporter_uid" => _} = params) do
     case Account.update_exporter(params) do
       {:ok, exporter} ->
@@ -73,7 +72,10 @@ defmodule TransigoAdminWeb.Api.ExporterController do
     end
   end
 
-  def sign_transaction(conn, %{"exporter_uid" => _exp_uid, "transaction_uid" => _trans_uid} = params) do
+  def sign_transaction(
+        conn,
+        %{"exporter_uid" => _exp_uid, "transaction_uid" => _trans_uid} = params
+      ) do
     case Credit.sign_transaction(params) do
       {:ok, transaction} ->
         conn
@@ -88,8 +90,6 @@ defmodule TransigoAdminWeb.Api.ExporterController do
         |> render("errors.json", message: message)
     end
   end
-
-
 
   def sign_msa(conn, %{"exporter_uid" => exporter_uid} = param) do
     case Account.sign_msa(exporter_uid, Map.get(param, "cn_msa")) do
