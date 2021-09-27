@@ -36,20 +36,23 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   end
 
   defp send_transaction_due_email(%Transaction{} = transaction) do
-    contact = TransigoAdmin.Account.get_contact_by_importer(transaction.importer_id)
+    importer = TransigoAdmin.Account.get_importer!(transaction.importer_id, [:contact])
+    marketplace = TransigoAdmin.Credit.get_marketplace_by_exported_id!(transaction.exporter_id)
 
     repaid_amount =
       transaction.second_installment_usd
       |> :erlang.float_to_binary(decimals: 2)
 
-    message =
-      "You have a transaction due in 3 days. Please have USD#{repaid_amount} ready in your account."
-
     Email.build()
     |> Email.put_from("tcaas@transigo.io", "Transigo")
-    |> Email.add_to(contact.email)
+    |> Email.add_to(importer.contact.email)
     |> Email.put_subject("Transaction Dues in 3 days")
-    |> Email.put_text(message)
+    |> Email.put_template("d-8a86d41005e64803951bf25f373bf5a9")
+    |> Email.add_dynamic_template_data("name", importer.contact.first_name)
+    |> Email.add_dynamic_template_data("amount", repaid_amount)
+    |> Email.add_dynamic_template_data("due_date", transaction.repaid_datetime)
+    |> Email.add_dynamic_template_data("bank_acc_num", importer.bank_account)
+    |> Email.add_dynamic_template_data("market_name", marketplace.marketplace)
     |> Mail.send()
 
     transaction
