@@ -18,6 +18,7 @@ defmodule TransigoAdmin.Application do
       TransigoAdminWeb.Endpoint,
       # Start a worker by calling: TransigoAdmin.Worker.start_link(arg)
       # {TransigoAdmin.Worker, arg}
+      {Task.Supervisor, name: TransigoAdmin.TaskSupervisor},
       {Oban, Application.get_env(:transigo_admin, Oban)}
     ]
 

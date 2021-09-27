@@ -2,6 +2,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   use TransigoAdminWeb, :controller
 
   alias TransigoAdmin.Account
+  alias TransigoAdmin.Credit
   alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.Account.Exporter
 

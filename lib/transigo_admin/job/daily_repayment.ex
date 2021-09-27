@@ -45,7 +45,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
     Email.build()
     |> Email.put_from("tcaas@transigo.io", "Transigo")
-    |> Email.add_to(contact.email)
+    |> Email.add_to(importer.contact.email)
     |> Email.put_subject("Transaction Dues in 3 days")
     |> Email.put_template("d-8a86d41005e64803951bf25f373bf5a9")
     |> Email.add_dynamic_template_data("name", importer.contact.first_name)

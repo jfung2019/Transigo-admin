@@ -55,14 +55,14 @@ defmodule TransigoAdmin.AccountTest do
     test "show error with invalid address params" do
       assert {:error, _schema, _changeset, _} =
                @valid_exporter_params
-               |> Map.put("address", "123 i love cheese")
+               |> Map.put("address", "as;dlfkj;lkjlkjfd")
                |> create_exporter()
     end
 
     test "show error with invalid email params" do
       assert {:error, _schema, _changeset, _} =
                @valid_exporter_params
-               |> Map.put("signatoryEmail", "123 i love cheese")
+               |> Map.put("signatoryEmail", "asl;dfkjlkjl")
                |> create_exporter()
     end
   end
@@ -108,7 +108,7 @@ defmodule TransigoAdmin.AccountTest do
       assert {:error, _, _, _} =
                Account.update_exporter(
                  @valid_update_exporter_params
-                 |> Map.put("address", "123 i love cheese")
+                 |> Map.put("address", "alsdkjflkj;lkjasdf")
                  |> Map.put("exporter_transigo_uid", exporter.exporter_transigo_uid)
                )
     end
@@ -120,7 +120,7 @@ defmodule TransigoAdmin.AccountTest do
     end
 
     test "invalid address returns error" do
-      assert {:error, _res} = GoogleMaps.geocode("123 I love cheese")
+      assert {:error, _res} = GoogleMaps.geocode("asldkjflj;lkj")
     end
   end
 end
