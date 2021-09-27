@@ -27,6 +27,9 @@ config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY", "API_KEY"),
   sandbox_enable: true
 
+config :google_maps,
+  api_key: System.get_env("TRANSIGO_GOOGLE_MAPS_API_KEY")
+
 config :transigo_admin,
   hs_api: TransigoAdmin.ServiceManager.HelloSign.HsMock,
   dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock,

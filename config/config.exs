@@ -32,9 +32,12 @@ config :transigo_admin,
   s3_api: TransigoAdmin.ServiceManager.S3.S3Api,
   s3_bucket_name: System.get_env("S3_BUCKET_NAME"),
   doctools_url: System.get_env("DOCTOOLS_URL"),
-  meridianlink_authorization:  System.get_env("MERIDIANLINK_AUTH"),
-  meridianlink_mcl_interface:  System.get_env("MERIDIANLINK_MCL_INTERFACE"),
-  encryption_salt:  System.get_env("ENCRYPTION_SALT")
+  meridianlink_authorization: System.get_env("MERIDIANLINK_AUTH"),
+  meridianlink_mcl_interface: System.get_env("MERIDIANLINK_MCL_INTERFACE"),
+  encryption_salt: System.get_env("ENCRYPTION_SALT")
+
+config :google_maps,
+  api_key: System.get_env("TRANSIGO_GOOGLE_MAPS_API_KEY")
 
 config :ex_aws,
   json_codec: Jason,

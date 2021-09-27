@@ -76,4 +76,7 @@ config :sendgrid,
   api_key: {:system, "TRANSIGO_SENDGRID_API_KEY"},
   sandbox_enable: false
 
+config :google_maps,
+  api_key: System.get_env("TRANSIGO_GOOGLE_MAPS_API_KEY")
+
 config :transigo_admin, Oban, plugins: false, queues: false
