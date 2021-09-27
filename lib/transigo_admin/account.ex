@@ -568,6 +568,17 @@ defmodule TransigoAdmin.Account do
     |> Repo.one()
   end
 
+  def get_contact_by_quota_id(quota_id) do
+    from(q in Quota,
+      where: q.id == ^quota_id,
+      join: i in assoc(q, :importer),
+      join: c in assoc(i, :contact),
+      preload: [:us_place],
+      select: c
+    )
+    |> Repo.one()
+  end
+
   def insert_contact_consumer_credit_report(
         %Contact{} = contact,
         %{
