@@ -2,6 +2,7 @@ defmodule TransigoAdminWeb.Router do
   use TransigoAdminWeb, :router
 
   pipeline :browser do
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
@@ -16,6 +17,7 @@ defmodule TransigoAdminWeb.Router do
   end
 
   pipeline :api do
+    plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
     plug :accepts, ["json"]
   end
 
