@@ -92,7 +92,7 @@ defmodule TransigoAdminWeb.Router do
   end
 
   scope "/" do
-    get "/health-check", TransigoAdminWeb.HealthCheckController, :health_check
+    get "/health-check", TransigoAdminWeb.HealthCheckController, :health_check, log: false
   end
 
   # Enables LiveDashboard only for development
