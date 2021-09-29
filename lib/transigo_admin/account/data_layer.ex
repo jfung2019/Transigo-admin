@@ -33,11 +33,8 @@ defmodule TransigoAdmin.DataLayer do
   def generate_uid(code) when code in @valid_codes do
     rand =
       HexGen.generate()
-      |> String.to_charlist()
+      |> String.graphemes()
       |> Enum.chunk_every(4)
-      |> Enum.map(fn x ->
-        to_string(x)
-      end)
       |> Enum.join("-")
 
     uuid = "T#{code}-#{rand}"
