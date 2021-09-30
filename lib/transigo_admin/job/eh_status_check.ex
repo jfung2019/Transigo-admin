@@ -3,6 +3,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   check in quota for pending Euler Hermes jobs and save result if the job is finished by EH
   """
   use Oban.Worker, queue: :eh_status, max_attempts: 1
+  require Logger
 
   alias TransigoAdmin.{Credit, Credit.Quota}
   alias TransigoAdmin.{Account, Account.Importer}
@@ -116,8 +117,15 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
          %Quota{} = quota
        ) do
     # update the meridianlink fields on the contact waiting a max of 8 min for a response
-    Task.Supervisor.async_nolink(TransigoAdmin.TaskSupervisor, TransigoAdmin.Meridianlink, :update_contact_consumer_credit_report_by_quota_id, [quota.id])
-    |> Task.yield(480000)
+    meridianlink_task = Task.Supervisor.async_nolink(TransigoAdmin.TaskSupervisor, TransigoAdmin.Meridianlink, :update_contact_consumer_credit_report_by_quota_id, [quota.id])
+    case Task.yield(meridianlink_task, 480000) || Task.shutdown(meridianlink_task) do
+      {:exit, _} ->
+        Logger.error("Could not run meridianlink for quota with id: #{IO.inspect(quota.id)}")
+        nil ->
+        Logger.error("Could not run meridianlink for quota with id: #{IO.inspect(quota.id)}")
+          _ ->
+            :ok
+    end
 
     # update the eh_grade on the quota table kicking off the plaid underwriting
     Credit.update_quota(quota, %{eh_grade: result})
