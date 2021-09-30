@@ -114,8 +114,14 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   defp update_job_result(
          {:ok, %{"requestStatus" => "ANSWERED"} = result},
          %Quota{} = quota
-       ),
-       do: Credit.update_quota(quota, %{eh_grade: result})
+       ) do
+    # update the meridianlink fields on the contact waiting a max of 8 min for a response
+    meridianlink_task = Task.Supervisor.async_nolink(TransigoAdmin.TaskSupervisor, TransigoAdmin.Meridianlink, :update_contact_consumer_credit_report_by_quota_id, [quota.id])
+    Task.await(meridianlink_task, 480000)
+
+    # update the eh_grade on the quota table kicking off the plaid underwriting
+    Credit.update_quota(quota, %{eh_grade: result})
+  end
 
   defp update_job_result(
          {:ok, %{"decision" => %{"permanent" => %{"permanentAmount" => eh_amount}}} = result},
