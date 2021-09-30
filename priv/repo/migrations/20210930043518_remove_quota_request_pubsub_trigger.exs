@@ -3,11 +3,11 @@ defmodule TransigoAdmin.Repo.Migrations.RemoveQuotaRequestPubsubTrigger do
 
   def change do
     execute """
-    DROP FUNCTION IF EXISTS notify_quota_created()
+    DROP FUNCTION IF EXISTS notify_quota_created() CASCADE
     """
 
     execute """
-    DROP TRIGGER IF EXISTS notify_quota_created ON quota
+    DROP TRIGGER IF EXISTS notify_quota_created ON quota CASCADE
     """
 
   end
