@@ -116,7 +116,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
          %Quota{} = quota
        ) do
     # update the meridianlink fields on the contact waiting a max of 8 min for a response
-    meridianlink_task = Task.async(TransigoAdmin.Meridianlink, :update_contact_consumer_credit_report_by_quota_id, [quota.id])
+    meridianlink_task = Task.Supervisor.async_nolink(TransigoAdmin.TaskSupervisor, TransigoAdmin.Meridianlink, :update_contact_consumer_credit_report_by_quota_id, [quota.id])
     Task.await(meridianlink_task, 480000)
 
     # update the eh_grade on the quota table kicking off the plaid underwriting
