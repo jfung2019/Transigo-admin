@@ -314,6 +314,10 @@ defmodule TransigoAdmin.Account do
     end
   end
 
+  defp get_s3_bucket do
+    Application.get_env(:transigo_admin, :s3_bucket_name)
+  end
+
   def get_msa(%{"exporter_uid" => exporter_uid}) do
     # TODO test this function
     key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
@@ -321,14 +325,15 @@ defmodule TransigoAdmin.Account do
     if check_obj_exists?(key) do
       {:ok,
        ExAws.Config.new(:s3)
-       |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)}
+       |> ExAws.S3.presigned_url(:get, get_s3_bucket(), key)}
     else
       {:error, "Object does not exists"}
     end
   end
 
-  def check_obj_exists?(_key) do
+  def check_obj_exists?(key) do
     # TODO implement this check
+    ExAws.S3.get_object(get_s3_bucket(), key)
     true
   end
 
@@ -558,12 +563,11 @@ defmodule TransigoAdmin.Account do
   end
 
   def get_contact_by_quota_id(quota_id) do
-    from(q in Quota,
+    from(c in Contact,
+      join: i in assoc(c, :importer),
+      join: q in assoc(i, :quota),
       where: q.id == ^quota_id,
-      join: i in assoc(q, :importer),
-      join: c in assoc(i, :contact),
-      preload: [:us_place],
-      select: c
+      preload: [:us_place]
     )
     |> Repo.one()
   end
