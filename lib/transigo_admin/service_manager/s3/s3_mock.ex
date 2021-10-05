@@ -8,4 +8,6 @@ defmodule TransigoAdmin.ServiceManager.S3.S3Mock do
     do: {:ok, "#{transaction_uid}_invoice.pdf"}
 
   def get_file_presigned_url(_key), do: {:ok, "url"}
+
+  def check_file_exists?(_file), do: true
 end
