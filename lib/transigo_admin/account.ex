@@ -24,6 +24,7 @@ defmodule TransigoAdmin.Account do
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
   @hs_api Application.compile_env(:transigo_admin, :hs_api)
   @util_api Application.compile_env(:transigo_admin, :util_api)
+  @s3_api Application.compile_env(:transigo_admin, :s3_api)
 
   @states_list Code.eval_string("""
                  [
@@ -314,27 +315,19 @@ defmodule TransigoAdmin.Account do
     end
   end
 
-  defp get_s3_bucket do
-    Application.get_env(:transigo_admin, :s3_bucket_name)
-  end
-
   def get_msa(%{"exporter_uid" => exporter_uid}) do
     # TODO test this function
     key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
 
     if check_obj_exists?(key) do
-      {:ok,
-       ExAws.Config.new(:s3)
-       |> ExAws.S3.presigned_url(:get, get_s3_bucket(), key)}
+      @s3_api.get_file_presigned_url(key)
     else
       {:error, "Object does not exists"}
     end
   end
 
   def check_obj_exists?(key) do
-    # TODO implement this check
-    ExAws.S3.get_object(get_s3_bucket(), key)
-    true
+    @s3_api.check_file_exists?(key)
   end
 
   @doc """
