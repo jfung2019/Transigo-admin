@@ -20,6 +20,8 @@ defmodule TransigoAdmin.Account.Contact do
     field :consumer_credit_score_percentile, :integer
     field :consumer_credit_report_meridianlink, :string
 
+    has_one :importer, TransigoAdmin.Account.Importer
+
     belongs_to :us_place, TransigoAdmin.Account.UsPlace, source: :personal_US_address_id
 
     timestamps(

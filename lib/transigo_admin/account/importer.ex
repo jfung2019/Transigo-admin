@@ -25,6 +25,8 @@ defmodule TransigoAdmin.Account.Importer do
     field :bank_name, :string
     field :shufti_pro_verified_json, :map
 
+    has_one :quota, TransigoAdmin.Credit.Quota
+
     belongs_to :contact, TransigoAdmin.Account.Contact
 
     timestamps(
