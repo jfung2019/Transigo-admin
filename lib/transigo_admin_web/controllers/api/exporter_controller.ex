@@ -59,11 +59,9 @@ defmodule TransigoAdminWeb.Api.ExporterController do
 
   def get_msa(conn, %{"exporter_uid" => _} = params) do
     case Account.get_msa(params) do
-      {:ok, msa} ->
+      {:ok, url} ->
         conn
-        |> put_status(200)
-        |> put_view(@exporter_view)
-        |> render("show_msa.json", msa: msa)
+        |> redirect(external: url)
 
       {:error, message} ->
         conn
