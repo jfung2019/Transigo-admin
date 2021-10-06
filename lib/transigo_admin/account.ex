@@ -263,24 +263,39 @@ defmodule TransigoAdmin.Account do
   @doc """
   Update exporter
   """
-  def update_exporter(%{"exporter_transigo_uid" => uid} = attrs) do
+  def update_exporter(%{"exporter_uid" => uid} = attrs) do
     with {:ok, exporter} <- get_exporter_by_exporter_uid(uid, [:contact]) do
       contact_attrs =
         attrs
         |> get_contact_params()
+        |> Enum.filter(fn {_, value} -> value != nil end)
+        |> Enum.into(%{})
 
       exporter_attrs =
         attrs
         |> get_exporter_params()
+        |> Enum.filter(fn {_, value} -> value != nil end)
+        |> Enum.into(%{})
 
       Multi.new()
       |> Multi.update(Exporter, Exporter.update_changeset(exporter, exporter_attrs))
       |> Multi.update(Contact, Contact.update_changeset(exporter.contact, contact_attrs))
       |> Repo.transaction()
+      |> extract_errors()
     else
       _ -> {:error, "Could not update exporter"}
     end
   end
+
+  defp extract_errors({:error, struct, changeset, _}) when struct in [Contact, Exporter] do
+    {:error,
+     changeset
+     |> Ecto.Changeset.traverse_errors(fn {msg, _opt} ->
+       msg
+     end)}
+  end
+
+  defp extract_errors(param), do: param
 
   @doc """
   Get exporter by exporter_transigo_uid
@@ -288,9 +303,15 @@ defmodule TransigoAdmin.Account do
   @spec get_exporter_by_exporter_uid(String.t(), list) :: Exporter.t() | nil
   def get_exporter_by_exporter_uid(exporter_uid, preloads \\ []) do
     if DataLayer.check_uid(exporter_uid, "exp") do
-      {:ok,
-       from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
-       |> Repo.one()}
+      exporter =
+        from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
+        |> Repo.one()
+
+      if not is_nil(exporter) do
+        {:ok, exporter}
+      else
+        {:error, "Could not find exporter"}
+      end
     else
       {:error, "Invalid UID"}
     end
