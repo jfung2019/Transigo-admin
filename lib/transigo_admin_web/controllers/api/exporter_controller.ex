@@ -11,7 +11,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
 
   def update_exporter(conn, %{"exporter_uid" => _} = params) do
     case Account.update_exporter(params) do
-      {:ok, exporter} ->
+      {:ok, %{Contact => _contact, Exporter => exporter}} ->
         conn
         |> put_status(200)
         |> put_view(@exporter_view)
@@ -49,11 +49,11 @@ defmodule TransigoAdminWeb.Api.ExporterController do
         |> put_view(@exporter_view)
         |> render("create.json", exporter: exporter)
 
-      {:error, message} ->
+      _ ->
         conn
         |> put_status(400)
         |> put_view(@error_view)
-        |> render("errors.json", message: message)
+        |> render("errors.json", message: "Could not create exporter")
     end
   end
 
