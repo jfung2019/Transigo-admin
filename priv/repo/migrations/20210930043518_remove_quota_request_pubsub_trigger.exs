@@ -9,6 +9,5 @@ defmodule TransigoAdmin.Repo.Migrations.RemoveQuotaRequestPubsubTrigger do
     execute """
     DROP TRIGGER IF EXISTS notify_quota_created ON quota CASCADE
     """
-
   end
 end

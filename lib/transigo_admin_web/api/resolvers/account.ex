@@ -26,4 +26,6 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
     Credit.get_transaction_by_transaction_uid(transaction_uid)
     |> Account.check_document()
   end
+
+  def sign_msa_url(_root, %{exporter_id: exporter_id}, _context), do: {:ok, %{url: ""}}
 end
