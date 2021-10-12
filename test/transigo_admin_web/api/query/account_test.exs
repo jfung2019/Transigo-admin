@@ -31,7 +31,7 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
 
   @get_hellosign_url """
   query($exporterId: ID!) {
-    signMsaUrl(exporterId: $exporterId) {
+    signMsaUrl(exporterUid: $exporterId) {
       url
     }
   }
@@ -135,7 +135,7 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
            } = json_response(response, 200)
   end
 
-  test "can get hellosign URL", %{conn: conn, exporter: %{id: exporter_id}} do
+  test "can get hellosign URL", %{conn: conn, exporter: %{exporter_transigo_uid: exporter_id}} do
     response =
       post(conn, "/api", %{query: @get_hellosign_url, variables: %{"exporterId" => exporter_id}})
 
@@ -146,6 +146,9 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
                }
              }
            } = json_response(response, 200)
+
+    [_base, token] = String.split(url, "token=")
+    assert {:ok, nil} = TransigoAdminWeb.Tokenizer.decrypt(token)
 
     assert is_binary(url)
   end
