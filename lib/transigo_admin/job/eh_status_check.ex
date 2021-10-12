@@ -117,14 +117,23 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
          %Quota{} = quota
        ) do
     # update the meridianlink fields on the contact waiting a max of 8 min for a response
-    meridianlink_task = Task.Supervisor.async_nolink(TransigoAdmin.TaskSupervisor, TransigoAdmin.Meridianlink, :update_contact_consumer_credit_report_by_quota_id, [quota.id])
-    case Task.yield(meridianlink_task, 480000) || Task.shutdown(meridianlink_task) do
+    meridianlink_task =
+      Task.Supervisor.async_nolink(
+        TransigoAdmin.TaskSupervisor,
+        TransigoAdmin.Meridianlink,
+        :update_contact_consumer_credit_report_by_quota_id,
+        [quota.id]
+      )
+
+    case Task.yield(meridianlink_task, 480_000) || Task.shutdown(meridianlink_task) do
       {:exit, _} ->
         Logger.error("Could not run meridianlink for quota with id: #{IO.inspect(quota.id)}")
-        nil ->
+
+      nil ->
         Logger.error("Could not run meridianlink for quota with id: #{IO.inspect(quota.id)}")
-          _ ->
-            :ok
+
+      _ ->
+        :ok
     end
 
     # update the eh_grade on the quota table kicking off the plaid underwriting

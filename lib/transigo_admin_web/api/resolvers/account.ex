@@ -1,5 +1,6 @@
 defmodule TransigoAdminWeb.Api.Resolvers.Account do
   alias TransigoAdmin.{Account, Account.Guardian, Credit}
+  alias TransigoAdminWeb.Router.Helpers, as: Routes
 
   def login(_root, %{email: email, password: password, totp: totp}, _context) do
     with %{} = admin <- Account.find_admin(email),
@@ -25,5 +26,18 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
   def check_document(_root, %{transaction_uid: transaction_uid}, _context) do
     Credit.get_transaction_by_transaction_uid(transaction_uid)
     |> Account.check_document()
+  end
+
+  def sign_msa_url(_root, %{exporter_uid: exporter_uid}, _context) do
+    {:ok, %{hellosign_signature_request_id: signature_request_id}} =
+      Account.get_exporter_by_exporter_uid(exporter_uid)
+
+    {:ok,
+     %{
+       url:
+         Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
+           token: TransigoAdminWeb.Tokenizer.encrypt(signature_request_id)
+         )
+     }}
   end
 end

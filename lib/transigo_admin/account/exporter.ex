@@ -1,6 +1,7 @@
 defmodule TransigoAdmin.Account.Exporter do
   use Ecto.Schema
   import Ecto.Changeset
+  @google_maps_module Application.compile_env(:transigo_admin, :google_maps_module)
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
@@ -83,7 +84,7 @@ defmodule TransigoAdmin.Account.Exporter do
 
   defp check_valid_address(changeset, options \\ []) do
     validate_change(changeset, :address, fn _, address ->
-      case GoogleMaps.geocode(address) do
+      case @google_maps_module.geocode(address) do
         {:ok, _} -> []
         {:error, _} -> [{:address, options[:message] || "invalid address"}]
       end
