@@ -1,8 +1,6 @@
 defmodule TransigoAdmin.MeridianlinkTest do
   use TransigoAdmin.DataCase, async: true
 
-  alias TransigoAdmin.Meridianlink
-  alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.Repo
 
   describe "meridianlink integration test" do

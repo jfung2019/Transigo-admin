@@ -65,14 +65,14 @@ defmodule TransigoAdmin.AccountTest do
     test "show error with invalid address params" do
       assert {:error, _schema, _changeset, _} =
                @valid_exporter_params
-               |> Map.put("address", "as;dlfkj;lkjlkjfd")
+               |> Map.put("address", "not an address")
                |> create_exporter()
     end
 
     test "show error with invalid email params" do
       assert {:error, _schema, _changeset, _} =
                @valid_exporter_params
-               |> Map.put("signatoryEmail", "asl;dfkjlkjl")
+               |> Map.put("signatoryEmail", "not an email")
                |> create_exporter()
     end
   end
@@ -138,7 +138,7 @@ defmodule TransigoAdmin.AccountTest do
       assert {:error, _, _, _} =
                Account.update_exporter(
                  @valid_update_exporter_params
-                 |> Map.put("address", "alsdkjflkj;lkjasdf")
+                 |> Map.put("signatoryEmail", "not an email")
                  |> Map.put("exporter_transigo_uid", exporter.exporter_transigo_uid)
                )
     end
