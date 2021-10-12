@@ -36,7 +36,7 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
      %{
        url:
          Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
-           token: TransigoAdminWeb.Encrypt.encrypt(signature_request_id)
+           token: TransigoAdminWeb.Tokenizer.encrypt(signature_request_id)
          )
      }}
   end
