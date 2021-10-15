@@ -16,10 +16,12 @@ defmodule TransigoAdmin.Meridianlink do
   #@base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
 
   # production url
-  @base_url "https://premium.meridianlink.com/inetapi/request_products.aspx"
+  #@base_url "https://premium.meridianlink.com/inetapi/request_products.aspx"
 
   # production data url
   #@base_url "https://cdc.meridianlink.com/inetapi/request_products.aspx"
+
+  @base_url Application.compile_env(:transigo_admin, :meridianlink_url)
 
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
