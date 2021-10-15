@@ -13,15 +13,13 @@ defmodule TransigoAdmin.Meridianlink do
   @status_codes %{new: "New", processing: "Processing", completed: "Completed", error: "Error"}
 
   # testing url
-  #@base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
+  # @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
 
   # production url
-  #@base_url "https://premium.meridianlink.com/inetapi/request_products.aspx"
+  # @base_url "https://premium.meridianlink.com/inetapi/request_products.aspx"
 
   # production data url
-  #@base_url "https://cdc.meridianlink.com/inetapi/request_products.aspx"
-
-  @base_url Application.compile_env(:transigo_admin, :meridianlink_url)
+  # @base_url "https://cdc.meridianlink.com/inetapi/request_products.aspx"
 
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
@@ -188,10 +186,14 @@ defmodule TransigoAdmin.Meridianlink do
     ]
   end
 
+  defp get_base_url do
+    Application.get_env(:transigo_admin, :meridianlink_url)
+  end
+
   defp retrieve_existing_credit_report(vendor_order_identifier) do
     case ConsumerCreditRetrieve.get_request_body(vendor_order_identifier) do
       {:ok, body} ->
-        HTTPoison.post(@base_url, body, get_headers())
+        HTTPoison.post(get_base_url(), body, get_headers())
 
       {:error, message} ->
         {:error, message}
@@ -201,7 +203,7 @@ defmodule TransigoAdmin.Meridianlink do
   defp order_new_consumer_credit_report(%ConsumerCreditNew{} = body_params) do
     case ConsumerCreditNew.get_request_body(body_params) do
       {:ok, body} ->
-        HTTPoison.post(@base_url, body, get_headers())
+        HTTPoison.post(get_base_url(), body, get_headers())
 
       {:error, message} ->
         {:error, message}
