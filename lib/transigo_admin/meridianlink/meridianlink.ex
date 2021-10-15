@@ -12,15 +12,6 @@ defmodule TransigoAdmin.Meridianlink do
 
   @status_codes %{new: "New", processing: "Processing", completed: "Completed", error: "Error"}
 
-  # testing url
-  # @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
-
-  # production url
-  # @base_url "https://premium.meridianlink.com/inetapi/request_products.aspx"
-
-  # production data url
-  # @base_url "https://cdc.meridianlink.com/inetapi/request_products.aspx"
-
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
     last_name: "Testcase",
