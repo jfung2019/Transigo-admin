@@ -842,7 +842,7 @@ defmodule TransigoAdmin.Credit do
       signer =
         request["signature_requests"]["signatures"]
         |> Enum.find(fn x -> x.signer_email_address == transaction.exporter.signatory_email end)
-      @hs_api.fetch_sign_url(signer.signature_id)
+      {:ok, @hs_api.fetch_sign_url(signer.signature_id)}
     end
   end
 

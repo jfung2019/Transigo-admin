@@ -7,7 +7,9 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   alias TransigoAdmin.Account.Exporter
 
   @exporter_view TransigoAdminWeb.ApiExporterView
+  @hello_sign_view TransigoAdminWeb.HellosignView
   @error_view TransigoAdminWeb.ApiErrorView
+  @hs_client_id "transigo hellosign client id"
 
   def update_exporter(conn, %{"exporter_uid" => _} = params) do
     case Account.update_exporter(params) do
@@ -76,17 +78,17 @@ defmodule TransigoAdminWeb.Api.ExporterController do
         %{"exporter_uid" => _exp_uid, "transaction_uid" => _trans_uid} = params
       ) do
     case Credit.sign_transaction(params) do
-      {:ok, transaction} ->
+      {:ok, url} ->
         conn
         |> put_status(200)
-        |> put_view(@exporter_view)
-        |> render("signed_transaction.json", transaction: transaction)
+        |> put_view(@hello_sign_view)
+        |> render("index.html", %{sign_url: url, hs_client_id: @hs_client_id})
 
-      {:error, message} ->
+      _ ->
         conn
         |> put_status(400)
-        |> put_view(@error_view)
-        |> render("errors.json", message: message)
+        |> put_view(@hello_sign_view)
+        |> render("failed.html")
     end
   end
 
