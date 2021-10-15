@@ -12,8 +12,7 @@ defmodule TransigoAdmin.Meridianlink do
 
   @status_codes %{new: "New", processing: "Processing", completed: "Completed", error: "Error"}
 
-  @base_url "https://demo.mortgagecreditlink.com/inetapi/request_products.aspx"
-  # TODO move these to config file and get from environment variables
+  @base_url "https://premium.meridianlink.com/inetapi/request_products.aspx"
 
   @test_case %ConsumerCreditNew{
     first_name: "Bill",
