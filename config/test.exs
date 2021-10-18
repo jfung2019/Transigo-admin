@@ -36,4 +36,5 @@ config :transigo_admin,
   util_api: TransigoAdmin.ServiceManager.Util.UtilMock,
   eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApiMock,
   s3_api: TransigoAdmin.ServiceManager.S3.S3Mock,
-  google_maps_module: GoogleMapsStub
+  google_maps_module: GoogleMapsStub,
+  meridianlink_api: TransigoAdmin.ServiceManager.MeridianlinkMock

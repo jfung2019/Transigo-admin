@@ -38,6 +38,7 @@ config :transigo_admin,
   meridianlink_authorization: System.get_env("MERIDIANLINK_AUTH"),
   meridianlink_mcl_interface: System.get_env("MERIDIANLINK_MCL_INTERFACE"),
   meridianlink_url: System.get_env("MERIDIANLINK_URL"),
+  meridianlink_api: TransigoAdmin.ServiceManager.Meridianlink,
   encryption_salt: System.get_env("ENCRYPTION_SALT")
 
 config :sendgrid,
