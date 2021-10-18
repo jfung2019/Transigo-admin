@@ -9,7 +9,6 @@ defmodule TransigoAdmin.Account do
   alias Ecto.Multi
   alias TransigoAdmin.DataLayer
   alias TransigoAdmin.Credit.Marketplace
-  alias TransigoAdmin.Credit.Quota
 
   alias TransigoAdmin.Account.{
     Admin,

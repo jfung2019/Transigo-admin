@@ -43,7 +43,7 @@ defmodule TransigoAdminWeb.Router do
     end
   end
 
-  scope "v2/exporters", TransigoAdminWeb.Api do
+  scope "/v2/exporters", TransigoAdminWeb.Api do
     pipe_through [:browser, :api_auth]
 
     get "/:exporter_uid/sign_transaction/:transaction_uid",
