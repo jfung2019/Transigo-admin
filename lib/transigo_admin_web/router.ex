@@ -43,6 +43,14 @@ defmodule TransigoAdminWeb.Router do
     end
   end
 
+  scope "v2/exporters", TransigoAdminWeb.Api do
+    pipe_through [:browser, :api_auth]
+
+    get "/:exporter_uid/sign_transaction/:transaction_uid",
+        ExporterController,
+        :sign_transaction
+  end
+
   scope "/v2", TransigoAdminWeb.Api do
     pipe_through [:api, :api_auth]
 
@@ -51,12 +59,7 @@ defmodule TransigoAdminWeb.Router do
       get "/:exporter_uid", ExporterController, :show_exporter
       put "/:exporter_uid", ExporterController, :update_exporter
       get "/:exporter_uid/get_msa", ExporterController, :get_msa
-
-      get "/:exporter_uid/sign_transaction/:transaction_uid",
-          ExporterController,
-          :sign_transaction
-
-      get "/sign_msa", ExporterController, :sign_msa
+      get "/:exporter_uid/sign_msa", ExporterController, :sign_msa
     end
 
     scope "/trans" do
