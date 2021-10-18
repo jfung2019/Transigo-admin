@@ -837,12 +837,13 @@ defmodule TransigoAdmin.Credit do
     with true <- DataLayer.check_uid(exporter_uid, "exp"),
          true <- DataLayer.check_uid(transaction_uid, "tra"),
          {:ok, transaction} <- get_exporter_and_transaction_by_id(params) do
-      {:ok, request} =
-        @hs_api.get_signature_request(transaction.hellosign_signature_request_id)
+      {:ok, request} = @hs_api.get_signature_request(transaction.hellosign_signature_request_id)
+
       signer =
-        request["signature_requests"]["signatures"]
-        |> Enum.find(fn x -> x.signer_email_address == transaction.exporter.signatory_email end)
-      {:ok, @hs_api.fetch_sign_url(signer.signature_id)}
+        request["signature_request"]["signatures"]
+        |> Enum.find(fn x -> x["signer_email_address"] == transaction.exporter.signatory_email end)
+
+      {:ok, @hs_api.fetch_sign_url(signer["signature_id"])}
     end
   end
 
