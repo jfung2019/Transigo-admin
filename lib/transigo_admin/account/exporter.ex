@@ -55,7 +55,7 @@ defmodule TransigoAdmin.Account.Exporter do
     :signatory_last_name,
     :signatory_mobile,
     :signatory_email,
-    :signatory_title,
+    :signatory_title
   ]
 
   @required_attrs [

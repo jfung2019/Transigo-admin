@@ -87,6 +87,7 @@ defmodule TransigoAdmin.AccountTest do
 
       %{marketplace: marketplace}
     end
+
     test "can retrive an exporter with valid params" do
       {:ok, %{Contact => _contact, Exporter => exporter}} = create_exporter()
 
@@ -111,6 +112,7 @@ defmodule TransigoAdmin.AccountTest do
 
       %{marketplace: marketplace}
     end
+
     test "can update exporter with valid params" do
       {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter()
 

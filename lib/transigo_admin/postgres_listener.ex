@@ -14,7 +14,7 @@ defmodule TransigoAdmin.PostgresListener do
     {:ok,
      %__MODULE__{
        pid: pid,
-       plaid_request_ref: plaid_request_ref,
+       plaid_request_ref: plaid_request_ref
      }}
   end
 
@@ -30,7 +30,6 @@ defmodule TransigoAdmin.PostgresListener do
 
     {:noreply, state}
   end
-
 
   def terminate(_reason, %{pid: pid, plaid_request_ref: plaid_request_ref}) do
     Notifications.unlisten!(pid, plaid_request_ref)

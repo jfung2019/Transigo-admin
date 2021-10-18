@@ -64,7 +64,6 @@ defmodule TransigoAdmin.Account.Contact do
     :consumer_credit_report_meridianlink
   ]
 
-
   @required_attrs [
     :contact_transigo_uid,
     :first_name,

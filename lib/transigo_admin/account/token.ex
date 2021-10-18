@@ -13,6 +13,7 @@ defmodule TransigoAdmin.Account.Token do
       type: :utc_datetime
     )
   end
+
   def changeset(token, attrs) do
     token
     |> cast(attrs, [:access_token, :user_id])
