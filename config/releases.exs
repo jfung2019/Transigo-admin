@@ -38,7 +38,8 @@ config :transigo_admin,
   meridianlink_authorization: System.get_env("MERIDIANLINK_AUTH"),
   meridianlink_mcl_interface: System.get_env("MERIDIANLINK_MCL_INTERFACE"),
   meridianlink_url: System.get_env("MERIDIANLINK_URL"),
-  encryption_salt: System.get_env("ENCRYPTION_SALT")
+  encryption_salt: System.get_env("ENCRYPTION_SALT"),
+  hellosign_test_mode: System.get_env("HELLOSIGN_TEST_MODE")
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),
