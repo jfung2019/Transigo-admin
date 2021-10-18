@@ -45,7 +45,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
-        |> post(Routes.exporter_path(conn, :create_exporter), exporter_params)
+        |> post(Routes.exporter_path(conn, :create), exporter_params)
         |> json_response(:ok)
 
       assert %{"result" => %{"exporter_transigoUID" => _}} = res
@@ -66,7 +66,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
-        |> post(Routes.exporter_path(conn, :create_exporter), exporter_params)
+        |> post(Routes.exporter_path(conn, :create), exporter_params)
         |> json_response(:bad_request)
 
       assert %{"errors" => ["Could not create exporter"]} = res
@@ -111,7 +111,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
-        |> get(Routes.exporter_path(conn, :show_exporter, exporter.exporter_transigo_uid))
+        |> get(Routes.exporter_path(conn, :show, exporter.exporter_transigo_uid))
         |> json_response(:ok)
 
       assert %{"result" => %{"exporter" => exporter_fields}} = res
@@ -129,7 +129,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
-        |> get(Routes.exporter_path(conn, :show_exporter, rand_uid))
+        |> get(Routes.exporter_path(conn, :show, rand_uid))
         |> json_response(:bad_request)
 
       assert %{"errors" => ["Could not find exporter"]} = res
@@ -145,7 +145,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
-        |> get(Routes.exporter_path(conn, :show_exporter, "123"))
+        |> get(Routes.exporter_path(conn, :show, "123"))
         |> json_response(:bad_request)
 
       assert %{"errors" => ["Invalid UID"]} = res
@@ -197,7 +197,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
         |> put(
-          Routes.exporter_path(conn, :update_exporter, exporter.exporter_transigo_uid),
+          Routes.exporter_path(conn, :update, exporter.exporter_transigo_uid),
           update_params
         )
         |> json_response(:ok)
@@ -220,7 +220,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
         |> put(
-          Routes.exporter_path(conn, :update_exporter, exporter.exporter_transigo_uid),
+          Routes.exporter_path(conn, :update, exporter.exporter_transigo_uid),
           update_params
         )
         |> json_response(:bad_request)
@@ -241,7 +241,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
         |> put(
-          Routes.exporter_path(conn, :update_exporter, exporter.exporter_transigo_uid),
+          Routes.exporter_path(conn, :update, exporter.exporter_transigo_uid),
           update_params
         )
         |> json_response(:ok)

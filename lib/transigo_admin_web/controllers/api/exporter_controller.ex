@@ -11,7 +11,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   @error_view TransigoAdminWeb.ApiErrorView
   @hs_client_id "transigo hellosign client id"
 
-  def update_exporter(conn, %{"exporter_uid" => _} = params) do
+  def update(conn, %{"exporter_uid" => _} = params) do
     case Account.update_exporter(params) do
       {:ok, %{Contact => _contact, Exporter => exporter}} ->
         conn
@@ -27,7 +27,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
     end
   end
 
-  def show_exporter(conn, %{"exporter_uid" => uid}) do
+  def show(conn, %{"exporter_uid" => uid}) do
     case Account.get_exporter_by_exporter_uid(uid) do
       {:ok, exporter} ->
         conn
@@ -43,7 +43,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
     end
   end
 
-  def create_exporter(conn, params) do
+  def create(conn, params) do
     case Account.create_exporter(params) do
       {:ok, %{Contact => _contact, Exporter => exporter}} ->
         conn
