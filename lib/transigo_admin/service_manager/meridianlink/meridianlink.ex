@@ -1,11 +1,12 @@
-defmodule TransigoAdmin.Meridianlink do
+defmodule TransigoAdmin.ServiceManager.Meridianlink do
+  @behaviour TransigoAdmin.ServiceManager.MeridianlinkBehavior
   require Logger
 
   alias TransigoAdmin.Account
   alias TransigoAdmin.Account.Contact
-  alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew
-  alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
-  alias TransigoAdmin.Meridianlink.XMLParser
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditNew
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRetrieve
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLParser
 
   @new_consumer_credit_report_retries 3
   @retrieve_consumer_credit_report_retries 90
@@ -38,7 +39,14 @@ defmodule TransigoAdmin.Meridianlink do
     get_consumer_credit_report(contact, request_fields)
   end
 
-  def get_consumer_credit_fields_from_contact(contact = %Contact{}) do
+  def get_consumer_credit_report(
+        %Contact{} = contact,
+        %ConsumerCreditNew{} = body_params \\ @test_case
+      ) do
+    do_get_consumer_credit_report(contact, body_params, 0)
+  end
+
+  defp get_consumer_credit_fields_from_contact(contact = %Contact{}) do
     %ConsumerCreditNew{
       first_name: Map.get(contact, :first_name),
       last_name: Map.get(contact, :last_name),
@@ -52,13 +60,6 @@ defmodule TransigoAdmin.Meridianlink do
       taxpayer_identifier_type: "SocialSecurityNumber",
       taxpayer_identifier_value: Map.get(contact, :ssn)
     }
-  end
-
-  def get_consumer_credit_report(
-        %Contact{} = contact,
-        %ConsumerCreditNew{} = body_params \\ @test_case
-      ) do
-    do_get_consumer_credit_report(contact, body_params, 0)
   end
 
   defp do_get_consumer_credit_report(_, _, @new_consumer_credit_report_retries) do
@@ -100,66 +101,61 @@ defmodule TransigoAdmin.Meridianlink do
     do_loop_retrive_credit_report(contact, res, vendor_order_identifier, 0)
   end
 
-  defp do_loop_retrieve_credit_report(
-         _contact,
-         _res,
-         _vendor_order_identifier,
-         @retrieve_consumer_credit_report_retries
-       ) do
-    Logger.info("Unable to retrive consumer credit report. Too many attempts.")
-    :error
-  end
-
   defp do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step) do
-    Logger.info("Polling...")
-    Process.sleep(1000)
+    if step > @retrieve_consumer_credit_report_retries do
+      Logger.info("Unable to retrive consumer credit report. Too many attempts.")
+      {:error, "Unable to order a consumer credit report. Too many retries"}
+    else
+      Logger.info("Polling...")
+      Process.sleep(1000)
 
-    case retrieve_existing_credit_report(vendor_order_identifier) do
-      {:ok, res} ->
-        %{status_code: status_code} =
-          if(res.body != "" and not is_nil(res.body)) do
-            XMLParser.check_retrive_status_code(res.body)
-          else
-            %{status_code: @status_codes.processing}
-          end
-
-        case status_code do
-          code when code == @status_codes.completed ->
-            Logger.info("Successfully retrived consumer credit report")
-
-            case XMLParser.get_equifax_credit_score_fields(res.body) do
-              {:ok,
-               %{
-                 credit_score_rank_percentile: credit_score_percentile,
-                 credit_score_value: credit_score
-               }} ->
-                case Account.insert_contact_consumer_credit_report(contact, %{
-                       consumer_credit_score: credit_score,
-                       consumer_credit_score_percentile: credit_score_percentile,
-                       consumer_credit_report_meridianlink: res.body
-                     }) do
-                  {:ok, _contact} ->
-                    :ok
-
-                  {:error, _changeset} ->
-                    {:error, "Could not update contact with fields"}
-                end
-
-              {:error, message} ->
-                {:error, message}
+      case retrieve_existing_credit_report(vendor_order_identifier) do
+        {:ok, res} ->
+          %{status_code: status_code} =
+            if(res.body != "" and not is_nil(res.body)) do
+              XMLParser.check_retrive_status_code(res.body)
+            else
+              %{status_code: @status_codes.processing}
             end
 
-          code when code == @status_codes.error ->
-            Logger.error("Unable to order a consumer credit report. Meridianlink error.")
-            :error
+          case status_code do
+            code when code == @status_codes.completed ->
+              Logger.info("Successfully retrived consumer credit report")
 
-          code when code in [@status_codes.new, @status_codes.processing] ->
-            Logger.info("Consumer credit report not ready yet trying again")
-            do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step + 1)
-        end
+              case XMLParser.get_equifax_credit_score_fields(res.body) do
+                {:ok,
+                 %{
+                   credit_score_rank_percentile: credit_score_percentile,
+                   credit_score_value: credit_score
+                 }} ->
+                  case Account.insert_contact_consumer_credit_report(contact, %{
+                         consumer_credit_score: credit_score,
+                         consumer_credit_score_percentile: credit_score_percentile,
+                         consumer_credit_report_meridianlink: res.body
+                       }) do
+                    {:ok, _contact} ->
+                      :ok
 
-      {:error, _message} ->
-        do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step + 1)
+                    {:error, _changeset} ->
+                      {:error, "Could not update contact with fields"}
+                  end
+
+                {:error, message} ->
+                  {:error, message}
+              end
+
+            code when code == @status_codes.error ->
+              Logger.error("Unable to order a consumer credit report. Meridianlink error.")
+              :error
+
+            code when code in [@status_codes.new, @status_codes.processing] ->
+              Logger.info("Consumer credit report not ready yet trying again")
+              do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step + 1)
+          end
+
+        {:error, _message} ->
+          do_loop_retrive_credit_report(contact, res, vendor_order_identifier, step + 1)
+      end
     end
   end
 
