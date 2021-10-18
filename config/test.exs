@@ -35,4 +35,5 @@ config :transigo_admin,
   dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock,
   util_api: TransigoAdmin.ServiceManager.Util.UtilMock,
   eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApiMock,
-  s3_api: TransigoAdmin.ServiceManager.S3.S3Mock
+  s3_api: TransigoAdmin.ServiceManager.S3.S3Mock,
+  google_maps_module: GoogleMapsStub

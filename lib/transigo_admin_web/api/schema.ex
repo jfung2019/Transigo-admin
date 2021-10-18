@@ -65,6 +65,13 @@ defmodule TransigoAdminWeb.Api.Schema do
       middleware Middleware.Authenticate
       resolve &Resolvers.Account.check_document/3
     end
+
+    @desc "gets signing URL for exporter"
+    field :sign_msa_url, :document_result do
+      arg :exporter_uid, non_null(:id)
+      middleware Middleware.Authenticate
+      resolve &Resolvers.Account.sign_msa_url/3
+    end
   end
 
   def context(ctx) do

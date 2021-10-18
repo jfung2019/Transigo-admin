@@ -6,6 +6,7 @@ defmodule TransigoAdminWeb.Api.OfferController do
   @offer_view TransigoAdminWeb.ApiOfferView
   @error_view TransigoAdminWeb.ApiErrorView
 
+  @spec generate_offer(Plug.Conn.t(), map) :: Plug.Conn.t()
   def generate_offer(conn, param) do
     case Credit.generate_offer(param) do
       {:ok, offer} ->

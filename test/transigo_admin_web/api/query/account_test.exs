@@ -29,6 +29,14 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   }
   """
 
+  @get_hellosign_url """
+  query($exporterId: ID!) {
+    signMsaUrl(exporterUid: $exporterId) {
+      url
+    }
+  }
+  """
+
   setup %{conn: conn} do
     Repo.insert!(%TransigoAdmin.Credit.Marketplace{
       origin: "DH",
@@ -125,5 +133,23 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
                }
              }
            } = json_response(response, 200)
+  end
+
+  test "can get hellosign URL", %{conn: conn, exporter: %{exporter_transigo_uid: exporter_id}} do
+    response =
+      post(conn, "/api", %{query: @get_hellosign_url, variables: %{"exporterId" => exporter_id}})
+
+    assert %{
+             "data" => %{
+               "signMsaUrl" => %{
+                 "url" => url
+               }
+             }
+           } = json_response(response, 200)
+
+    [_base, token] = String.split(url, "token=")
+    assert {:ok, nil} = TransigoAdminWeb.Tokenizer.decrypt(token)
+
+    assert is_binary(url)
   end
 end
