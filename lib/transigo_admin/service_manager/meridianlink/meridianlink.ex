@@ -6,7 +6,7 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
   alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditNew
   alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRetrieve
-  alias TransigoAdmin.ServiceManager.Meridianlink.XMLParser
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.XMLParser
 
   @new_consumer_credit_report_retries 3
   @retrieve_consumer_credit_report_retries 90

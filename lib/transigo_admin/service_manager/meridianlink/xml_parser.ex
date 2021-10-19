@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLParser do
+defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.XMLParser do
   import SweetXml
 
   @vendor_order_identifier_x_path ~x"/MESSAGE/DEAL_SETS/DEAL_SET/DEALS/DEAL/SERVICES/SERVICE/SERVICE_PRODUCT_FULFILLMENT/SERVICE_PRODUCT_FULFILLMENT_DETAIL/VendorOrderIdentifier/text()"
