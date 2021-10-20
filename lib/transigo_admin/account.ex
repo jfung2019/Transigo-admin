@@ -467,7 +467,7 @@ defmodule TransigoAdmin.Account do
 
     payload = [
       {"client_id", Application.get_env(:transigo_admin, :hs_client_id)},
-      {"test_mode", "1"},
+      {"test_mode", Application.get_env(:transigo_admin, :hellosign_test_mode)},
       {"use_text_tags", "1"},
       {"hide_text_tags", "1"},
       {:file, msa_path, {"form-data", [name: "file[0]", filename: msa_basename]}, []},

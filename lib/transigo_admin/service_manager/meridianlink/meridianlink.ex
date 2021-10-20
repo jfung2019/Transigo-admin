@@ -69,16 +69,20 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
 
   defp do_get_consumer_credit_report(contact, body_params, step) do
     Logger.info("ordering a new consumer credit report")
+    Logger.info("Params used for request:", inspect(body_params))
+
 
     case order_new_consumer_credit_report(body_params) do
       {:ok, res} ->
         Logger.info("successfully ordered a new consumer credit report. Polling for results.")
+        Logger.info("response from meridianlink:", inspect(res))
 
         %{
           vendor_order_identifier: vendor_order_identifier,
           taxpayer_identifier_value: _taxpayer_identifier_value,
           taxpayer_identifier_type: _taxpayer_identifier_type
         } = response_data = XMLParser.get_new_order_response_data(res.body)
+        Logger.info("parsed response from meridianlink:", inspect(response_data))
 
         Logger.info("VendorOrderIdentifier: #{vendor_order_identifier}")
 
