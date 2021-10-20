@@ -593,8 +593,8 @@ defmodule TransigoAdmin.Credit do
 
   defp check_exporter(exporter_uid) do
     case Account.get_exporter_by_exporter_uid(exporter_uid) do
-      nil -> {:error, "Exporter not found"}
-      exporter -> {:ok, exporter}
+      {:error, _} -> {:error, "Exporter not found"}
+      {:ok, exporter} -> {:ok, exporter}
     end
   end
 
