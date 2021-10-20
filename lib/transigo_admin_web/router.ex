@@ -34,12 +34,12 @@ defmodule TransigoAdminWeb.Router do
 
     resources "/importers_signup", ImporterFormController, only: [:new, :create]
     resources "/sessions", SessionController, only: [:new, :create], singleton: true
+    get "/signing", HellosignController, :index
 
     scope "/admin" do
       pipe_through :admin_authenticated
 
       get "/sessions", SessionController, :index, as: :logged_in_session
-      get "/signing", HellosignController, :index
     end
   end
 
