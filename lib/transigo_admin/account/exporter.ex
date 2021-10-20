@@ -49,6 +49,16 @@ defmodule TransigoAdmin.Account.Exporter do
     :cn_msa
   ]
 
+  @update_attrs [
+    :business_name,
+    :registration_number,
+    :signatory_first_name,
+    :signatory_last_name,
+    :signatory_mobile,
+    :signatory_email,
+    :signatory_title
+  ]
+
   @required_attrs [
     :exporter_transigo_uid,
     :business_name,
@@ -76,10 +86,9 @@ defmodule TransigoAdmin.Account.Exporter do
 
   def update_changeset(exporter, attrs) do
     exporter
-    |> cast(attrs, @available_attrs)
+    |> cast(attrs, @update_attrs)
     |> change_cn_msa()
     |> EctoCommons.EmailValidator.validate_email(:signatory_email)
-    |> check_valid_address()
   end
 
   defp check_valid_address(changeset, options \\ []) do

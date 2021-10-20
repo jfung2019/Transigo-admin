@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.EulerHermes.EhApiMock do
+defmodule TransigoAdmin.Test.Support.Mock.EhApiMock do
   @behaviour TransigoAdmin.ServiceManager.EulerHermes.EhApiBehavior
 
   def eh_auth(), do: {:ok, "eh_access_token"}

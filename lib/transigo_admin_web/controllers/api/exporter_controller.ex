@@ -7,11 +7,13 @@ defmodule TransigoAdminWeb.Api.ExporterController do
   alias TransigoAdmin.Account.Exporter
 
   @exporter_view TransigoAdminWeb.ApiExporterView
+  @hello_sign_view TransigoAdminWeb.HellosignView
   @error_view TransigoAdminWeb.ApiErrorView
+  @hs_client_id "transigo hellosign client id"
 
-  def update_exporter(conn, %{"exporter_uid" => _} = params) do
+  def update(conn, %{"exporter_uid" => _} = params) do
     case Account.update_exporter(params) do
-      {:ok, exporter} ->
+      {:ok, %{Contact => _contact, Exporter => exporter}} ->
         conn
         |> put_status(200)
         |> put_view(@exporter_view)
@@ -25,7 +27,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
     end
   end
 
-  def show_exporter(conn, %{"exporter_uid" => uid}) do
+  def show(conn, %{"exporter_uid" => uid}) do
     case Account.get_exporter_by_exporter_uid(uid) do
       {:ok, exporter} ->
         conn
@@ -41,7 +43,7 @@ defmodule TransigoAdminWeb.Api.ExporterController do
     end
   end
 
-  def create_exporter(conn, params) do
+  def create(conn, params) do
     case Account.create_exporter(params) do
       {:ok, %{Contact => _contact, Exporter => exporter}} ->
         conn
@@ -49,21 +51,19 @@ defmodule TransigoAdminWeb.Api.ExporterController do
         |> put_view(@exporter_view)
         |> render("create.json", exporter: exporter)
 
-      {:error, message} ->
+      _ ->
         conn
         |> put_status(400)
         |> put_view(@error_view)
-        |> render("errors.json", message: message)
+        |> render("errors.json", message: "Could not create exporter")
     end
   end
 
   def get_msa(conn, %{"exporter_uid" => _} = params) do
     case Account.get_msa(params) do
-      {:ok, msa} ->
+      {:ok, url} ->
         conn
-        |> put_status(200)
-        |> put_view(@exporter_view)
-        |> render("show_msa.json", msa: msa)
+        |> redirect(external: url)
 
       {:error, message} ->
         conn
@@ -78,17 +78,17 @@ defmodule TransigoAdminWeb.Api.ExporterController do
         %{"exporter_uid" => _exp_uid, "transaction_uid" => _trans_uid} = params
       ) do
     case Credit.sign_transaction(params) do
-      {:ok, transaction} ->
+      {:ok, url} ->
         conn
         |> put_status(200)
-        |> put_view(@exporter_view)
-        |> render("signed_transaction.json", transaction: transaction)
+        |> put_view(@hello_sign_view)
+        |> render("index.html", %{sign_url: url, hs_client_id: @hs_client_id})
 
-      {:error, message} ->
+      _ ->
         conn
         |> put_status(400)
-        |> put_view(@error_view)
-        |> render("errors.json", message: message)
+        |> put_view(@hello_sign_view)
+        |> render("failed.html")
     end
   end
 

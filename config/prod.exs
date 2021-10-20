@@ -55,3 +55,6 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
+
+config :transigo_admin,
+  meridianlink_api: TransigoAdmin.ServiceManager.Meridianlink

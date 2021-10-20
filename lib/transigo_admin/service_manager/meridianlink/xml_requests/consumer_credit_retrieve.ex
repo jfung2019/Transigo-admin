@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve do
+defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRetrieve do
   def get_request_body(vendor_order_identifier) when is_binary(vendor_order_identifier) do
     case Integer.parse(vendor_order_identifier) do
       {_, ""} ->

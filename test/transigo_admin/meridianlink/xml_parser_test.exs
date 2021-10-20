@@ -1,7 +1,7 @@
-defmodule TransigoAdmin.Meridianlink.XMLParserTest do
+defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.XMLParserTest do
   use TransigoAdmin.DataCase, async: true
 
-  alias TransigoAdmin.Meridianlink.XMLParser
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.XMLParser
 
   test "can parse desired fields from consumer credit retrive response" do
     {:ok, xml} =

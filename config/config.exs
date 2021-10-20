@@ -37,6 +37,7 @@ config :transigo_admin,
   encryption_salt: System.get_env("ENCRYPTION_SALT"),
   google_maps_module: GoogleMaps,
   meridianlink_url: System.get_env("MERIDIANLINK_URL"),
+  meridianlink_api: TransigoAdmin.ServiceManager.Meridianlink,
   hellosign_test_mode: System.get_env("HELLOSIGN_TEST_MODE")
 
 config :google_maps,

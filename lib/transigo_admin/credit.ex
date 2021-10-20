@@ -1,6 +1,7 @@
 defmodule TransigoAdmin.Credit do
   import Ecto.Query, warn: false
 
+  alias TransigoAdmin.DataLayer
   alias TransigoAdmin.{Repo, Account}
   alias Absinthe.Relay
   alias TransigoAdmin.Credit.{Transaction, Quota, Marketplace, Offer}
@@ -829,4 +830,38 @@ defmodule TransigoAdmin.Credit do
   def datasource, do: Dataloader.Ecto.new(Repo, query: &query/2)
 
   def query(queryable, _), do: queryable
+
+  def sign_transaction(
+        %{"exporter_uid" => exporter_uid, "transaction_uid" => transaction_uid} = params
+      ) do
+    with true <- DataLayer.check_uid(exporter_uid, "exp"),
+         true <- DataLayer.check_uid(transaction_uid, "tra"),
+         {:ok, transaction} <- get_exporter_and_transaction_by_id(params) do
+      {:ok, request} = @hs_api.get_signature_request(transaction.hellosign_signature_request_id)
+
+      signer =
+        request["signature_request"]["signatures"]
+        |> Enum.find(fn x -> x["signer_email_address"] == transaction.exporter.signatory_email end)
+
+      {:ok, @hs_api.fetch_sign_url(signer["signature_id"])}
+    end
+  end
+
+  def get_exporter_and_transaction_by_id(%{
+        "exporter_uid" => exporter_uid,
+        "transaction_uid" => transaction_uid
+      }) do
+    transaction =
+      Transaction
+      |> where(transaction_uid: ^transaction_uid)
+      |> where([t], t.hs_signing_status != "all_signed")
+      |> preload(:exporter)
+      |> Repo.one()
+
+    if not is_nil(transaction) and transaction.exporter.exporter_transigo_uid == exporter_uid do
+      {:ok, transaction}
+    else
+      {:error, "could not find exporter or transaction"}
+    end
+  end
 end

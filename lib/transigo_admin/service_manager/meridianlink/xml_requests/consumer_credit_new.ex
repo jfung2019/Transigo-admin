@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew do
+defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditNew do
   defstruct [
     :first_name,
     :last_name,

@@ -43,22 +43,22 @@ defmodule TransigoAdminWeb.Router do
     end
   end
 
+  scope "/v2/exporters", TransigoAdminWeb.Api do
+    pipe_through [:browser, :api_auth]
+
+    get "/:exporter_uid/sign_transaction/:transaction_uid",
+        ExporterController,
+        :sign_transaction
+  end
+
   scope "/v2", TransigoAdminWeb.Api do
     pipe_through [:api, :api_auth]
 
     scope "/exporters" do
-      scope "/:exporter_uid" do
-        post "/", ExporterController, :create_exporter
-        get "/:exporter_uid", ExporterController, :show_exporter
-        put "/:exporter_uid", ExporterController, :update_exporter
-        get "/:exporter_uid/get_msa", ExporterController, :get_msa
+      resources "/", ExporterController, only: [:create, :show, :update], param: "exporter_uid"
 
-        get "/:exporter_uid/sign_transaction/:transaction_uid",
-            ExporterController,
-            :sign_transaction
-
-        get "/sign_msa", ExporterController, :sign_msa
-      end
+      get "/:exporter_uid/get_msa", ExporterController, :get_msa
+      get "/:exporter_uid/sign_msa", ExporterController, :sign_msa
     end
 
     scope "/trans" do

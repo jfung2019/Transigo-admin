@@ -1,8 +1,8 @@
-defmodule TransigoAdmin.Meridianlink.XMLRequestTest do
+defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequestTest do
   use TransigoAdmin.DataCase, async: true
 
-  alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditNew
-  alias TransigoAdmin.Meridianlink.XMLRequests.ConsumerCreditRetrieve
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditNew
+  alias TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRetrieve
 
   test "produces a valid new consumer credit request body with valid inputs" do
     valid_params = %ConsumerCreditNew{

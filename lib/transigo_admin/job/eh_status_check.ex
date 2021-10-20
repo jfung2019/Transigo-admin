@@ -10,6 +10,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
   #  alias SendGrid.{Mail, Email}
 
   @eh_api Application.compile_env(:transigo_admin, :eh_api)
+  @meridianlink Application.compile_env(:transigo_admin, :meridianlink_api)
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"type" => "10_mins"}}) do
@@ -120,7 +121,7 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
     meridianlink_task =
       Task.Supervisor.async_nolink(
         TransigoAdmin.TaskSupervisor,
-        TransigoAdmin.Meridianlink,
+        @meridianlink,
         :update_contact_consumer_credit_report_by_quota_id,
         [quota.id]
       )

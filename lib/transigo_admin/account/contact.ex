@@ -49,6 +49,15 @@ defmodule TransigoAdmin.Account.Contact do
     :consumer_credit_report_meridianlink
   ]
 
+  @update_attrs [
+    :first_name,
+    :last_name,
+    :mobile,
+    :work_phone,
+    :email,
+    :role
+  ]
+
   @consumer_credit_attrs [
     :consumer_credit_score,
     :consumer_credit_score_percentile,
@@ -80,6 +89,6 @@ defmodule TransigoAdmin.Account.Contact do
 
   def update_changeset(contact, attrs) do
     contact
-    |> cast(attrs, @available_attrs)
+    |> cast(attrs, @update_attrs)
   end
 end
