@@ -31,10 +31,10 @@ config :google_maps,
   api_key: System.get_env("TRANSIGO_GOOGLE_MAPS_API_KEY")
 
 config :transigo_admin,
-  hs_api: TransigoAdmin.ServiceManager.HelloSign.HsMock,
-  dwolla_api: TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock,
-  util_api: TransigoAdmin.ServiceManager.Util.UtilMock,
-  eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApiMock,
-  s3_api: TransigoAdmin.ServiceManager.S3.S3Mock,
+  hs_api: TransigoAdmin.Test.Support.Mock.HsMock,
+  dwolla_api: TransigoAdmin.Test.Support.Mock.DwollaApiMock,
+  util_api: TransigoAdmin.Test.Support.Mock.UtilMock,
+  eh_api: TransigoAdmin.Test.Support.Mock.EhApiMock,
+  s3_api: TransigoAdmin.Test.Support.Mock.S3Mock,
   google_maps_module: GoogleMapsStub,
-  meridianlink_api: TransigoAdmin.ServiceManager.MeridianlinkMock
+  meridianlink_api: TransigoAdmin.Test.Support.Mock.MeridianlinkMock

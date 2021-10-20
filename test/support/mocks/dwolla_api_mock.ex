@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.Dwolla.DwollaApiMock do
+defmodule TransigoAdmin.Test.Support.Mock.DwollaApiMock do
   @behaviour TransigoAdmin.ServiceManager.Dwolla.DwollaApiBehavior
 
   @mock_access_token "valid_token"

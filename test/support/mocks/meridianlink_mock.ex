@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.MeridianlinkMock do
+defmodule TransigoAdmin.Test.Support.Mock.MeridianlinkMock do
   @behaviour TransigoAdmin.ServiceManager.MeridianlinkBehavior
 
   alias TransigoAdmin.Account

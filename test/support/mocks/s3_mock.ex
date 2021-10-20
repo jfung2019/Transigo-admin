@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.S3.S3Mock do
+defmodule TransigoAdmin.Test.Support.Mock.S3Mock do
   @behaviour TransigoAdmin.ServiceManager.S3.S3Behavior
 
   def download_file(%{transaction_uid: transaction_uid}, :invoice),

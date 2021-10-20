@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.Util.UtilMock do
+defmodule TransigoAdmin.Test.Support.Mock.UtilMock do
   @behaviour TransigoAdmin.ServiceManager.Util.UtilBehavior
 
   def get_uid("mes"), do: "Tmes-1234-abcd-1234-abcd"

@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.ServiceManager.HelloSign.HsMock do
+defmodule TransigoAdmin.Test.Support.Mock.HsMock do
   @behaviour TransigoAdmin.ServiceManager.HelloSign.HsBehavior
 
   def get_signature_request(_request_id),
