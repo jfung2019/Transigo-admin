@@ -58,7 +58,7 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
       postal_code: contact.us_place.zip_code,
       state_code: contact.us_place.state,
       taxpayer_identifier_type: "SocialSecurityNumber",
-      taxpayer_identifier_value: Map.get(contact, :ssn)
+      taxpayer_identifier_value: Map.get(contact, :ssn) |> String.replace(~r/[^\d]/, "")
     }
   end
 
@@ -67,37 +67,43 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
     {:error, "Unable to order a consumer credit report. Meridianlink error."}
   end
 
-  defp do_get_consumer_credit_report(contact, body_params, step) do
+  defp do_get_consumer_credit_report(contact, %ConsumerCreditNew{} = body_params, step) do
     Logger.info("ordering a new consumer credit report")
     Logger.info("Params used for request: #{inspect(body_params)}")
 
-    case order_new_consumer_credit_report(body_params) do
-      {:ok, res} ->
-        Logger.info("successfully ordered a new consumer credit report. Polling for results.")
-        Logger.info("response from meridianlink: #{inspect(res)}")
+    if is_nil(body_params.taxpayer_identifier_value) or is_nil(body_params.first_name) or
+         is_nil(body_params.last_name) do
+      Logger.error("Unable to order a consumer credit report. Required params are nil")
+      {:error, "Unable to order a consumer credit report. Internal Error"}
+    else
+      case order_new_consumer_credit_report(body_params) do
+        {:ok, res} ->
+          Logger.info("successfully ordered a new consumer credit report. Polling for results.")
+          Logger.info("response from meridianlink: #{inspect(res)}")
 
-        %{
-          vendor_order_identifier: vendor_order_identifier,
-          taxpayer_identifier_value: _taxpayer_identifier_value,
-          taxpayer_identifier_type: _taxpayer_identifier_type
-        } = response_data = XMLParser.get_new_order_response_data(res.body)
+          %{
+            vendor_order_identifier: vendor_order_identifier,
+            taxpayer_identifier_value: _taxpayer_identifier_value,
+            taxpayer_identifier_type: _taxpayer_identifier_type
+          } = response_data = XMLParser.get_new_order_response_data(res.body)
 
-        Logger.info("parsed response from meridianlink: #{inspect(response_data)}")
+          Logger.info("parsed response from meridianlink: #{inspect(response_data)}")
 
-        Logger.info("VendorOrderIdentifier: #{vendor_order_identifier}")
+          Logger.info("VendorOrderIdentifier: #{vendor_order_identifier}")
 
-        if same_consumer?(response_data, body_params) do
-          Logger.info("consumers match!")
-          loop_retrive_credit_report(contact, res.body, vendor_order_identifier)
-        else
-          Logger.error("Consumers do not match! Meridianlink error")
-          {:error, "Consumers do not match! Meridianlink error."}
-        end
+          if same_consumer?(response_data, body_params) do
+            Logger.info("consumers match!")
+            loop_retrive_credit_report(contact, res.body, vendor_order_identifier)
+          else
+            Logger.error("Consumers do not match! Meridianlink error")
+            {:error, "Consumers do not match! Meridianlink error."}
+          end
 
-      {:error, _message} ->
-        Logger.error("Unable to order a consumer credit report. Trying again...")
-        Process.sleep(1000)
-        do_get_consumer_credit_report(contact, body_params, step + 1)
+        {:error, _message} ->
+          Logger.error("Unable to order a consumer credit report. Trying again...")
+          Process.sleep(1000)
+          do_get_consumer_credit_report(contact, body_params, step + 1)
+      end
     end
   end
 
@@ -134,7 +140,9 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
                    credit_score_rank_percentile: credit_score_percentile,
                    credit_score_value: credit_score
                  }} = parsed_res ->
-                  Logger.info("parsed retrieve response from meridianlink: #{inspect(parsed_res)}")
+                  Logger.info(
+                    "parsed retrieve response from meridianlink: #{inspect(parsed_res)}"
+                  )
 
                   case Account.insert_contact_consumer_credit_report(contact, %{
                          consumer_credit_score: credit_score,
