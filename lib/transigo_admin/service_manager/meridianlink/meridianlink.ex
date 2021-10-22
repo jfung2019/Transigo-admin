@@ -62,6 +62,21 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
     }
   end
 
+  defp get_consumer_credit_retrive_fields_from_contact(
+         contact = %Contact{},
+         vendor_order_identifier
+       ) do
+    %ConsumerCreditRetrieve{
+      first_name: Map.get(contact, :first_name),
+      last_name: Map.get(contact, :last_name),
+      middle_name: "",
+      suffix_name: "",
+      taxpayer_identifier_type: "SocialSecurityNumber",
+      taxpayer_identifier_value: Map.get(contact, :ssn) |> String.replace(~r/[^\d]/, ""),
+      vendor_order_identifier: vendor_order_identifier
+    }
+  end
+
   defp do_get_consumer_credit_report(_, _, @new_consumer_credit_report_retries) do
     Logger.error("Unable to order a consumer credit report. Trying again...")
     {:error, "Unable to order a consumer credit report. Meridianlink error."}
@@ -119,7 +134,10 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
       Logger.info("Polling...")
       Process.sleep(1000)
 
-      case retrieve_existing_credit_report(vendor_order_identifier) do
+      retrieve_request =
+        get_consumer_credit_retrive_fields_from_contact(contact, vendor_order_identifier)
+
+      case retrieve_existing_credit_report(retrieve_request) do
         {:ok, res} ->
           Logger.info("retrieve response from meridianlink: #{inspect(res)}")
 
@@ -161,8 +179,8 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
               end
 
             code when code == @status_codes.error ->
-              Logger.error("Unable to order a consumer credit report. Meridianlink error.")
-              :error
+              Logger.error("Unable to order a consumer credit report. Meridianlink error")
+              {:error, "Unable to order a consumer credit report. Meridianlink error"}
 
             code when code in [@status_codes.new, @status_codes.processing] ->
               Logger.info("Consumer credit report not ready yet trying again")
@@ -193,8 +211,8 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink do
     Application.get_env(:transigo_admin, :meridianlink_url)
   end
 
-  defp retrieve_existing_credit_report(vendor_order_identifier) do
-    case ConsumerCreditRetrieve.get_request_body(vendor_order_identifier) do
+  defp retrieve_existing_credit_report(retrive_request) do
+    case ConsumerCreditRetrieve.get_request_body(retrive_request) do
       {:ok, body} ->
         HTTPoison.post(get_base_url(), body, get_headers())
 
