@@ -1,6 +1,22 @@
 defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRetrieve do
-  def get_request_body(vendor_order_identifier) when is_binary(vendor_order_identifier) do
-    case Integer.parse(vendor_order_identifier) do
+  defstruct [
+    :vendor_order_identifier,
+    :first_name,
+    :last_name,
+    :middle_name,
+    :suffix_name,
+    :taxpayer_identifier_type,
+    :taxpayer_identifier_value
+  ]
+
+  def get_request_body(%__MODULE__{} = body)
+      when is_binary(body.vendor_order_identifier) and
+             is_binary(body.first_name) and is_binary(body.last_name) and
+             is_binary(body.middle_name) and
+             is_binary(body.suffix_name) and
+             is_binary(body.taxpayer_identifier_type) and
+             is_binary(body.taxpayer_identifier_value) do
+    case Integer.parse(body.vendor_order_identifier) do
       {_, ""} ->
         {:ok,
          """
@@ -19,10 +35,10 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRe
          	<PARTY p2:label="Party1">
          		<INDIVIDUAL>
          			<NAME>
-         				<FirstName>Bill</FirstName>
-         				<LastName>Testcase</LastName>
-         				<MiddleName>C</MiddleName>
-         				<SuffixName></SuffixName>
+         				<FirstName>#{body.first_name}</FirstName>
+         				<LastName>#{body.last_name}</LastName>
+         				<MiddleName>#{body.middle_name}</MiddleName>
+         				<SuffixName>#{body.suffix_name}</SuffixName>
          			</NAME>
          		</INDIVIDUAL>
          		<ROLES>
@@ -34,8 +50,8 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRe
          		</ROLES>
          		<TAXPAYER_IDENTIFIERS>
          			<TAXPAYER_IDENTIFIER>
-         				<TaxpayerIdentifierType>SocialSecurityNumber</TaxpayerIdentifierType>
-         				<TaxpayerIdentifierValue>000000015</TaxpayerIdentifierValue>
+         				<TaxpayerIdentifierType>#{body.taxpayer_identifier_type}</TaxpayerIdentifierType>
+         				<TaxpayerIdentifierValue>#{body.taxpayer_identifier_value}</TaxpayerIdentifierValue>
          			</TAXPAYER_IDENTIFIER>
          		</TAXPAYER_IDENTIFIERS>
          	</PARTY>
@@ -94,7 +110,7 @@ defmodule TransigoAdmin.ServiceManager.Meridianlink.XMLRequests.ConsumerCreditRe
          		</SERVICE_PRODUCT>
          		<SERVICE_PRODUCT_FULFILLMENT>
          			<SERVICE_PRODUCT_FULFILLMENT_DETAIL>
-         				<VendorOrderIdentifier>#{vendor_order_identifier}</VendorOrderIdentifier>
+         				<VendorOrderIdentifier>#{body.vendor_order_identifier}</VendorOrderIdentifier>
          			</SERVICE_PRODUCT_FULFILLMENT_DETAIL>
          		</SERVICE_PRODUCT_FULFILLMENT>
          	</SERVICE>
