@@ -5,13 +5,6 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
 
   alias TransigoAdmin.Repo
 
-  def get_uid(type) do
-    case HTTPoison.get(Application.get_env(:transigo_admin, :uid_util_url) <> type) do
-      {:ok, %{body: uid}} -> uid
-      {:error, _error} = error_tuple -> error_tuple
-    end
-  end
-
   def create_importer(importer_param) do
     payload =
       importer_param
