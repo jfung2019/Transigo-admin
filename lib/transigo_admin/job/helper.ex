@@ -1,8 +1,7 @@
 defmodule TransigoAdmin.Job.Helper do
-  alias TransigoAdmin.{Account, Account.User, Account.WebhookEvent}
+  alias TransigoAdmin.{Account, DataLayer}
+  alias TransigoAdmin.Account.{WebhookEvent, User}
   alias TransigoAdmin.{Credit, Credit.Transaction}
-
-  @util_api Application.compile_env(:transigo_admin, :util_api)
 
   @doc """
   create webhook event and send to each users
@@ -11,7 +10,7 @@ defmodule TransigoAdmin.Job.Helper do
   def notify_api_users(result, event) do
     {:ok, webhook_event} =
       Account.create_webhook_event(%{
-        message_uid: @util_api.get_uid("mes"),
+        message_uid: DataLayer.generate_uid("mes"),
         event: event,
         result: result
       })

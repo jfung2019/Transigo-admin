@@ -732,7 +732,7 @@ defmodule TransigoAdmin.Credit do
            advance_usd: downpayment_usd,
            importer_fee: linear_fee,
            transaction: %{
-             transaction_uid: @util_api.get_uid("tra"),
+             transaction_uid: DataLayer.generate_uid("tra"),
              importer_id: importer_id,
              exporter_id: exporter_id,
              credit_term_days: credit_days,
