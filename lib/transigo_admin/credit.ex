@@ -264,7 +264,7 @@ defmodule TransigoAdmin.Credit do
       {"deal",
        Jason.encode!(%{
          credit_invoice_term: transaction.credit_term_days,
-         currency: "usd",
+         currency: "USD",
          downpayment: transaction.down_payment_usd |> Jason.encode!(),
          est_invoice_date: transaction.invoice_date |> Date.to_iso8601(),
          factoring_fee: offer.importer_fee |> Jason.encode!(),
