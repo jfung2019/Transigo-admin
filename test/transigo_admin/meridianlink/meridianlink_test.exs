@@ -1,7 +1,10 @@
-defmodule TransigoAdmin.MeridianlinkTest do
+defmodule TransigoAdmin.ServiceManager.MeridianlinkTest do
   use TransigoAdmin.DataCase, async: true
 
+  alias TransigoAdmin.Account.Contact
   alias TransigoAdmin.Repo
+
+  @meridianlink Application.get_env(:transigo_admin, :meridianlink_api)
 
   describe "meridianlink integration test" do
     setup do
@@ -77,34 +80,34 @@ defmodule TransigoAdmin.MeridianlinkTest do
       %{importer: importer, contact: contact, quota: quota}
     end
 
-    #    test "can update a contact", %{importer: _importer, contact: contact, quota: _quota} do
-    #      # credit fields are nil
-    #      assert contact.consumer_credit_score == nil
-    #      assert contact.consumer_credit_score_percentile == nil
-    #      assert contact.consumer_credit_report_meridianlink == nil
+       test "can update a contact", %{importer: _importer, contact: contact, quota: _quota} do
+         # credit fields are nil
+         assert contact.consumer_credit_score == nil
+         assert contact.consumer_credit_score_percentile == nil
+         assert contact.consumer_credit_report_meridianlink == nil
 
-    #      assert :ok = Meridianlink.update_contact_consumer_credit_report(contact.id)
+         assert :ok = @meridianlink.update_contact_consumer_credit_report(contact.id)
 
-    #      # after update credit fields are filled in
-    #      contact = Repo.get!(Contact, contact.id)
-    #      assert contact.consumer_credit_score != nil
-    #      assert contact.consumer_credit_score_percentile != nil
-    #      assert contact.consumer_credit_report_meridianlink != nil
-    #    end
+         # after update credit fields are filled in
+         contact = Repo.get!(Contact, contact.id)
+         assert contact.consumer_credit_score != nil
+         assert contact.consumer_credit_score_percentile != nil
+         assert contact.consumer_credit_report_meridianlink != nil
+       end
 
-    #    test "can update a contact by quota id", %{importer: _importer, contact: contact, quota: quota} do
-    #      # credit fields are nil
-    #      assert contact.consumer_credit_score == nil
-    #      assert contact.consumer_credit_score_percentile == nil
-    #      assert contact.consumer_credit_report_meridianlink == nil
-    #
-    #      assert :ok = Meridianlink.update_contact_consumer_credit_report_by_quota_id(quota.id)
-    #
-    #      # after update credit fields are filled in
-    #      contact = Repo.get!(Contact, contact.id)
-    #      assert contact.consumer_credit_score != nil
-    #      assert contact.consumer_credit_score_percentile != nil
-    #      assert contact.consumer_credit_report_meridianlink != nil
-    #    end
+       test "can update a contact by quota id", %{importer: _importer, contact: contact, quota: quota} do
+         # credit fields are nil
+         assert contact.consumer_credit_score == nil
+         assert contact.consumer_credit_score_percentile == nil
+         assert contact.consumer_credit_report_meridianlink == nil
+
+         assert :ok = @meridianlink.update_contact_consumer_credit_report_by_quota_id(quota.id)
+
+         # after update credit fields are filled in
+         contact = Repo.get!(Contact, contact.id)
+         assert contact.consumer_credit_score != nil
+         assert contact.consumer_credit_score_percentile != nil
+         assert contact.consumer_credit_report_meridianlink != nil
+       end
   end
 end

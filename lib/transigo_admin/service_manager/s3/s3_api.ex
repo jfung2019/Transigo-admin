@@ -43,6 +43,26 @@ defmodule TransigoAdmin.ServiceManager.S3.S3Api do
       ),
       do: do_upload_file(transaction_uid, exporter_uid, importer_uid, file, "po")
 
+  def check_file_exists?(file) do
+    {:ok, temp} = Briefly.create(extname: ".pdf")
+
+    download =
+      ExAws.S3.download_file(
+        Application.get_env(:transigo_admin, :s3_bucket_name),
+        file,
+        temp
+      )
+      |> ExAws.request()
+
+    case download do
+      {:ok, :done} ->
+        true
+
+      _ ->
+        false
+    end
+  end
+
   def get_file_presigned_url(key) do
     ExAws.Config.new(:s3)
     |> ExAws.S3.presigned_url(:get, Application.get_env(:transigo_admin, :s3_bucket_name), key)

@@ -9,7 +9,6 @@ defmodule TransigoAdmin.Account do
   alias Ecto.Multi
   alias TransigoAdmin.DataLayer
   alias TransigoAdmin.Credit.Marketplace
-  alias TransigoAdmin.Credit.Quota
 
   alias TransigoAdmin.Account.{
     Admin,
@@ -24,6 +23,7 @@ defmodule TransigoAdmin.Account do
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
   @hs_api Application.compile_env(:transigo_admin, :hs_api)
   @util_api Application.compile_env(:transigo_admin, :util_api)
+  @s3_api Application.compile_env(:transigo_admin, :s3_api)
 
   @states_list Code.eval_string("""
                  [
@@ -262,24 +262,39 @@ defmodule TransigoAdmin.Account do
   @doc """
   Update exporter
   """
-  def update_exporter(%{"exporter_transigo_uid" => uid} = attrs) do
+  def update_exporter(%{"exporter_uid" => uid} = attrs) do
     with {:ok, exporter} <- get_exporter_by_exporter_uid(uid, [:contact]) do
       contact_attrs =
         attrs
         |> get_contact_params()
+        |> Enum.filter(fn {_, value} -> value != nil end)
+        |> Enum.into(%{})
 
       exporter_attrs =
         attrs
         |> get_exporter_params()
+        |> Enum.filter(fn {_, value} -> value != nil end)
+        |> Enum.into(%{})
 
       Multi.new()
       |> Multi.update(Exporter, Exporter.update_changeset(exporter, exporter_attrs))
       |> Multi.update(Contact, Contact.update_changeset(exporter.contact, contact_attrs))
       |> Repo.transaction()
+      |> extract_errors()
     else
       _ -> {:error, "Could not update exporter"}
     end
   end
+
+  defp extract_errors({:error, struct, changeset, _}) when struct in [Contact, Exporter] do
+    {:error,
+     changeset
+     |> Ecto.Changeset.traverse_errors(fn {msg, _opt} ->
+       msg
+     end)}
+  end
+
+  defp extract_errors(param), do: param
 
   @doc """
   Get exporter by exporter_transigo_uid
@@ -287,9 +302,15 @@ defmodule TransigoAdmin.Account do
   @spec get_exporter_by_exporter_uid(String.t(), list) :: Exporter.t() | nil
   def get_exporter_by_exporter_uid(exporter_uid, preloads \\ []) do
     if DataLayer.check_uid(exporter_uid, "exp") do
-      {:ok,
-       from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
-       |> Repo.one()}
+      exporter =
+        from(e in Exporter, where: e.exporter_transigo_uid == ^exporter_uid, preload: ^preloads)
+        |> Repo.one()
+
+      if not is_nil(exporter) do
+        {:ok, exporter}
+      else
+        {:error, "Could not find exporter"}
+      end
     else
       {:error, "Invalid UID"}
     end
@@ -314,27 +335,19 @@ defmodule TransigoAdmin.Account do
     end
   end
 
-  defp get_s3_bucket do
-    Application.get_env(:transigo_admin, :s3_bucket_name)
-  end
-
   def get_msa(%{"exporter_uid" => exporter_uid}) do
     # TODO test this function
     key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
 
     if check_obj_exists?(key) do
-      {:ok,
-       ExAws.Config.new(:s3)
-       |> ExAws.S3.presigned_url(:get, get_s3_bucket(), key)}
+      @s3_api.get_file_presigned_url(key)
     else
       {:error, "Object does not exists"}
     end
   end
 
   def check_obj_exists?(key) do
-    # TODO implement this check
-    ExAws.S3.get_object(get_s3_bucket(), key)
-    true
+    @s3_api.check_file_exists?(key)
   end
 
   @doc """
@@ -454,7 +467,7 @@ defmodule TransigoAdmin.Account do
 
     payload = [
       {"client_id", Application.get_env(:transigo_admin, :hs_client_id)},
-      {"test_mode", "1"},
+      {"test_mode", Application.get_env(:transigo_admin, :hellosign_test_mode)},
       {"use_text_tags", "1"},
       {"hide_text_tags", "1"},
       {:file, msa_path, {"form-data", [name: "file[0]", filename: msa_basename]}, []},

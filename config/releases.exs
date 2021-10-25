@@ -26,7 +26,6 @@ config :transigo_admin,
   dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
   dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE"),
   util_api: TransigoAdmin.ServiceManager.Util.UtilApi,
-  uid_util_url: System.get_env("UID_UTIL_URL"),
   eh_api_key: System.get_env("TRANSIGO_EH_KEY"),
   eh_auth_url: System.get_env("EH_AUTH_URL"),
   eh_api: TransigoAdmin.ServiceManager.EulerHermes.EhApi,
@@ -37,7 +36,9 @@ config :transigo_admin,
   doctools_url: System.get_env("DOCTOOLS_URL"),
   meridianlink_authorization: System.get_env("MERIDIANLINK_AUTH"),
   meridianlink_mcl_interface: System.get_env("MERIDIANLINK_MCL_INTERFACE"),
-  encryption_salt: System.get_env("ENCRYPTION_SALT")
+  meridianlink_url: System.get_env("MERIDIANLINK_URL"),
+  encryption_salt: System.get_env("ENCRYPTION_SALT"),
+  hellosign_test_mode: System.get_env("HELLOSIGN_TEST_MODE")
 
 config :sendgrid,
   api_key: System.get_env("TRANSIGO_SENDGRID_API_KEY"),

@@ -22,7 +22,6 @@ config :transigo_admin,
   dwolla_client_secret: System.get_env("DWOLLA_SECRET"),
   dwolla_master_funding_source: System.get_env("DWOLLA_MASTER_FUNDING_SOURCE"),
   util_api: TransigoAdmin.ServiceManager.Util.UtilApi,
-  uid_util_url: System.get_env("UID_UTIL_URL"),
   eh_api_key: System.get_env("TRANSIGO_EH_KEY"),
   eh_auth_url: System.get_env("EH_AUTH_URL"),
   eh_risk_url: System.get_env("EH_RISK_URL"),
@@ -35,7 +34,10 @@ config :transigo_admin,
   meridianlink_authorization: System.get_env("MERIDIANLINK_AUTH"),
   meridianlink_mcl_interface: System.get_env("MERIDIANLINK_MCL_INTERFACE"),
   encryption_salt: System.get_env("ENCRYPTION_SALT"),
-  google_maps_module: GoogleMaps
+  google_maps_module: GoogleMaps,
+  meridianlink_url: System.get_env("MERIDIANLINK_URL"),
+  meridianlink_api: TransigoAdmin.ServiceManager.Meridianlink,
+  hellosign_test_mode: System.get_env("HELLOSIGN_TEST_MODE")
 
 config :google_maps,
   api_key: System.get_env("TRANSIGO_GOOGLE_MAPS_API_KEY")
