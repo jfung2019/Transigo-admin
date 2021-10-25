@@ -1,5 +1,4 @@
 defmodule TransigoAdmin.ServiceManager.Util.UtilBehavior do
-
   @callback create_importer(map()) ::
               {:ok,
                HTTPoison.Response.t() | HTTPoison.AsyncResponse.t() | HTTPoison.MaybeRedirect.t()}
