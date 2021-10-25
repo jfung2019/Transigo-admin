@@ -268,7 +268,7 @@ defmodule TransigoAdmin.Credit do
          downpayment: transaction.down_payment_usd |> Jason.encode!(),
          est_invoice_date: transaction.invoice_date |> Date.to_iso8601(),
          factoring_fee: offer.importer_fee |> Jason.encode!(),
-         locale: "en-US",
+         locale: "en_US",
          purchase_price:
            (offer.transaction_usd - transaction.down_payment_usd) |> Jason.encode!(),
          reserve: 0.0,
