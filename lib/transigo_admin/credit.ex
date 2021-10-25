@@ -115,7 +115,19 @@ defmodule TransigoAdmin.Credit do
     Logger.debug("Params are: #{inspect(params)}")
     transaction = get_transaction_by_transaction_uid(transaction_uid)
     downpayment_confirm = Map.get(params, "downpaymentConfirm")
-    sum_paid_usd = Map.get(params, "sumPaidusd")
+
+    sum_paid_usd =
+      case Map.get(params, "sumPaidusd") do
+        nil ->
+          nil
+
+        value when is_binary(value) ->
+          {float_value, _} = Float.parse(value)
+          float_value
+
+        value ->
+          value
+      end
 
     cond do
       is_nil(downpayment_confirm) ->
@@ -128,7 +140,10 @@ defmodule TransigoAdmin.Credit do
         {:error, "Offer not found"}
 
       transaction.down_payment_usd != sum_paid_usd ->
-        Logger.error("Transaction downpayment: #{inspect(transaction.down_payment_usd)} is not equal to #{inspect(sum_paid_usd)}")
+        Logger.error(
+          "Transaction downpayment: #{inspect(transaction.down_payment_usd)} is not equal to #{inspect(sum_paid_usd)}"
+        )
+
         {:error, "Downpayment does not match"}
 
       true ->
