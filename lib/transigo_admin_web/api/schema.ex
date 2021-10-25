@@ -72,6 +72,13 @@ defmodule TransigoAdminWeb.Api.Schema do
       middleware Middleware.Authenticate
       resolve &Resolvers.Account.sign_msa_url/3
     end
+
+    @desc "gets signing URL for transaction"
+    field :sign_docs_url, :document_result do
+      arg :transaction_uid, non_null(:id)
+      middleware Middleware.Authenticate
+      resolve &Resolvers.Account.sign_docs_url/3
+    end
   end
 
   def context(ctx) do
