@@ -37,6 +37,14 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   }
   """
 
+  @get_transaction_sign_url """
+  query($transaction_uid: ID!) {
+    signDocsUrl(transactionUid: $transaction_uid) {
+      url
+    }
+  }
+  """
+
   setup %{conn: conn} do
     Repo.insert!(%TransigoAdmin.Credit.Marketplace{
       origin: "DH",
@@ -107,10 +115,25 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
         contact_id: contact_id
       })
 
+    {:ok, transaction} =
+      TransigoAdmin.Credit.create_transaction(%{
+        transaction_uid: TransigoAdmin.DataLayer.generate_uid("tra"),
+        credit_term_days: 60,
+        down_payment_usd: 3000,
+        factoring_fee_usd: 3000,
+        transaction_state: "assigned",
+        financed_sum: 3000,
+        invoice_date: Timex.now(),
+        second_installment_usd: 3000,
+        importer_id: importer.id,
+        exporter_id: exporter.id
+      })
+
     {:ok,
      conn: put_req_header(conn, "authorization", "Bearer #{token}"),
      exporter: exporter,
-     importer: importer}
+     importer: importer,
+     transaction: transaction}
   end
 
   test "can list exporters", %{conn: conn, exporter: %{id: exporter_id}} do
@@ -151,5 +174,58 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
     assert {:ok, nil} = TransigoAdminWeb.Tokenizer.decrypt(token)
 
     assert is_binary(url)
+  end
+
+  test "cannot get hellosign URL for nonexistent exporter", %{conn: conn} do
+    response =
+      post(conn, "/api", %{
+        query: @get_hellosign_url,
+        variables: %{"exporterId" => TransigoAdmin.DataLayer.generate_uid("exp")}
+      })
+
+    assert %{
+             "data" => %{
+               "signMsaUrl" => %{
+                 "url" => "could not get url"
+               }
+             }
+           } = json_response(response, 200)
+  end
+
+  test "can get hellosign URL for transaction", %{conn: conn, transaction: transaction} do
+    response =
+      post(conn, "/api", %{
+        query: @get_transaction_sign_url,
+        variables: %{"transaction_uid" => transaction.transaction_uid}
+      })
+
+    assert %{
+             "data" => %{
+               "signDocsUrl" => %{
+                 "url" => url
+               }
+             }
+           } = json_response(response, 200)
+
+    [_base, token] = String.split(url, "token=")
+    assert {:ok, nil} = TransigoAdminWeb.Tokenizer.decrypt(token)
+
+    assert is_binary(url)
+  end
+
+  test "cannot get hellosign URL for nonexistent transaction", %{conn: conn} do
+    response =
+      post(conn, "/api", %{
+        query: @get_transaction_sign_url,
+        variables: %{"transaction_uid" => TransigoAdmin.DataLayer.generate_uid("tra")}
+      })
+
+    assert %{
+             "data" => %{
+               "signDocsUrl" => %{
+                 "url" => "could not get url"
+               }
+             }
+           } = json_response(response, 200)
   end
 end
