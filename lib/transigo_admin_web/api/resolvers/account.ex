@@ -40,28 +40,34 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
   end
 
   def sign_msa_url(_root, %{exporter_uid: exporter_uid}, _context) do
-    {:ok, %{hellosign_signature_request_id: signature_request_id}} =
-      Account.get_exporter_by_exporter_uid(exporter_uid)
+    case Account.get_exporter_by_exporter_uid(exporter_uid) do
+      {:ok, %{hellosign_signature_request_id: signature_request_id}} ->
+        {:ok,
+         %{
+           url:
+             Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
+               token: TransigoAdminWeb.Tokenizer.encrypt(signature_request_id)
+             )
+         }}
 
-    {:ok,
-     %{
-       url:
-         Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
-           token: TransigoAdminWeb.Tokenizer.encrypt(signature_request_id)
-         )
-     }}
+      _ ->
+        {:ok, %{url: "could not get url"}}
+    end
   end
 
   def sign_docs_url(_root, %{transaction_uid: transaction_uid}, _context) do
-    {:ok, %{hellosign_signature_request_id: signature_request_id}} =
-      Credit.get_transaction_by_transaction_uid(transaction_uid)
+    transaction = Credit.get_transaction_by_transaction_uid(transaction_uid)
 
-    {:ok,
-     %{
-       url:
-         Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
-           token: TransigoAdminWeb.Tokenizer.encrypt(signature_request_id)
-         )
-     }}
+    if not is_nil(transaction) do
+      {:ok,
+       %{
+         url:
+           Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
+             token: TransigoAdminWeb.Tokenizer.encrypt(transaction.hellosign_signature_request_id)
+           )
+       }}
+    else
+      {:ok, %{url: "could not get url"}}
+    end
   end
 end
