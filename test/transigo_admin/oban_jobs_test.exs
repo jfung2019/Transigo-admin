@@ -5,7 +5,7 @@ defmodule TransigoAdmin.ObanJobsTest do
   alias TransigoAdmin.Account.Exporter
 
   setup do
-    Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+    marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
       origin: "DH",
       marketplace: "DHGate"
     })
@@ -29,7 +29,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         "contactTitle" => "President",
         "contactAddress" => "Stockton St.",
         "marketplaceOrigin" => "DH"
-      })
+      }, marketplace)
 
     {:ok, %{id: contact_id}} =
       Account.create_contact(%{

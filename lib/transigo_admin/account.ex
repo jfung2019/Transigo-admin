@@ -15,6 +15,7 @@ defmodule TransigoAdmin.Account do
     Exporter,
     Importer,
     Contact,
+    Token,
     User,
     WebhookEvent,
     WebhookUserEvent
@@ -149,46 +150,36 @@ defmodule TransigoAdmin.Account do
   @doc """
   Create exporter
   """
-  @spec create_exporter(map) :: {:ok, Exporter.t()} | {:error, %Ecto.Changeset{}}
-  def create_exporter(attrs \\ %{}) do
-    marketplace =
-      from(m in Marketplace,
-        where: m.origin == ^attrs["marketplaceOrigin"]
-      )
-      |> Repo.one()
+  @spec create_exporter(map, Marketplace.t()) :: {:ok, Exporter.t()} | {:error, %Ecto.Changeset{}}
+  def create_exporter(attrs \\ %{}, marketplace) do
+    contact =
+      attrs
+      |> get_exporter_contact_from_params()
+      |> Map.put(:contact_transigo_uid, DataLayer.generate_uid("con"))
 
-    if not is_nil(marketplace) do
-      contact =
-        attrs
-        |> get_exporter_contact_from_params()
-        |> Map.put(:contact_transigo_uid, DataLayer.generate_uid("con"))
+    exporter =
+      attrs
+      |> get_exporter_from_params()
+      |> Map.put(:exporter_transigo_uid, DataLayer.generate_uid("exp"))
+      |> Map.put(:marketplace_id, marketplace.id)
 
-      exporter =
-        attrs
-        |> get_exporter_from_params()
-        |> Map.put(:exporter_transigo_uid, DataLayer.generate_uid("exp"))
-        |> Map.put(:marketplace_id, marketplace.id)
-
-      Multi.new()
-      |> Multi.insert(Contact, Contact.changeset(%Contact{}, contact))
-      |> Multi.insert(
-        Exporter,
-        fn %{
-             Contact => %Contact{
-               id: contact_id
-             }
-           } ->
-          Exporter.changeset(
-            %Exporter{},
-            exporter
-            |> Map.put(:contact_id, contact_id)
-          )
-        end
-      )
-      |> Repo.transaction()
-    else
-      {:error, "Could not insert exporter"}
-    end
+    Multi.new()
+    |> Multi.insert(Contact, Contact.changeset(%Contact{}, contact))
+    |> Multi.insert(
+      Exporter,
+      fn %{
+           Contact => %Contact{
+             id: contact_id
+           }
+         } ->
+        Exporter.changeset(
+          %Exporter{},
+          exporter
+          |> Map.put(:contact_id, contact_id)
+        )
+      end
+    )
+    |> Repo.transaction()
   end
 
   defp get_exporter_params(params) do
@@ -732,13 +723,13 @@ defmodule TransigoAdmin.Account do
   end
 
   @doc """
-  check if token exist in database
+  Returns the token preloaded with the user and their marketplace they belong to.
   """
-  @spec get_token_id(String.t()) :: String.t()
-  def get_token_id(token) do
-    from(t in "tokens",
+  @spec get_user_and_marketplace_by_token(String.t()) :: %Token{} | nil
+  def get_user_and_marketplace_by_token(token) do
+    from(t in Token,
       where: t.access_token == ^token,
-      select: t.id
+      preload: [user: :marketplace]
     )
     |> Repo.one()
   end
