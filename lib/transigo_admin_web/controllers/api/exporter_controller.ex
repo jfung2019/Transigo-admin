@@ -43,8 +43,8 @@ defmodule TransigoAdminWeb.Api.ExporterController do
     end
   end
 
-  def create(conn, params) do
-    case Account.create_exporter(params) do
+  def create(%{assigns: %{marketplace: marketplace}} = conn, params) do
+    case Account.create_exporter(params, marketplace) do
       {:ok, %{Contact => _contact, Exporter => exporter}} ->
         conn
         |> put_status(200)

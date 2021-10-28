@@ -9,8 +9,10 @@ defmodule TransigoAdminWeb.ApiAuth do
   @impl true
   def call(conn, _opts) do
     with ["Bearer " <> token] <- Plug.Conn.get_req_header(conn, "authorization"),
-         :ok <- check_token(token) do
+         %TransigoAdmin.Account.Token{} = token <- check_token(token) do
       conn
+      |> Plug.Conn.assign(:marketplace, token.user.marketplace)
+      |> Plug.Conn.assign(:user, token.user)
     else
       _ ->
         conn
@@ -22,9 +24,9 @@ defmodule TransigoAdminWeb.ApiAuth do
   end
 
   defp check_token(token) do
-    case TransigoAdmin.Account.get_token_id(token) do
+    case TransigoAdmin.Account.get_user_and_marketplace_by_token(token) do
       nil -> :error
-      _ -> :ok
+      token -> token
     end
   end
 end
