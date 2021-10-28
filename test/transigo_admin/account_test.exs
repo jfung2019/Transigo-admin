@@ -41,8 +41,8 @@ defmodule TransigoAdmin.AccountTest do
     "marketplaceOrigin" => "DH"
   }
 
-  def create_exporter(params \\ @valid_exporter_params) do
-    Account.create_exporter(params)
+  def create_exporter(params \\ @valid_exporter_params, marketplace) do
+    Account.create_exporter(params, marketplace)
   end
 
   describe "create exporter" do
@@ -56,24 +56,24 @@ defmodule TransigoAdmin.AccountTest do
       %{marketplace: marketplace}
     end
 
-    test "creates exporter with valid params" do
-      assert {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter()
+    test "creates exporter with valid params", %{marketplace: marketplace} do
+      assert {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter(marketplace)
       assert contact.first_name == @valid_exporter_params["contactFirstName"]
       assert exporter.business_name == @valid_exporter_params["businessName"]
     end
 
-    test "show error with invalid address params" do
+    test "show error with invalid address params", %{marketplace: marketplace} do
       assert {:error, _schema, _changeset, _} =
                @valid_exporter_params
                |> Map.put("address", "not an address")
-               |> create_exporter()
+               |> create_exporter(marketplace)
     end
 
-    test "show error with invalid email params" do
+    test "show error with invalid email params", %{marketplace: marketplace} do
       assert {:error, _schema, _changeset, _} =
                @valid_exporter_params
                |> Map.put("signatoryEmail", "not an email")
-               |> create_exporter()
+               |> create_exporter(marketplace)
     end
   end
 
@@ -88,8 +88,8 @@ defmodule TransigoAdmin.AccountTest do
       %{marketplace: marketplace}
     end
 
-    test "can retrive an exporter with valid params" do
-      {:ok, %{Contact => _contact, Exporter => exporter}} = create_exporter()
+    test "can retrive an exporter with valid params", %{marketplace: marketplace} do
+      {:ok, %{Contact => _contact, Exporter => exporter}} = create_exporter(marketplace)
 
       assert {:ok, get_exporter} =
                Account.get_exporter_by_exporter_uid(exporter.exporter_transigo_uid)
@@ -113,8 +113,8 @@ defmodule TransigoAdmin.AccountTest do
       %{marketplace: marketplace}
     end
 
-    test "can update exporter with valid params" do
-      {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter()
+    test "can update exporter with valid params", %{marketplace: marketplace} do
+      {:ok, %{Contact => contact, Exporter => exporter}} = create_exporter(marketplace)
 
       assert {:ok, %{Contact => updated_contact, Exporter => updated_exporter}} =
                Account.update_exporter(
@@ -132,8 +132,8 @@ defmodule TransigoAdmin.AccountTest do
                @valid_update_exporter_params["signatoryFirstName"]
     end
 
-    test "shows error when invalid update params given" do
-      {:ok, %{Contact => _contact, Exporter => exporter}} = create_exporter()
+    test "shows error when invalid update params given", %{marketplace: marketplace} do
+      {:ok, %{Contact => _contact, Exporter => exporter}} = create_exporter(marketplace)
 
       assert {:error, _} =
                Account.update_exporter(
