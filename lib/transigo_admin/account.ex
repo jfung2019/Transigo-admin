@@ -140,7 +140,9 @@ defmodule TransigoAdmin.Account do
     hs_status = "%#{Map.get(pagination_args, :hs_signing_status)}%"
 
     from(e in Exporter,
-      where: ilike(e.business_name, ^keyword) and ilike(e.hs_signing_status, ^hs_status)
+      where:
+        (ilike(e.business_name, ^keyword) or ilike(e.exporter_transigo_uid, ^keyword)) and
+          ilike(e.hs_signing_status, ^hs_status)
     )
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
@@ -620,7 +622,9 @@ defmodule TransigoAdmin.Account do
   def list_importers_paginated(pagination_args) do
     keyword = "%#{Map.get(pagination_args, :keyword)}%"
 
-    from(i in Importer, where: ilike(i.business_name, ^keyword))
+    from(i in Importer,
+      where: ilike(i.business_name, ^keyword) or ilike(i.importer_transigo_uid, ^keyword)
+    )
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
 
