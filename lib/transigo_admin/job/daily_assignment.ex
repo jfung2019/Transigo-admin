@@ -6,7 +6,6 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
-  alias SendGrid.{Mail, Email}
 
   @util_api Application.compile_env(:transigo_admin, :util_api)
   @s3_api Application.compile_env(:transigo_admin, :s3_api)
@@ -15,41 +14,41 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
     Credit.list_transactions_by_state("originated", [:exporter, importer: [:contact]])
-    |> Enum.each(&send_assignment_notice(&1))
+    |> Enum.each(&generate_sign_assignment/1)
 
     :ok
   end
 
-  defp send_assignment_notice(%Transaction{} = transaction) do
-    case download_assignment_notice(transaction) do
-      {:ok, filename} ->
-        case File.read(filename) do
-          {:ok, content} ->
-            Email.build()
-            |> Email.put_from("tcaas@transigo.io", "Transigo")
-            |> Email.add_to(transaction.importer.contact.email)
-            |> Email.put_subject("Transigo Assignment Notice")
-            |> Email.put_text("Transigo Assignment Notice for credits")
-            |> Email.add_attachment(%{
-              content: Base.encode64(content),
-              filename: Path.basename(filename),
-              type: "application/pdf",
-              disposition: "attachment"
-            })
-            |> Mail.send()
-            |> mark_transaction_as_assigned(transaction)
-
-            File.rm(filename)
-
-            :ok
-
-          _ ->
-            :error
-        end
-
-      {:error, _} ->
-        :error
+  def generate_sign_assignment(%Transaction{} = transaction) do
+    with {:ok, assignment_path} <- download_assignment_notice(transaction),
+         {:ok, assignment_payload} <- get_assignment_payload(assignment_path),
+         {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = _sign_req} <-
+           @hs_api.create_signature_request(assignment_payload) do
+      Credit.update_transaction(transaction, %{
+        transaction_state: "assignment_awaiting",
+        hellosign_assignment_signature_request_id: req_id
+      })
+    else
+      _ ->
+        {:error, message: "failed to create signature request for assignment"}
     end
+  end
+
+  defp get_assignment_payload(assignment_path) do
+    assignment_basename = Path.basename(assignment_path)
+
+    payload = [
+      {"client_id", Application.get_env(:transigo_admin, :hs_client_id)},
+      {"test_mode", Application.get_env(:transigo_admin, :hellosign_test_mode)},
+      {"use_text_tags", "1"},
+      {"hide_text_tags", "1"},
+      {:file, assignment_path, {"form-data", [name: "file[0]", filename: assignment_basename]},
+       []},
+      {"signers[1][name]", "Nir Tal"},
+      {"signers[1][email_address]", "nir.tal@transigo.io"}
+    ]
+
+    {:ok, payload}
   end
 
   defp download_assignment_notice(
@@ -60,7 +59,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
            invoice_ref: invoice_ref,
            credit_term_days: credit_term_days,
            hellosign_signature_request_id: hs_request_id
-         } = transaction
+         } = transaction = %Transaction{}
        ) do
     case @s3_api.download_file(transaction, :invoice) do
       {:ok, invoice_file} ->
@@ -119,9 +118,4 @@ defmodule TransigoAdmin.Job.DailyAssignment do
         nil
     end
   end
-
-  defp mark_transaction_as_assigned(:ok, transaction),
-    do: Credit.update_transaction(transaction, %{transaction_state: "assigned"})
-
-  defp mark_transaction_as_assigned(error, _transaction), do: error
 end
