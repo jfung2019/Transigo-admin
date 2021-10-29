@@ -330,7 +330,7 @@ defmodule TransigoAdmin.Account do
 
   def get_msa(%{"exporter_uid" => exporter_uid}) do
     # TODO test this function
-    key = "exporter/%{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
+    key = "exporter/#{exporter_uid}/#{exporter_uid}_all_signed_msa.pdf"
 
     if check_obj_exists?(key) do
       @s3_api.get_file_presigned_url(key)
