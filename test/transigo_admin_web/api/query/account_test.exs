@@ -6,8 +6,8 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   alias TransigoAdmin.Repo
 
   @list_exporters """
-  query($first: Integer!) {
-    listExporters(first: $first) {
+  query($first: Integer!, $keyword: String) {
+    listExporters(first: $first, keyword: $keyword) {
       edges {
         node {
           id
@@ -54,7 +54,7 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   """
 
   setup %{conn: conn} do
-    Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+    marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
       origin: "DH",
       marketplace: "DHGate"
     })
@@ -104,7 +104,7 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
         "contactTitle" => "President",
         "contactAddress" => "Stockton St.",
         "marketplaceOrigin" => "DH"
-      })
+      }, marketplace)
 
     {:ok, importer} =
       Account.create_importer(%{
@@ -154,8 +154,30 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
            } = json_response(response, 200)
   end
 
+  test "can search exporters", %{conn: conn, exporter: %{id: exporter_id, exporter_transigo_uid: uid}} do
+    response = post(conn, "/api", %{query: @list_exporters, variables: %{"first" => 1, "keyword" => uid}})
+
+    assert %{
+             "data" => %{
+               "listExporters" => %{"edges" => [%{"node" => %{"id" => ^exporter_id}}]}
+             }
+           } = json_response(response, 200)
+  end
+
   test "can list importers", %{conn: conn, importer: %{id: importer_id}} do
     response = post(conn, "/api", %{query: @list_importers, variables: %{"first" => 3}})
+
+    assert %{
+             "data" => %{
+               "listImporters" => %{
+                 "edges" => [%{"node" => %{"id" => ^importer_id}}]
+               }
+             }
+           } = json_response(response, 200)
+  end
+
+  test "can search importers", %{conn: conn, importer: %{id: importer_id, importer_transigo_uid: uid}} do
+    response = post(conn, "/api", %{query: @list_importers, variables: %{"first" => 1, "keyword" => uid}})
 
     assert %{
              "data" => %{

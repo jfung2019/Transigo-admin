@@ -3,6 +3,7 @@ defmodule TransigoAdmin.Account.Token do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
   schema "tokens" do
     field :access_token
     belongs_to :user, TransigoAdmin.Account.User

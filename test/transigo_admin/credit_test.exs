@@ -6,7 +6,7 @@ defmodule TransigoAdmin.CreditTest do
 
   describe "transaction" do
     setup do
-      Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+      marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
         origin: "DH",
         marketplace: "DHGate"
       })
@@ -30,7 +30,7 @@ defmodule TransigoAdmin.CreditTest do
           "contactTitle" => "President",
           "contactAddress" => "Stockton St.",
           "marketplaceOrigin" => "DH"
-        })
+        }, marketplace)
 
       {:ok, importer} =
         Account.create_importer(%{
@@ -191,6 +191,28 @@ defmodule TransigoAdmin.CreditTest do
 
       assert [^pull_initiated_transaction] = Credit.list_transactions_by_state("pull_initiated")
       assert [^repaid_transaction] = Credit.list_transactions_by_state("repaid")
+    end
+
+    test "can confirm downpayment", %{exporter: exporter, importer: importer} do
+      {:ok, %{transaction_uid: uid}} =
+        Credit.create_transaction(%{
+          transaction_uid: "future",
+          credit_term_days: 60,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
+          transaction_state: "originated",
+          financed_sum: 3000,
+          invoice_date: Timex.now(),
+          second_installment_usd: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      assert {:ok, %{transaction_uid: ^uid}} =
+               Credit.confirm_downpayment(uid, %{
+                 "downpaymentConfirm" => "confirmed",
+                 "sumPaidusd" => "3000"
+               })
     end
   end
 end

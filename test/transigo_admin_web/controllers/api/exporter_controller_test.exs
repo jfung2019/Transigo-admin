@@ -12,6 +12,17 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
           marketplace: "DHGate"
         })
 
+      user =
+        Repo.insert!(%TransigoAdmin.Account.User{
+          user_uid: "Tusr-1816-603e-00e0-0bef-f4ec-7567",
+          webhook: "http://sandbox.camelfin.com/buyerfinanceweb/quota/quotaTgReturn",
+          company: "camel-sandbox",
+          client_id: "1965ea39abd27b085503555b5ebd1cc2b3679f7458f8bf7613a00cde8cc957db",
+          client_secret:
+            "5ed185b8b9f8465c6a2213f40e3df536b4bde42ce4eab7c1e4e43d60b0749410a08ca623994653413f6bc4a6a2cfd136",
+          marketplace_id: marketplace.id
+        })
+
       exporter_params = %{
         "businessName" => "Best Business",
         "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
@@ -28,20 +39,24 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
         "workPhone" => "7075023748",
         "contactEmail" => "elliot@bbiz.com",
         "contactTitle" => "President",
-        "contactAddress" => "Stockton St.",
-        "marketplaceOrigin" => "DH"
+        "contactAddress" => "Stockton St."
       }
 
-      %{marketplace: marketplace, exporter_params: exporter_params}
+      token =
+        Repo.insert!(%Token{
+          access_token: "token",
+          user_id: user.id
+        })
+
+      %{marketplace: marketplace, exporter_params: exporter_params, user: user, token: token}
     end
 
     test "successfully creates exporter with valid params", %{
       conn: conn,
       marketplace: _,
-      exporter_params: exporter_params
+      exporter_params: exporter_params,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
@@ -54,10 +69,9 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
     test "invalid email on create gives error", %{
       conn: conn,
       marketplace: _,
-      exporter_params: exporter_params
+      exporter_params: exporter_params,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       exporter_params =
         exporter_params
         |> Map.put("contactEmail", "not an email")
@@ -81,33 +95,55 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
           marketplace: "DHGate"
         })
 
-      {:ok, %{Exporter => exporter, Contact => _contact}} =
-        TransigoAdmin.Account.create_exporter(%{
-          "businessName" => "Best Business",
-          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-          "businessAddressCountry" => "USA",
-          "registrationNumber" => "123456",
-          "signatoryFirstName" => "David",
-          "signatoryLastName" => "Silva",
-          "signatoryMobile" => "7077321415",
-          "signatoryEmail" => "david@bbiz.com",
-          "signatoryTitle" => "Founder",
-          "contactFirstName" => "Elliot",
-          "contactLastName" => "Winden",
-          "contactMobile" => "7071749274",
-          "workPhone" => "7075023748",
-          "contactEmail" => "elliot@bbiz.com",
-          "contactTitle" => "President",
-          "contactAddress" => "Stockton St.",
-          "marketplaceOrigin" => "DH"
+      user =
+        Repo.insert!(%TransigoAdmin.Account.User{
+          user_uid: "Tusr-1816-603e-00e0-0bef-f4ec-7567",
+          webhook: "http://sandbox.camelfin.com/buyerfinanceweb/quota/quotaTgReturn",
+          company: "camel-sandbox",
+          client_id: "1965ea39abd27b085503555b5ebd1cc2b3679f7458f8bf7613a00cde8cc957db",
+          client_secret:
+            "5ed185b8b9f8465c6a2213f40e3df536b4bde42ce4eab7c1e4e43d60b0749410a08ca623994653413f6bc4a6a2cfd136",
+          marketplace_id: marketplace.id
         })
 
-      %{marketplace: marketplace, exporter: exporter}
+      {:ok, %{Exporter => exporter, Contact => _contact}} =
+        TransigoAdmin.Account.create_exporter(
+          %{
+            "businessName" => "Best Business",
+            "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+            "businessAddressCountry" => "USA",
+            "registrationNumber" => "123456",
+            "signatoryFirstName" => "David",
+            "signatoryLastName" => "Silva",
+            "signatoryMobile" => "7077321415",
+            "signatoryEmail" => "david@bbiz.com",
+            "signatoryTitle" => "Founder",
+            "contactFirstName" => "Elliot",
+            "contactLastName" => "Winden",
+            "contactMobile" => "7071749274",
+            "workPhone" => "7075023748",
+            "contactEmail" => "elliot@bbiz.com",
+            "contactTitle" => "President",
+            "contactAddress" => "Stockton St."
+          },
+          marketplace
+        )
+
+      token =
+        Repo.insert!(%Token{
+          access_token: "token",
+          user_id: user.id
+        })
+
+      %{marketplace: marketplace, exporter: exporter, user: user, token: token}
     end
 
-    test "can show exporter with valid params", %{conn: conn, marketplace: _, exporter: exporter} do
-      token = Repo.insert!(%Token{access_token: "token"})
-
+    test "can show exporter with valid params", %{
+      conn: conn,
+      marketplace: _,
+      exporter: exporter,
+      token: token
+    } do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
@@ -121,10 +157,10 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
     test "cannot show exporter with that does not exist", %{
       conn: conn,
       marketplace: _,
-      exporter: _exporter
+      exporter: _exporter,
+      token: token
     } do
       rand_uid = TransigoAdmin.DataLayer.generate_uid("exp")
-      token = Repo.insert!(%Token{access_token: "token"})
 
       res =
         conn
@@ -138,10 +174,9 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
     test "cannot show exporter with invalid uid", %{
       conn: conn,
       marketplace: _,
-      exporter: _exporter
+      exporter: _exporter,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
@@ -160,37 +195,55 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
           marketplace: "DHGate"
         })
 
-      {:ok, %{Exporter => exporter, Contact => _contact}} =
-        TransigoAdmin.Account.create_exporter(%{
-          "businessName" => "Best Business",
-          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-          "businessAddressCountry" => "USA",
-          "registrationNumber" => "123456",
-          "signatoryFirstName" => "David",
-          "signatoryLastName" => "Silva",
-          "signatoryMobile" => "7077321415",
-          "signatoryEmail" => "david@bbiz.com",
-          "signatoryTitle" => "Founder",
-          "contactFirstName" => "Elliot",
-          "contactLastName" => "Winden",
-          "contactMobile" => "7071749274",
-          "workPhone" => "7075023748",
-          "contactEmail" => "elliot@bbiz.com",
-          "contactTitle" => "President",
-          "contactAddress" => "Stockton St.",
-          "marketplaceOrigin" => "DH"
+      user =
+        Repo.insert!(%TransigoAdmin.Account.User{
+          user_uid: "Tusr-1816-603e-00e0-0bef-f4ec-7567",
+          webhook: "http://sandbox.camelfin.com/buyerfinanceweb/quota/quotaTgReturn",
+          company: "camel-sandbox",
+          client_id: "1965ea39abd27b085503555b5ebd1cc2b3679f7458f8bf7613a00cde8cc957db",
+          client_secret:
+            "5ed185b8b9f8465c6a2213f40e3df536b4bde42ce4eab7c1e4e43d60b0749410a08ca623994653413f6bc4a6a2cfd136",
+          marketplace_id: marketplace.id
         })
 
-      %{marketplace: marketplace, exporter: exporter}
+      {:ok, %{Exporter => exporter, Contact => _contact}} =
+        TransigoAdmin.Account.create_exporter(
+          %{
+            "businessName" => "Best Business",
+            "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+            "businessAddressCountry" => "USA",
+            "registrationNumber" => "123456",
+            "signatoryFirstName" => "David",
+            "signatoryLastName" => "Silva",
+            "signatoryMobile" => "7077321415",
+            "signatoryEmail" => "david@bbiz.com",
+            "signatoryTitle" => "Founder",
+            "contactFirstName" => "Elliot",
+            "contactLastName" => "Winden",
+            "contactMobile" => "7071749274",
+            "workPhone" => "7075023748",
+            "contactEmail" => "elliot@bbiz.com",
+            "contactTitle" => "President",
+            "contactAddress" => "Stockton St."
+          },
+          marketplace
+        )
+
+      token =
+        Repo.insert!(%Token{
+          access_token: "token",
+          user_id: user.id
+        })
+
+      %{marketplace: marketplace, exporter: exporter, user: user, token: token}
     end
 
     test "can update exporter with valid params", %{
       conn: conn,
       marketplace: _,
-      exporter: exporter
+      exporter: exporter,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       update_params = %{"signatoryFirstName" => "Joe"}
 
       res =
@@ -210,10 +263,9 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
     test "cannot update exporter with invalid params", %{
       conn: conn,
       marketplace: _,
-      exporter: exporter
+      exporter: exporter,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       update_params = %{"signatoryEmail" => "not an email"}
 
       res =
@@ -231,10 +283,9 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
     test "cannot update exporter with non updatable params", %{
       conn: conn,
       marketplace: _,
-      exporter: exporter
+      exporter: exporter,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       update_params = %{"address" => "not an updatable param"}
 
       res =
@@ -259,33 +310,55 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
           marketplace: "DHGate"
         })
 
-      {:ok, %{Exporter => exporter, Contact => _contact}} =
-        TransigoAdmin.Account.create_exporter(%{
-          "businessName" => "Best Business",
-          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-          "businessAddressCountry" => "USA",
-          "registrationNumber" => "123456",
-          "signatoryFirstName" => "David",
-          "signatoryLastName" => "Silva",
-          "signatoryMobile" => "7077321415",
-          "signatoryEmail" => "david@bbiz.com",
-          "signatoryTitle" => "Founder",
-          "contactFirstName" => "Elliot",
-          "contactLastName" => "Winden",
-          "contactMobile" => "7071749274",
-          "workPhone" => "7075023748",
-          "contactEmail" => "elliot@bbiz.com",
-          "contactTitle" => "President",
-          "contactAddress" => "Stockton St.",
-          "marketplaceOrigin" => "DH"
+      user =
+        Repo.insert!(%TransigoAdmin.Account.User{
+          user_uid: "Tusr-1816-603e-00e0-0bef-f4ec-7567",
+          webhook: "http://sandbox.camelfin.com/buyerfinanceweb/quota/quotaTgReturn",
+          company: "camel-sandbox",
+          client_id: "1965ea39abd27b085503555b5ebd1cc2b3679f7458f8bf7613a00cde8cc957db",
+          client_secret:
+            "5ed185b8b9f8465c6a2213f40e3df536b4bde42ce4eab7c1e4e43d60b0749410a08ca623994653413f6bc4a6a2cfd136",
+          marketplace_id: marketplace.id
         })
 
-      %{marketplace: marketplace, exporter: exporter}
+      {:ok, %{Exporter => exporter, Contact => _contact}} =
+        TransigoAdmin.Account.create_exporter(
+          %{
+            "businessName" => "Best Business",
+            "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+            "businessAddressCountry" => "USA",
+            "registrationNumber" => "123456",
+            "signatoryFirstName" => "David",
+            "signatoryLastName" => "Silva",
+            "signatoryMobile" => "7077321415",
+            "signatoryEmail" => "david@bbiz.com",
+            "signatoryTitle" => "Founder",
+            "contactFirstName" => "Elliot",
+            "contactLastName" => "Winden",
+            "contactMobile" => "7071749274",
+            "workPhone" => "7075023748",
+            "contactEmail" => "elliot@bbiz.com",
+            "contactTitle" => "President",
+            "contactAddress" => "Stockton St."
+          },
+          marketplace
+        )
+
+      token =
+        Repo.insert!(%Token{
+          access_token: "token",
+          user_id: user.id
+        })
+
+      %{marketplace: marketplace, exporter: exporter, user: user, token: token}
     end
 
-    test "can redirect to msa url", %{conn: conn, marketplace: _, exporter: exporter} do
-      token = Repo.insert!(%Token{access_token: "token"})
-
+    test "can redirect to msa url", %{
+      conn: conn,
+      marketplace: _,
+      exporter: exporter,
+      token: token
+    } do
       conn =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
@@ -294,9 +367,7 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
       assert redirected_to(conn) =~ "url"
     end
 
-    test "can sign an msa", %{conn: conn, marketplace: _, exporter: exporter} do
-      token = Repo.insert!(%Token{access_token: "token"})
-
+    test "can sign an msa", %{conn: conn, marketplace: _, exporter: exporter, token: token} do
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
@@ -315,26 +386,39 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
           marketplace: "DHGate"
         })
 
-      {:ok, %{Exporter => exporter, Contact => _contact}} =
-        TransigoAdmin.Account.create_exporter(%{
-          "businessName" => "Best Business",
-          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-          "businessAddressCountry" => "USA",
-          "registrationNumber" => "123456",
-          "signatoryFirstName" => "David",
-          "signatoryLastName" => "Silva",
-          "signatoryMobile" => "7077321415",
-          "signatoryEmail" => "david@bbiz.com",
-          "signatoryTitle" => "Founder",
-          "contactFirstName" => "Elliot",
-          "contactLastName" => "Winden",
-          "contactMobile" => "7071749274",
-          "workPhone" => "7075023748",
-          "contactEmail" => "elliot@bbiz.com",
-          "contactTitle" => "President",
-          "contactAddress" => "Stockton St.",
-          "marketplaceOrigin" => "DH"
+      user =
+        Repo.insert!(%TransigoAdmin.Account.User{
+          user_uid: "Tusr-1816-603e-00e0-0bef-f4ec-7567",
+          webhook: "http://sandbox.camelfin.com/buyerfinanceweb/quota/quotaTgReturn",
+          company: "camel-sandbox",
+          client_id: "1965ea39abd27b085503555b5ebd1cc2b3679f7458f8bf7613a00cde8cc957db",
+          client_secret:
+            "5ed185b8b9f8465c6a2213f40e3df536b4bde42ce4eab7c1e4e43d60b0749410a08ca623994653413f6bc4a6a2cfd136",
+          marketplace_id: marketplace.id
         })
+
+      {:ok, %{Exporter => exporter, Contact => _contact}} =
+        TransigoAdmin.Account.create_exporter(
+          %{
+            "businessName" => "Best Business",
+            "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+            "businessAddressCountry" => "USA",
+            "registrationNumber" => "123456",
+            "signatoryFirstName" => "David",
+            "signatoryLastName" => "Silva",
+            "signatoryMobile" => "7077321415",
+            "signatoryEmail" => "david@bbiz.com",
+            "signatoryTitle" => "Founder",
+            "contactFirstName" => "Elliot",
+            "contactLastName" => "Winden",
+            "contactMobile" => "7071749274",
+            "workPhone" => "7075023748",
+            "contactEmail" => "elliot@bbiz.com",
+            "contactTitle" => "President",
+            "contactAddress" => "Stockton St."
+          },
+          marketplace
+        )
 
       {:ok, importer} =
         TransigoAdmin.Account.create_importer(%{
@@ -366,17 +450,28 @@ defmodule TransigoAdminWeb.Api.ExporterControllerTest do
           exporter_id: exporter.id
         })
 
-      %{marketplace: marketplace, exporter: exporter, transaction: transaction}
+      token =
+        Repo.insert!(%Token{
+          access_token: "token",
+          user_id: user.id
+        })
+
+      %{
+        marketplace: marketplace,
+        exporter: exporter,
+        transaction: transaction,
+        user: user,
+        token: token
+      }
     end
 
     test "can sign a transaction", %{
       conn: conn,
       marketplace: _,
       exporter: exporter,
-      transaction: transaction
+      transaction: transaction,
+      token: token
     } do
-      token = Repo.insert!(%Token{access_token: "token"})
-
       res =
         conn
         |> put_req_header("authorization", "Bearer " <> token.access_token)
