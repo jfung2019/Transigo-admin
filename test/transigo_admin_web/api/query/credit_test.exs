@@ -42,7 +42,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
   """
 
   setup %{conn: conn} do
-    Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+    marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
       origin: "DH",
       marketplace: "DHGate"
     })
@@ -92,7 +92,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
         "contactTitle" => "President",
         "contactAddress" => "Stockton St.",
         "marketplaceOrigin" => "DH"
-      })
+      }, marketplace)
 
     {:ok, importer} =
       Account.create_importer(%{
