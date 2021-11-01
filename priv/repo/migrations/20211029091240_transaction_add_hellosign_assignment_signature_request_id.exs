@@ -3,7 +3,7 @@ defmodule TransigoAdmin.Repo.Migrations.TransactionAddHellosignAssignmentSignatu
 
   def change do
     alter table("transaction") do
-      add :hellosign_assignment_signature_request_id, :string
+      add :hellosign_assignment_signature_request_id, :varchar
     end
   end
 end
