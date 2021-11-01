@@ -52,15 +52,14 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   end
 
   defp download_assignment_notice(
-         %Transaction{} =
-           %{
-             transaction_uid: transaction_uid,
-             importer: importer,
-             invoice_date: invoice_date,
-             invoice_ref: invoice_ref,
-             credit_term_days: credit_term_days,
-             hellosign_signature_request_id: hs_request_id
-           } = transaction
+         %Transaction{
+           transaction_uid: transaction_uid,
+           importer: importer,
+           invoice_date: invoice_date,
+           invoice_ref: invoice_ref,
+           credit_term_days: credit_term_days,
+           hellosign_signature_request_id: hs_request_id
+         } = transaction
        ) do
     case @s3_api.download_file(transaction, :invoice) do
       {:ok, invoice_file} ->
