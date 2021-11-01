@@ -37,8 +37,6 @@ defmodule TransigoAdmin.Job.HourlyAssignment do
             |> Mail.send()
             |> mark_transaction_as_assigned(transaction)
 
-            File.rm(filename)
-
             :ok
 
           _ ->
