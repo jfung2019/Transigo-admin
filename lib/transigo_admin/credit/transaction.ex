@@ -23,6 +23,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :second_installment_usd, :float, source: :second_installment_USD
     field :repaid_datetime, :utc_datetime
     field :dwolla_repayment_transfer_url, :string
+    field :hellosign_assignment_signature_request_id, :string
 
     belongs_to :importer, TransigoAdmin.Account.Importer
     belongs_to :exporter, TransigoAdmin.Account.Exporter
@@ -53,7 +54,8 @@ defmodule TransigoAdmin.Credit.Transaction do
     :repaid_datetime,
     :dwolla_repayment_transfer_url,
     :importer_id,
-    :exporter_id
+    :exporter_id,
+    :hellosign_assignment_signature_request_id
   ]
 
   @required_attrs [

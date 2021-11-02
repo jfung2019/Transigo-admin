@@ -70,4 +70,20 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
       {:ok, %{url: "could not get url"}}
     end
   end
+
+  def sign_assignment_url(_root, %{transaction_uid: transaction_uid}, _context) do
+    transaction = Credit.get_transaction_by_transaction_uid(transaction_uid)
+
+    if not is_nil(transaction) do
+      {:ok,
+       %{
+         url:
+           Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
+             token: TransigoAdminWeb.Tokenizer.encrypt(transaction.hellosign_assignment_signature_request_id)
+           )
+       }}
+    else
+      {:ok, %{url: "could not get url"}}
+    end
+  end
 end

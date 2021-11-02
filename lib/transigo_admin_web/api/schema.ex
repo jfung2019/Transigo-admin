@@ -79,6 +79,13 @@ defmodule TransigoAdminWeb.Api.Schema do
       middleware Middleware.Authenticate
       resolve &Resolvers.Account.sign_docs_url/3
     end
+
+    @desc "gets signing URL for transaction assignment"
+    field :sign_assignment_url, :document_result do
+      arg :transaction_uid, non_null(:id)
+      middleware Middleware.Authenticate
+      resolve &Resolvers.Account.sign_assignment_url/3
+    end
   end
 
   def context(ctx) do

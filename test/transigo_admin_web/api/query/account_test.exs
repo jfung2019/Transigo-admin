@@ -45,6 +45,14 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   }
   """
 
+  @get_transaction_assignment_sign_url """
+  query($transaction_uid: ID!) {
+    signAssignmentUrl(transactionUid: $transaction_uid) {
+      url
+    }
+  }
+  """
+
   setup %{conn: conn} do
     marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
       origin: "DH",
@@ -245,6 +253,43 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
     assert %{
              "data" => %{
                "signDocsUrl" => %{
+                 "url" => "could not get url"
+               }
+             }
+           } = json_response(response, 200)
+  end
+
+  test "can get hellosign URL for transaction assignment", %{conn: conn, transaction: transaction} do
+    response =
+      post(conn, "/api", %{
+        query: @get_transaction_assignment_sign_url,
+        variables: %{"transaction_uid" => transaction.transaction_uid}
+      })
+
+    assert %{
+             "data" => %{
+               "signAssignmentUrl" => %{
+                 "url" => url
+               }
+             }
+           } = json_response(response, 200)
+
+    [_base, token] = String.split(url, "token=")
+    assert {:ok, nil} = TransigoAdminWeb.Tokenizer.decrypt(token)
+
+    assert is_binary(url)
+  end
+
+  test "cannot get hellosign URL for nonexistent transaction assignment", %{conn: conn} do
+    response =
+      post(conn, "/api", %{
+        query: @get_transaction_assignment_sign_url,
+        variables: %{"transaction_uid" => TransigoAdmin.DataLayer.generate_uid("tra")}
+      })
+
+    assert %{
+             "data" => %{
+               "signAssignmentUrl" => %{
                  "url" => "could not get url"
                }
              }
