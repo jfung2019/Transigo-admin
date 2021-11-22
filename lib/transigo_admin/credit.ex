@@ -238,7 +238,7 @@ defmodule TransigoAdmin.Credit do
       |> Date.to_iso8601()
 
     est_second_installment_date =
-      transaction.po_date
+      transaction.invoice_date
       |> Timex.shift(days: transaction.credit_term_days)
       |> Date.to_iso8601()
 
