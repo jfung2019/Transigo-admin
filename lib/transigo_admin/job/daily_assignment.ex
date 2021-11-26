@@ -4,6 +4,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   generate assignment notice and send it to importer
   """
   use Oban.Worker, queue: :transaction, max_attempts: 1
+  require Logger
 
   alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
 
@@ -29,7 +30,9 @@ defmodule TransigoAdmin.Job.DailyAssignment do
         hellosign_assignment_signature_request_id: req_id
       })
     else
-      _ ->
+      error ->
+        Logger.error("failed to create signature request for assignment")
+        Logger.error(error)
         {:error, message: "failed to create signature request for assignment"}
     end
   end
@@ -48,6 +51,8 @@ defmodule TransigoAdmin.Job.DailyAssignment do
       {"signers[1][email_address]", "nir.tal@transigo.io"}
     ]
 
+    Logger.error("assignment payload")
+    Logger.error(payload)
     {:ok, payload}
   end
 
@@ -93,7 +98,9 @@ defmodule TransigoAdmin.Job.DailyAssignment do
         ]
         |> @util_api.generate_assignment_notice()
 
-      {:error, _} ->
+      {:error, error} ->
+        Logger.error("Error downloading file from S3")
+        Logger.error(error)
         :error
     end
   end
