@@ -103,13 +103,13 @@ defmodule TransigoAdmin.Job.Helper do
   @spec get_transigo_doc_info :: String.t()
   def get_transigo_doc_info do
     Jason.encode!(%{
-      address: "7400 Beaufont Springs Drive, Suite 300 PMB#9655, Richmond, VA 23225, USA",
+      address: "7400 Beaufont Springs Drive, Suite 300 PMB#40025, Richmond, VA 23225, USA",
       contact: "Nir Tal",
       contact_email: "nir@transigo.io",
-      name: "Transigo, Inc.",
+      name: "Transigo Transactions USA, LLC",
       phone: "888-783-6052",
       snail_mail:
-        "Transigo Inc., 7400 Beaufont Springs Drive, Suite 300 PMB#9655 Richmond, VA 23225",
+        "Transigo Inc., 7400 Beaufont Springs Drive, Suite 300 PMB#40025 Richmond, VA 23225",
       support_email: "support@transigo.io"
     })
   end
