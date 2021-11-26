@@ -4,6 +4,7 @@ defmodule TransigoAdmin.Job.HourlyAssignment do
   generate assignment notice and send it to importer
   """
   use Oban.Worker, queue: :transaction, max_attempts: 1
+  require Logger
 
   alias TransigoAdmin.{Credit, Credit.Transaction}
   alias SendGrid.{Mail, Email}
@@ -39,11 +40,20 @@ defmodule TransigoAdmin.Job.HourlyAssignment do
 
             :ok
 
-          _ ->
+          error ->
+            Logger.error("Failed to read file")
+            Logger.error(error)
             :error
         end
 
-      {:error, _} ->
+      {:error, error} ->
+        Logger.error("Failed to read signed assignment notice")
+        Logger.error(error)
+        :error
+
+      error ->
+        Logger.error("Failed to read signed assignment notice")
+        Logger.error(error)
         :error
     end
   end
