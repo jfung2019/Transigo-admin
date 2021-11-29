@@ -7,6 +7,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
   require Logger
 
   alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
+  alias Tesla.Multipart
 
   @util_api Application.compile_env(:transigo_admin, :util_api)
   @s3_api Application.compile_env(:transigo_admin, :s3_api)
@@ -70,32 +71,69 @@ defmodule TransigoAdmin.Job.DailyAssignment do
       {:ok, invoice_file} ->
         invoice_file_basename = Path.basename(invoice_file)
 
-        [
-          {"closing_date", get_hs_doc_create_date(hs_request_id)},
-          {"document_signature_date", Timex.now() |> Timex.format!("{ISOdate}")},
-          {"financier", "Transigo"},
-          {"fname", "#{transaction_uid}_assignment"},
-          {"importer",
-           Jason.encode!(%{
-             address: get_importer_address(importer),
-             contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
-             email: importer.contact.email,
-             name: importer.business_name,
-             bank_account: importer.bank_account,
-             bank_name: importer.bank_name
-           })},
-          {"invoice",
-           Jason.encode!(%{
-             invoice_date: invoice_date,
-             invoice_fname: invoice_file_basename,
-             invoice_num: invoice_ref,
-             second_installment_date: Timex.shift(invoice_date, days: credit_term_days)
-           })},
-          {:file, invoice_file,
-           {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
-          {"tags", "true"},
-          {"transigo", Helper.get_transigo_doc_info()}
-        ]
+        # [
+        #   {"closing_date", get_hs_doc_create_date(hs_request_id)},
+        #   {"document_signature_date", Timex.now() |> Timex.format!("{ISOdate}")},
+        #   {"financier", "Transigo"},
+        #   {"fname", "#{transaction_uid}_assignment"},
+        #   {"importer",
+        #    Jason.encode!(%{
+        #      address: get_importer_address(importer),
+        #      contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
+        #      email: importer.contact.email,
+        #      name: importer.business_name,
+        #      bank_account: importer.bank_account,
+        #      bank_name: importer.bank_name
+        #    })},
+        #   {"invoice",
+        #    Jason.encode!(%{
+        #      invoice_date: invoice_date,
+        #      invoice_fname: invoice_file_basename,
+        #      invoice_num: invoice_ref,
+        #      second_installment_date: Timex.shift(invoice_date, days: credit_term_days)
+        #    })},
+        #   {:file, invoice_file,
+        #    {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
+        #   {"tags", "true"},
+        #   {"transigo", Helper.get_transigo_doc_info()}
+        # ]
+
+        Multipart.new()
+        |> Multipart.add_content_type_param("multipart/form-data")
+        |> Multipart.add_field("closing_date", get_hs_doc_create_date(hs_request_id))
+        |> Multipart.add_field(
+          "document_signature_date",
+          Timex.now() |> Timex.format!("{ISOdate}")
+        )
+        |> Multipart.add_field("financier", "Transigo")
+        |> Multipart.add_field("fname", "#{transaction_uid}_assignment")
+        |> Multipart.add_field(
+          "importer",
+          Jason.encode!(%{
+            address: get_importer_address(importer),
+            contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
+            email: importer.contact.email,
+            name: importer.business_name,
+            bank_account: importer.bank_account,
+            bank_name: importer.bank_name
+          })
+        )
+        |> Multipart.add_field(
+          "invoice",
+          Jason.encode!(%{
+            invoice_date: invoice_date,
+            invoice_fname: invoice_file_basename,
+            invoice_num: invoice_ref,
+            second_installment_date: Timex.shift(invoice_date, days: credit_term_days)
+          })
+        )
+        |> Multipart.add_field("tags", "true")
+        |> Multipart.add_field("transigo", Helper.get_transigo_doc_info())
+        |> Multipart.add_file(invoice_file,
+          name: "invoice_file",
+          filename: invoice_file_basename,
+          detect_content_type: true
+        )
         |> @util_api.generate_assignment_notice()
 
       {:error, error} ->

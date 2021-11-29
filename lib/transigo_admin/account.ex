@@ -418,31 +418,53 @@ defmodule TransigoAdmin.Account do
     end
   end
 
-  @spec get_msa_payload(Exporter.t(), boolean) :: {:ok, list}
+  @spec get_msa_payload(Exporter.t(), boolean) :: {:ok, map}
   def get_msa_payload(%{contact: contact, marketplace: marketplace} = exporter, cn_msa) do
     now = Timex.now() |> Timex.format!("{ISOdate}")
 
-    payload = [
-      {"marketplace", marketplace.marketplace},
-      {"document_signature_date", now},
-      {"fname", "#{exporter.exporter_transigo_uid}_msa"},
-      {"tags", "true"},
-      {"exporter",
-       Jason.encode!(%{
-         MSA_date: now,
-         address: exporter.address,
-         company_name: exporter.business_name,
-         contact: "#{contact.first_name} #{contact.last_name}",
-         email: contact.email,
-         phone: contact.mobile,
-         title: contact.role,
-         signatory_email: exporter.signatory_email,
-         signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
-         signatory_title: exporter.signatory_title
-       })},
-      {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()},
-      {"cn", get_cn_tag(cn_msa)}
-    ]
+    # payload = [
+    #   {"marketplace", marketplace.marketplace},
+    #   {"document_signature_date", now},
+    #   {"fname", "#{exporter.exporter_transigo_uid}_msa"},
+    #   {"tags", "true"},
+    #   {"exporter",
+    #    Jason.encode!(%{
+    #      MSA_date: now,
+    #      address: exporter.address,
+    #      company_name: exporter.business_name,
+    #      contact: "#{contact.first_name} #{contact.last_name}",
+    #      email: contact.email,
+    #      phone: contact.mobile,
+    #      title: contact.role,
+    #      signatory_email: exporter.signatory_email,
+    #      signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+    #      signatory_title: exporter.signatory_title
+    #    })},
+    #   {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()},
+    #   {"cn", get_cn_tag(cn_msa)}
+    # ]
+
+    payload = %{
+      "marketplace" => marketplace.marketplace,
+      "document_signature_date" => now,
+      "fname" => "#{exporter.exporter_transigo_uid}_msa",
+      "tags" => "true",
+      "exporter" =>
+        Jason.encode!(%{
+          MSA_date: now,
+          address: exporter.address,
+          company_name: exporter.business_name,
+          contact: "#{contact.first_name} #{contact.last_name}",
+          email: contact.email,
+          phone: contact.mobile,
+          title: contact.role,
+          signatory_email: exporter.signatory_email,
+          signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+          signatory_title: exporter.signatory_title
+        }),
+      "transigo" => TransigoAdmin.Job.Helper.get_transigo_doc_info(),
+      "cn" => get_cn_tag(cn_msa)
+    }
 
     {:ok, payload}
   end

@@ -26,33 +26,57 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
     ])
   end
 
+  # def generate_assignment_notice(payload) do
+  #   HTTPoison.post(
+  #     "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_assignment_notice",
+  #     {:multipart, payload},
+  #     []
+  #   )
+  #   |> save_file()
+  # end
+
   def generate_assignment_notice(payload) do
-    HTTPoison.post(
+    Tesla.post(
       "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_assignment_notice",
-      {:multipart, payload},
-      []
+      payload
     )
-    |> save_file()
+    |> save_file_tesla()
   end
+
+  # def generate_exporter_msa(payload) do
+  #   HTTPoison.post(
+  #     "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_msa",
+  #     {:multipart, payload},
+  #     [],
+  #     recv_timeout: 60_000
+  #   )
+  #   |> save_file()
+  # end
 
   def generate_exporter_msa(payload) do
-    HTTPoison.post(
+    Tesla.post(
       "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_msa",
-      {:multipart, payload},
-      [],
-      recv_timeout: 60_000
+      payload
     )
-    |> save_file()
+    |> save_file_tesla()
   end
 
+  # def generate_transaction_doc(payload) do
+  #   HTTPoison.post(
+  #     "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_trans_docs",
+  #     {:multipart, payload},
+  #     [],
+  #     recv_timeout: 60_000
+  #   )
+  #   |> save_file()
+  # end
+
   def generate_transaction_doc(payload) do
-    HTTPoison.post(
+    Tesla.post(
       "#{Application.get_env(:transigo_admin, :doctools_url)}/generate_trans_docs",
-      {:multipart, payload},
-      [],
-      recv_timeout: 60_000
+      payload
     )
-    |> save_file()
+    |> save_file_tesla()
   end
 
   defp format_date(
@@ -72,9 +96,27 @@ defmodule TransigoAdmin.ServiceManager.Util.UtilApi do
 
   defp format_date(map), do: map
 
-  defp save_file(response) do
+  # defp save_file(response) do
+  #   case response do
+  #     {:ok, %{status_code: 200, body: pdf_content}} ->
+  #       with {:ok, temp} <- Briefly.create(extname: ".pdf"),
+  #            :ok <- File.write(temp, pdf_content) do
+  #         {:ok, temp}
+  #       else
+  #         error ->
+  #           IO.inspect(error)
+  #           {:error, "Fail to save file"}
+  #       end
+
+  #     error ->
+  #       IO.inspect(error)
+  #       {:error, error}
+  #   end
+  # end
+
+  defp save_file_tesla(response) do
     case response do
-      {:ok, %{status_code: 200, body: pdf_content}} ->
+      {:ok, %{status: 200, body: pdf_content}} ->
         with {:ok, temp} <- Briefly.create(extname: ".pdf"),
              :ok <- File.write(temp, pdf_content) do
           {:ok, temp}

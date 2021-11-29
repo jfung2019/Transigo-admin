@@ -79,7 +79,10 @@ defmodule TransigoAdminWeb.Api.Resolvers.Account do
        %{
          url:
            Routes.hellosign_url(TransigoAdminWeb.Endpoint, :index,
-             token: TransigoAdminWeb.Tokenizer.encrypt(transaction.hellosign_assignment_signature_request_id)
+             token:
+               TransigoAdminWeb.Tokenizer.encrypt(
+                 transaction.hellosign_assignment_signature_request_id
+               )
            )
        }}
     else
