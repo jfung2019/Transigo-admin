@@ -2,6 +2,7 @@ defmodule TransigoAdmin.Credit do
   import Ecto.Query, warn: false
   require Logger
 
+  alias Tesla.Multipart
   alias TransigoAdmin.DataLayer
   alias TransigoAdmin.{Repo, Account}
   alias Absinthe.Relay
@@ -242,80 +243,167 @@ defmodule TransigoAdmin.Credit do
       |> Timex.shift(days: transaction.credit_term_days)
       |> Date.to_iso8601()
 
-    payload = [
-      {"financier", "Transigo"},
-      {"fname", "#{transaction.transaction_uid}_trans_docs"},
-      {"tags", "true"},
-      {"pg_cap", pg_cap |> Jason.encode!()},
-      {"today_date", today},
-      {:file, invoice_file,
-       {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
-      {:file, po_file, {"form-data", [name: "po_pi_file", filename: po_file_basename]}, []},
-      {:file, po_file, {"form-data", [name: "acc_file", filename: acc_file_basename]}, []},
-      {"dates",
-       Jason.encode!(%{
-         assignment_date: today,
-         closing_date_AppendixC_date: today,
-         exporter_schedA_date: transaction.po_date |> Date.to_iso8601(),
-         importer_acceptance_date: today,
-         invoice_signing_date: today,
-         pi_signing_date: today
-       })},
-      {"deal",
-       Jason.encode!(%{
-         credit_invoice_term: transaction.credit_term_days,
-         currency: "USD",
-         downpayment: transaction.down_payment_usd |> Jason.encode!(),
-         est_invoice_date: transaction.invoice_date |> Date.to_iso8601(),
-         factoring_fee: offer.importer_fee |> Jason.encode!(),
-         locale: "en_US",
-         purchase_price:
-           (offer.transaction_usd - transaction.down_payment_usd) |> Jason.encode!(),
-         reserve: 0.0,
-         second_installment:
-           (offer.transaction_usd - transaction.down_payment_usd + offer.importer_fee)
-           |> Jason.encode!()
-       })},
-      {"exporter",
-       Jason.encode!(%{
-         MSA_date: exporter.sign_msa_datetime |> Date.to_iso8601(),
-         address: exporter.address,
-         company_name: exporter.business_name,
-         contact: "#{exporter.contact.first_name} #{exporter.contact.last_name}",
-         email: exporter.contact.email,
-         phone: to_string(exporter.contact.work_phone),
-         signatory_email: exporter.signatory_email,
-         signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
-         signatory_title: exporter.signatory_title,
-         title: exporter.contact.role
-       })},
-      {"importer",
-       Jason.encode!(%{
-         address: importer_address,
-         contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
-         email: importer.contact.email,
-         name: importer.business_name,
-         mobile: importer.contact.mobile,
-         personal_address: importer.contact.us_place.full_address,
-         bank_account: importer.bank_account,
-         bank_name: importer.bank_name
-       })},
-      {"invoice",
-       Jason.encode!(%{
-         invoice_date: transaction.invoice_date |> Date.to_iso8601(),
-         invoice_fname: "Invoice.pdf",
-         invoice_num: transaction.invoice_ref,
-         second_installment_date: second_installment_date
-       })},
-      {"po_pi",
-       Jason.encode!(%{
-         est_second_installment_date: est_second_installment_date,
-         proforma_fname: "PO.pdf",
-         proforma_invoice_date: transaction.po_date |> Date.to_iso8601(),
-         proforma_invoice_num: transaction.po_ref
-       })},
-      {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()}
-    ]
+    # payload = [
+    #   {"financier", "Transigo"},
+    #   {"fname", "#{transaction.transaction_uid}_trans_docs"},
+    #   {"tags", "true"},
+    #   {"pg_cap", pg_cap |> Jason.encode!()},
+    #   {"today_date", today},
+    #   {:file, invoice_file,
+    #    {"form-data", [name: "invoice_file", filename: invoice_file_basename]}, []},
+    #   {:file, po_file, {"form-data", [name: "po_pi_file", filename: po_file_basename]}, []},
+    #   {:file, po_file, {"form-data", [name: "acc_file", filename: acc_file_basename]}, []},
+    #   {"dates",
+    #    Jason.encode!(%{
+    #      assignment_date: today,
+    #      closing_date_AppendixC_date: today,
+    #      exporter_schedA_date: transaction.po_date |> Date.to_iso8601(),
+    #      importer_acceptance_date: today,
+    #      invoice_signing_date: today,
+    #      pi_signing_date: today
+    #    })},
+    #   {"deal",
+    #    Jason.encode!(%{
+    #      credit_invoice_term: transaction.credit_term_days,
+    #      currency: "USD",
+    #      downpayment: transaction.down_payment_usd |> Jason.encode!(),
+    #      est_invoice_date: transaction.invoice_date |> Date.to_iso8601(),
+    #      factoring_fee: offer.importer_fee |> Jason.encode!(),
+    #      locale: "en_US",
+    #      purchase_price:
+    #        (offer.transaction_usd - transaction.down_payment_usd) |> Jason.encode!(),
+    #      reserve: 0.0,
+    #      second_installment:
+    #        (offer.transaction_usd - transaction.down_payment_usd + offer.importer_fee)
+    #        |> Jason.encode!()
+    #    })},
+    #   {"exporter",
+    #    Jason.encode!(%{
+    #      MSA_date: exporter.sign_msa_datetime |> Date.to_iso8601(),
+    #      address: exporter.address,
+    #      company_name: exporter.business_name,
+    #      contact: "#{exporter.contact.first_name} #{exporter.contact.last_name}",
+    #      email: exporter.contact.email,
+    #      phone: to_string(exporter.contact.work_phone),
+    #      signatory_email: exporter.signatory_email,
+    #      signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+    #      signatory_title: exporter.signatory_title,
+    #      title: exporter.contact.role
+    #    })},
+    #   {"importer",
+    #    Jason.encode!(%{
+    #      address: importer_address,
+    #      contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
+    #      email: importer.contact.email,
+    #      name: importer.business_name,
+    #      mobile: importer.contact.mobile,
+    #      personal_address: importer.contact.us_place.full_address,
+    #      bank_account: importer.bank_account,
+    #      bank_name: importer.bank_name
+    #    })},
+    #   {"invoice",
+    #    Jason.encode!(%{
+    #      invoice_date: transaction.invoice_date |> Date.to_iso8601(),
+    #      invoice_fname: "Invoice.pdf",
+    #      invoice_num: transaction.invoice_ref,
+    #      second_installment_date: second_installment_date
+    #    })},
+    #   {"po_pi",
+    #    Jason.encode!(%{
+    #      est_second_installment_date: est_second_installment_date,
+    #      proforma_fname: "PO.pdf",
+    #      proforma_invoice_date: transaction.po_date |> Date.to_iso8601(),
+    #      proforma_invoice_num: transaction.po_ref
+    #    })},
+    #   {"transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info()}
+    # ]
+
+    payload =
+      Multipart.new()
+      |> Multipart.add_content_type_param("multipart/form")
+      |> Multipart.add_field("financier", "Transigo")
+      |> Multipart.add_field("fname", "#{transaction.transaction_uid}_trans_docs")
+      |> Multipart.add_field("tags", "true")
+      |> Multipart.add_field("pg_cap", pg_cap |> Jason.encode!())
+      |> Multipart.add_field("today_date", today)
+      |> Multipart.add_field(
+        "dates",
+        Jason.encode!(%{
+          assignment_date: today,
+          closing_date_AppendixC_date: today,
+          exporter_schedA_date: transaction.po_date |> Date.to_iso8601(),
+          importer_acceptance_date: today,
+          invoice_signing_date: today,
+          pi_signing_date: today
+        })
+      )
+      |> Multipart.add_field(
+        "deal",
+        Jason.encode!(%{
+          credit_invoice_term: transaction.credit_term_days,
+          currency: "USD",
+          downpayment: transaction.down_payment_usd |> Jason.encode!(),
+          est_invoice_date: transaction.invoice_date |> Date.to_iso8601(),
+          factoring_fee: offer.importer_fee |> Jason.encode!(),
+          locale: "en_US",
+          purchase_price:
+            (offer.transaction_usd - transaction.down_payment_usd) |> Jason.encode!(),
+          reserve: 0.0,
+          second_installment:
+            (offer.transaction_usd - transaction.down_payment_usd + offer.importer_fee)
+            |> Jason.encode!()
+        })
+      )
+      |> Multipart.add_field(
+        "exporter",
+        Jason.encode!(%{
+          MSA_date: exporter.sign_msa_datetime |> Date.to_iso8601(),
+          address: exporter.address,
+          company_name: exporter.business_name,
+          contact: "#{exporter.contact.first_name} #{exporter.contact.last_name}",
+          email: exporter.contact.email,
+          phone: to_string(exporter.contact.work_phone),
+          signatory_email: exporter.signatory_email,
+          signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
+          signatory_title: exporter.signatory_title,
+          title: exporter.contact.role
+        })
+      )
+      |> Multipart.add_field(
+        "importer",
+        Jason.encode!(%{
+          address: importer_address,
+          contact: "#{importer.contact.first_name} #{importer.contact.last_name}",
+          email: importer.contact.email,
+          name: importer.business_name,
+          mobile: importer.contact.mobile,
+          personal_address: importer.contact.us_place.full_address,
+          bank_account: importer.bank_account,
+          bank_name: importer.bank_name
+        })
+      )
+      |> Multipart.add_field(
+        "invoice",
+        Jason.encode!(%{
+          invoice_date: transaction.invoice_date |> Date.to_iso8601(),
+          invoice_fname: "Invoice.pdf",
+          invoice_num: transaction.invoice_ref,
+          second_installment_date: second_installment_date
+        })
+      )
+      |> Multipart.add_field(
+        "po_pi",
+        Jason.encode!(%{
+          est_second_installment_date: est_second_installment_date,
+          proforma_fname: "PO.pdf",
+          proforma_invoice_date: transaction.po_date |> Date.to_iso8601(),
+          proforma_invoice_num: transaction.po_ref
+        })
+      )
+      |> Multipart.add_field("transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info())
+      |> Multipart.add_file(invoice_file, name: "invoice_file", filename: invoice_file_basename)
+      |> Multipart.add_file(po_file, name: "po_pi_file", filename: po_file_basename)
+      |> Multipart.add_file(po_file, name: "acc_file", filename: acc_file_basename)
 
     {:ok, payload}
   end

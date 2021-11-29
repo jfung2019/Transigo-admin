@@ -69,7 +69,8 @@ defmodule TransigoAdmin.MixProject do
       {:google_maps, "~> 0.11"},
       {:fuzzy_compare, "~> 1.0"},
       {:address_us, github: "smashedtoatoms/address_us"},
-      {:ecto_commons, "~> 0.3.3"}
+      {:ecto_commons, "~> 0.3.3"},
+      {:tesla, "~> 1.4"}
     ]
   end
 
