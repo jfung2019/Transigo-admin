@@ -2,6 +2,7 @@ defmodule TransigoAdmin.Account do
   import Ecto.Query, warn: false
   import Argon2, only: [verify_pass: 2, no_user_verify: 0]
 
+  alias Tesla.Multipart
   alias TransigoAdmin.Repo
   alias Absinthe.Relay
   alias TransigoAdminWeb.Router.Helpers, as: Routes
@@ -444,12 +445,15 @@ defmodule TransigoAdmin.Account do
     #   {"cn", get_cn_tag(cn_msa)}
     # ]
 
-    payload = %{
-      "marketplace" => marketplace.marketplace,
-      "document_signature_date" => now,
-      "fname" => "#{exporter.exporter_transigo_uid}_msa",
-      "tags" => "true",
-      "exporter" =>
+    payload =
+      Multipart.new()
+      |> Multipart.add_content_type_param("mutipart/form")
+      |> Multipart.add_field("marketplace", marketplace.marketplace)
+      |> Multipart.add_field("document_signature_date", now)
+      |> Multipart.add_field("fname", "#{exporter.exporter_transigo_uid}_msa")
+      |> Multipart.add_field("tags", "true")
+      |> Multipart.add_field(
+        "exporter",
         Jason.encode!(%{
           MSA_date: now,
           address: exporter.address,
@@ -461,10 +465,10 @@ defmodule TransigoAdmin.Account do
           signatory_email: exporter.signatory_email,
           signatory_name: "#{exporter.signatory_first_name} #{exporter.signatory_last_name}",
           signatory_title: exporter.signatory_title
-        }),
-      "transigo" => TransigoAdmin.Job.Helper.get_transigo_doc_info(),
-      "cn" => get_cn_tag(cn_msa)
-    }
+        })
+      )
+      |> Multipart.add_field("transigo", TransigoAdmin.Job.Helper.get_transigo_doc_info())
+      |> Multipart.add_field("cn", get_cn_tag(cn_msa))
 
     {:ok, payload}
   end
