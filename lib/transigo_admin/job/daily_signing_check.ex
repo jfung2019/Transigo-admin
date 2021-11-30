@@ -30,8 +30,7 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
       {:ok, %{"signature_request" => %{"created_at" => created_at}}} ->
         result =
           DateTime.from_unix!(created_at, :second)
-          # |> Timex.diff(Timex.now(), :month)
-          |> Timex.diff(Timex.now(), :minutes)
+          |> Timex.diff(Timex.now(), :month)
           |> regenerate_msa(exporter)
 
         result
@@ -43,8 +42,7 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
 
   def regenerate_msa(created_diff, %{contact: _c, marketplace: _m} = exporter) do
     cond do
-      # created_diff <= -1 ->
-      created_diff <= -10 ->  
+      created_diff <= -1 ->
         {:ok, payload} = Account.get_msa_payload(exporter, exporter.cn_msa)
 
         payload
