@@ -59,9 +59,9 @@ config :transigo_admin, Oban,
        {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
        {"1 0 * * *", TransigoAdmin.Job.DailyBalance},
        {"*/2 * * * *", TransigoAdmin.Job.DailyAssignment},
-       #{"2 0 * * *", TransigoAdmin.Job.DailyAssignment},
+       # {"2 0 * * *", TransigoAdmin.Job.DailyAssignment},
        {"*/2 * * * *", TransigoAdmin.Job.HourlyAssignment},
-       #{"0 * * * *", TransigoAdmin.Job.HourlyAssignment},
+       # {"0 * * * *", TransigoAdmin.Job.HourlyAssignment},
        {"3 0 * * *", TransigoAdmin.Job.DailySigningCheck},
        {"4 0 1 * *", TransigoAdmin.Job.MonthlyRevShare},
        {"* * * * *", TransigoAdmin.Job.WebhookResend, args: %{state: "init_send_fail"}},
@@ -93,7 +93,7 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
-
+config :transigo_admin, :helper, TransigoAdmin.Job.Helper_API
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 # Import environment specific config. This must remain at the bottom

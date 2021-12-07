@@ -42,10 +42,11 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
   """
 
   setup %{conn: conn} do
-    marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
-      origin: "DH",
-      marketplace: "DHGate"
-    })
+    marketplace =
+      Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+        origin: "DH",
+        marketplace: "DHGate"
+      })
 
     {:ok, admin} =
       Account.create_admin(%{
@@ -74,25 +75,28 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
       })
 
     {:ok, %{Exporter => exporter}} =
-      Account.create_exporter(%{
-        "businessName" => "Best Business",
-        "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-        "businessAddressCountry" => "USA",
-        "registrationNumber" => "123456",
-        "signatoryFirstName" => "David",
-        "signatoryLastName" => "Silva",
-        "signatoryMobile" => "7077321415",
-        "signatoryEmail" => "david@bbiz.com",
-        "signatoryTitle" => "Founder",
-        "contactFirstName" => "Elliot",
-        "contactLastName" => "Winden",
-        "contactMobile" => "7071749274",
-        "workPhone" => "7075023748",
-        "contactEmail" => "elliot@bbiz.com",
-        "contactTitle" => "President",
-        "contactAddress" => "Stockton St.",
-        "marketplaceOrigin" => "DH"
-      }, marketplace)
+      Account.create_exporter(
+        %{
+          "businessName" => "Best Business",
+          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+          "businessAddressCountry" => "USA",
+          "registrationNumber" => "123456",
+          "signatoryFirstName" => "David",
+          "signatoryLastName" => "Silva",
+          "signatoryMobile" => "7077321415",
+          "signatoryEmail" => "david@bbiz.com",
+          "signatoryTitle" => "Founder",
+          "contactFirstName" => "Elliot",
+          "contactLastName" => "Winden",
+          "contactMobile" => "7071749274",
+          "workPhone" => "7075023748",
+          "contactEmail" => "elliot@bbiz.com",
+          "contactTitle" => "President",
+          "contactAddress" => "Stockton St.",
+          "marketplaceOrigin" => "DH"
+        },
+        marketplace
+      )
 
     {:ok, importer} =
       Account.create_importer(%{

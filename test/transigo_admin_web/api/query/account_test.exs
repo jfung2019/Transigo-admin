@@ -54,10 +54,11 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
   """
 
   setup %{conn: conn} do
-    marketplace = Repo.insert!(%TransigoAdmin.Credit.Marketplace{
-      origin: "DH",
-      marketplace: "DHGate"
-    })
+    marketplace =
+      Repo.insert!(%TransigoAdmin.Credit.Marketplace{
+        origin: "DH",
+        marketplace: "DHGate"
+      })
 
     {:ok, admin} =
       Account.create_admin(%{
@@ -86,25 +87,28 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
       })
 
     {:ok, %{Exporter => exporter}} =
-      Account.create_exporter(%{
-        "businessName" => "Best Business",
-        "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
-        "businessAddressCountry" => "USA",
-        "registrationNumber" => "123456",
-        "signatoryFirstName" => "David",
-        "signatoryLastName" => "Silva",
-        "signatoryMobile" => "7077321415",
-        "signatoryEmail" => "david@bbiz.com",
-        "signatoryTitle" => "Founder",
-        "contactFirstName" => "Elliot",
-        "contactLastName" => "Winden",
-        "contactMobile" => "7071749274",
-        "workPhone" => "7075023748",
-        "contactEmail" => "elliot@bbiz.com",
-        "contactTitle" => "President",
-        "contactAddress" => "Stockton St.",
-        "marketplaceOrigin" => "DH"
-      }, marketplace)
+      Account.create_exporter(
+        %{
+          "businessName" => "Best Business",
+          "address" => "3503 Bennet Ave, Santa Clara CA, 95051",
+          "businessAddressCountry" => "USA",
+          "registrationNumber" => "123456",
+          "signatoryFirstName" => "David",
+          "signatoryLastName" => "Silva",
+          "signatoryMobile" => "7077321415",
+          "signatoryEmail" => "david@bbiz.com",
+          "signatoryTitle" => "Founder",
+          "contactFirstName" => "Elliot",
+          "contactLastName" => "Winden",
+          "contactMobile" => "7071749274",
+          "workPhone" => "7075023748",
+          "contactEmail" => "elliot@bbiz.com",
+          "contactTitle" => "President",
+          "contactAddress" => "Stockton St.",
+          "marketplaceOrigin" => "DH"
+        },
+        marketplace
+      )
 
     {:ok, importer} =
       Account.create_importer(%{
@@ -154,8 +158,12 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
            } = json_response(response, 200)
   end
 
-  test "can search exporters", %{conn: conn, exporter: %{id: exporter_id, exporter_transigo_uid: uid}} do
-    response = post(conn, "/api", %{query: @list_exporters, variables: %{"first" => 1, "keyword" => uid}})
+  test "can search exporters", %{
+    conn: conn,
+    exporter: %{id: exporter_id, exporter_transigo_uid: uid}
+  } do
+    response =
+      post(conn, "/api", %{query: @list_exporters, variables: %{"first" => 1, "keyword" => uid}})
 
     assert %{
              "data" => %{
@@ -176,8 +184,12 @@ defmodule TransigoAdminWeb.Api.Query.AccountTest do
            } = json_response(response, 200)
   end
 
-  test "can search importers", %{conn: conn, importer: %{id: importer_id, importer_transigo_uid: uid}} do
-    response = post(conn, "/api", %{query: @list_importers, variables: %{"first" => 1, "keyword" => uid}})
+  test "can search importers", %{
+    conn: conn,
+    importer: %{id: importer_id, importer_transigo_uid: uid}
+  } do
+    response =
+      post(conn, "/api", %{query: @list_importers, variables: %{"first" => 1, "keyword" => uid}})
 
     assert %{
              "data" => %{

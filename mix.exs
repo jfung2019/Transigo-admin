@@ -70,7 +70,8 @@ defmodule TransigoAdmin.MixProject do
       {:fuzzy_compare, "~> 1.0"},
       {:address_us, github: "smashedtoatoms/address_us"},
       {:ecto_commons, "~> 0.3.3"},
-      {:tesla, "~> 1.4"}
+      {:tesla, "~> 1.4"},
+      {:mox, "~> 0.5.2", only: :test}
     ]
   end
 

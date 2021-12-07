@@ -3,6 +3,9 @@ defmodule TransigoAdmin.Job.Helper do
   alias TransigoAdmin.Account.{WebhookEvent, User}
   alias TransigoAdmin.{Credit, Credit.Transaction}
 
+  # use TransigoAdmin.Job.Helper_API.Behaviour
+  @behaviour TransigoAdmin.Job.Helper_API
+
   @doc """
   create webhook event and send to each users
   """
