@@ -895,6 +895,7 @@ defmodule TransigoAdmin.Credit do
   defp do_accept_decline_offer(%Offer{id: offer_id} = offer, accept_or_decline) do
     offer
     |> Offer.changeset(%{offer_accepted_declined: accept_or_decline})
+    # |> Offer.changeset(%{offer_accept_decline_datetime: Timex.now()})
     |> Repo.update()
 
     {:ok, get_offer(offer_id, [:transaction])}
