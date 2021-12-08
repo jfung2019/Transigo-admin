@@ -31,6 +31,7 @@ defmodule TransigoAdmin.Credit.Quota do
     field :eh_grade, :map
     field :eh_grade_job_url, :string
     field :plaid_form_result, :map
+    field :plaid_underwriting_signals, :map
 
     belongs_to :importer, TransigoAdmin.Account.Importer
 
@@ -61,7 +62,8 @@ defmodule TransigoAdmin.Credit.Quota do
     :eh_grade,
     :eh_grade_job_url,
     :plaid_form_result,
-    :importer_id
+    :importer_id,
+    :plaid_underwriting_signals
   ]
 
   @required_attrs [
