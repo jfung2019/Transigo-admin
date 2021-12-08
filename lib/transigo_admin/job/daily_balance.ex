@@ -15,7 +15,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
 
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
-  alias TransigoAdmin.{Credit.Offer, Job.Helper}
+  alias TransigoAdmin.{Credit.Offer, Job.HelperApi}
 
   alias TransigoAdmin.Repo
 
@@ -29,14 +29,14 @@ defmodule TransigoAdmin.Job.DailyBalance do
     load_all_acceptance_offer()
     |> Enum.map(&check_offer_transaction_state(&1, "down_payment_done"))
     |> Enum.filter(fn t -> t.hs_signing_status == "all_signed" end)
-    |> Enum.map(&Helper.move_transaction_to_state(&1, "moved_to_payment"))
+    |> Enum.map(&HelperApi.move_transaction_to_state(&1, "moved_to_payment"))
     |> Enum.reject(&is_nil(&1))
     |> format_webhook_result()
-    |> Helper.notify_api_users("daily_balance")
+    |> HelperApi.notify_api_users("daily_balance")
   end
 
   def format_webhook_result(transactions) do
-    total = Helper.cal_total_sum(transactions)
+    total = HelperApi.cal_total_sum(transactions)
 
     %{
       totalRemitSum: total.sum,

@@ -1,4 +1,4 @@
-defmodule TransigoAdmin.Job.Helper_API do
+defmodule TransigoAdmin.Job.HelperApi do
   alias TransigoAdmin.Account.{User, WebhookEvent}
   alias TransigoAdmin.Credit.Transaction
 
@@ -42,5 +42,5 @@ defmodule TransigoAdmin.Job.Helper_API do
 
   def get_transigo_doc_info(), do: impl().get_transigo_doc_info()
 
-  defp impl, do: Application.get_env(:transigo_admin, :helper, TransigoAdmin.Job.Helper_API)
+  defp impl, do: Application.get_env(:transigo_admin, __MODULE__)[:adapter]
 end

@@ -1,7 +1,7 @@
 defmodule TransigoAdmin.ObanJobsTest do
   use TransigoAdmin.DataCase, async: false
 
-  alias TransigoAdmin.{Account, Credit, Job}
+  alias TransigoAdmin.{Account, Credit, Job, Job.Helper, Credit.Transaction}
   alias TransigoAdmin.Account.Exporter
 
   import Mox
@@ -235,7 +235,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o1_id}} =
+      {:ok, %{id: _o1_id}} =
         Credit.create_offer(%{
           transaction_id: t1_id,
           transaction_usd: 10000,
@@ -261,7 +261,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o2_id}} =
+      {:ok, %{id: _o2_id}} =
         Credit.create_offer(%{
           transaction_id: t2_id,
           transaction_usd: 10000,
@@ -287,7 +287,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o3_id}} =
+      {:ok, %{id: _o3_id}} =
         Credit.create_offer(%{
           transaction_id: t3_id,
           transaction_usd: 10000,
@@ -297,9 +297,25 @@ defmodule TransigoAdmin.ObanJobsTest do
           offer_accepted_declined: "A"
         })
 
+      expect(TransigoAdmin.Job.HelperMock, :move_transaction_to_state, fn %Transaction{} =
+                                                                            transaction,
+                                                                          state ->
+        case Credit.update_transaction(transaction, %{transaction_state: state}) do
+          {:ok, transaction} ->
+            %{
+              transctionUID: transaction.transaction_uid,
+              sum: Float.round(transaction.financed_sum, 2)
+            }
+            |> Helper.put_datetime(transaction)
+
+          {:error, _} ->
+            nil
+        end
+      end)
+
       expect(TransigoAdmin.Job.HelperMock, :notify_api_users, fn result, _event ->
-        result["dailyTransactions"]
-        |> Enum.map(fn x -> x["transactionUID"] end)
+        result.dailyTransactions
+        |> Enum.map(fn x -> x.transctionUID end)
       end)
 
       expect(TransigoAdmin.Job.HelperMock, :cal_total_sum, fn transactions ->
