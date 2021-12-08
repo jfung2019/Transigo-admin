@@ -205,20 +205,6 @@ defmodule TransigoAdmin.ObanJobsTest do
 
   describe "Daily Balance" do
     test "can perform balance correctly", %{exporter: exporter, importer: importer} do
-      # transaction that should not be counted
-      Credit.create_transaction(%{
-        transaction_uid: "not_count1",
-        credit_term_days: 60,
-        down_payment_usd: 3000,
-        factoring_fee_usd: 3000,
-        transaction_state: "created",
-        financed_sum: 3000,
-        invoice_date: Timex.now(),
-        second_installment_usd: 3000,
-        importer_id: importer.id,
-        exporter_id: exporter.id
-      })
-
       # transaction with down payment confirmed
       {:ok, %{id: t1_id}} =
         Credit.create_transaction(%{
@@ -235,7 +221,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: _o1_id}} =
+      {:ok, %{id: o1_id}} =
         Credit.create_offer(%{
           transaction_id: t1_id,
           transaction_usd: 10000,
@@ -245,7 +231,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           offer_accepted_declined: "A"
         })
 
-      # transaction with down payment confirmed
+      # transaction with offer declined
       {:ok, %{id: t2_id}} =
         Credit.create_transaction(%{
           transaction_uid: "t2",
@@ -261,7 +247,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: _o2_id}} =
+      {:ok, %{id: o2_id}} =
         Credit.create_offer(%{
           transaction_id: t2_id,
           transaction_usd: 10000,
@@ -271,7 +257,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           offer_accepted_declined: "D"
         })
 
-      # transaction with down payment confirmed
+      # transaction with hs_signing_status is missing transigo
       {:ok, %{id: t3_id}} =
         Credit.create_transaction(%{
           transaction_uid: "t3",
@@ -279,7 +265,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
           transaction_state: "down_payment_done",
-          hs_signing_status: "missing transigo",
+          hs_signing_status: "missing_transigo",
           financed_sum: 8000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -287,7 +273,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: _o3_id}} =
+      {:ok, %{id: o3_id}} =
         Credit.create_offer(%{
           transaction_id: t3_id,
           transaction_usd: 10000,
@@ -303,7 +289,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         case Credit.update_transaction(transaction, %{transaction_state: state}) do
           {:ok, transaction} ->
             %{
-              transctionUID: transaction.transaction_uid,
+              transactionUID: transaction.transaction_uid,
               sum: Float.round(transaction.financed_sum, 2)
             }
             |> Helper.put_datetime(transaction)
@@ -315,7 +301,7 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       expect(TransigoAdmin.Job.HelperMock, :notify_api_users, fn result, _event ->
         result.dailyTransactions
-        |> Enum.map(fn x -> x.transctionUID end)
+        |> Enum.map(fn x -> x.transactionUID end)
       end)
 
       expect(TransigoAdmin.Job.HelperMock, :cal_total_sum, fn transactions ->
@@ -326,10 +312,16 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       result = Job.DailyBalance.do_daily_balance() |> List.flatten()
 
+      #check the transaction_state changes to "moved_to_payment" after daily_balane job
       assert [%{id: ^t1_id}] = Credit.list_transactions_by_state("moved_to_payment")
 
-      assert t2_id not in result
-      assert t3_id not in result
+      #check if the transaction with offer declined,
+      #it will not display inside the webhook result
+      assert "t2" not in result
+
+      #check if the transaction document is not signed by transigo, 
+      #it will not display inside the webhook result
+      assert "t3" not in result
     end
   end
 
