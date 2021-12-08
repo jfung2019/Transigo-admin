@@ -80,7 +80,7 @@ defmodule TransigoAdmin.Job.Helper do
     case Credit.update_transaction(transaction, %{transaction_state: state}) do
       {:ok, transaction} ->
         %{
-          transctionUID: transaction.transaction_uid,
+          transactionUID: transaction.transaction_uid,
           sum: Float.round(transaction.financed_sum, 2)
         }
         |> put_datetime(transaction)
