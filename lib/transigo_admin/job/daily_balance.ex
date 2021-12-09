@@ -28,9 +28,12 @@ defmodule TransigoAdmin.Job.DailyBalance do
   def do_daily_balance() do
     load_all_acceptance_offer()
     |> Enum.map(&check_offer_transaction_state(&1, "down_payment_done"))
-    |> Enum.filter(fn t -> t.hs_signing_status == "all_signed" end)
+    |> Enum.filter(fn
+        %_{} = t -> t.hs_signing_status == "all_signed"
+        _ -> false
+        end)
     |> Enum.map(&HelperApi.move_transaction_to_state(&1, "moved_to_payment"))
-    |> Enum.reject(&is_nil(&1))
+    |> Enum.reject(&is_nil/1)
     |> format_webhook_result()
     |> HelperApi.notify_api_users("daily_balance")
   end
@@ -60,9 +63,6 @@ defmodule TransigoAdmin.Job.DailyBalance do
   @doc """
   List all the transaction with transaction_state == "down_payment_done"
   """
-
-  def check_offer_transaction_state(nil, _state), do: {:error, "No acceptance offer found"}
-
   def check_offer_transaction_state(
         %Offer{transaction: %{transaction_state: state} = transaction},
         state
