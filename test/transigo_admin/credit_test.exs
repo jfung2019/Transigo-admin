@@ -198,7 +198,7 @@ defmodule TransigoAdmin.CreditTest do
     end
 
     test "can confirm downpayment", %{exporter: exporter, importer: importer} do
-      {:ok, %{transaction_uid: uid}} =
+      {:ok, %{transaction_uid: uid, id: transaction_id}} =
         Credit.create_transaction(%{
           transaction_uid: "future",
           credit_term_days: 60,
@@ -210,6 +210,16 @@ defmodule TransigoAdmin.CreditTest do
           second_installment_usd: 3000,
           importer_id: importer.id,
           exporter_id: exporter.id
+        })
+
+        {:ok, %{id: o1_id}} =
+        Credit.create_offer(%{
+          transaction_id: transaction_id,
+          transaction_usd: 10000,
+          advance_percentage: 30,
+          advance_usd: 3000,
+          importer_fee: 550,
+          offer_accepted_declined: "A"
         })
 
       assert {:ok, %{transaction_uid: ^uid}} =
