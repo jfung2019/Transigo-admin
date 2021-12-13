@@ -116,6 +116,7 @@ defmodule TransigoAdmin.Credit do
     Logger.debug("Params are: #{inspect(params)}")
     transaction = get_transaction_by_transaction_uid(transaction_uid)
     downpayment_confirm = Map.get(params, "downpaymentConfirm")
+    offer = get_offer_by_transaction_uid(transaction_uid)
 
     sum_paid_usd =
       case Map.get(params, "sumPaidusd") do
@@ -139,6 +140,12 @@ defmodule TransigoAdmin.Credit do
 
       is_nil(transaction) ->
         {:error, "Offer not found"}
+
+      offer.offer_accepted_declined == "D" ->
+        {:error, "Offer declined"}
+
+      offer.offer_accepted_declined == nil ->
+        {:error, "Offer not accepted"}    
 
       transaction.down_payment_usd != sum_paid_usd ->
         Logger.error(
@@ -522,6 +529,7 @@ defmodule TransigoAdmin.Credit do
     invoice_date = Map.get(params, "invoiceDate")
     invoice_ref = Map.get(params, "invoiceRef")
     invoice = Map.get(params, "invoice")
+    offer = get_offer_by_transaction_uid(transaction_uid)
 
     cond do
       is_nil(invoice_date) ->
@@ -529,6 +537,12 @@ defmodule TransigoAdmin.Credit do
 
       is_nil(invoice_ref) ->
         {:error, "invoiceRef missing"}
+
+      offer.offer_accepted_declined == "D" ->
+        {:error, "Offer declined"}
+
+      offer.offer_accepted_declined == nil ->
+        {:error, "Offer not accepted"}  
 
       true ->
         do_upload(invoice_date, invoice_ref, invoice, transaction_uid, :invoice)
@@ -545,6 +559,7 @@ defmodule TransigoAdmin.Credit do
     po_date = Map.get(params, "PODate")
     po_ref = Map.get(params, "PORef")
     po = Map.get(params, "po")
+    offer = get_offer_by_transaction_uid(transaction_uid)    
 
     cond do
       is_nil(po_date) ->
@@ -552,6 +567,12 @@ defmodule TransigoAdmin.Credit do
 
       is_nil(po_ref) ->
         {:error, "PORef missing"}
+
+      offer.offer_accepted_declined == "D" ->
+        {:error, "Offer declined"}
+
+      offer.offer_accepted_declined == nil ->
+        {:error, "Offer not accepted"}    
 
       true ->
         do_upload(po_date, po_ref, po, transaction_uid, :po)
