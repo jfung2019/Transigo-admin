@@ -212,7 +212,7 @@ defmodule TransigoAdmin.CreditTest do
           exporter_id: exporter.id
         })
 
-        {:ok, %{id: o1_id}} =
+      {:ok, %{id: o1_id}} =
         Credit.create_offer(%{
           transaction_id: transaction_id,
           transaction_usd: 10000,
@@ -227,6 +227,68 @@ defmodule TransigoAdmin.CreditTest do
                  "downpaymentConfirm" => "confirmed",
                  "sumPaidusd" => "3000"
                })
+    end
+
+    test "can offer accept decline more than once", %{exporter: exporter, importer: importer} do
+      {:ok, %{transaction_uid: uid, id: transaction_id}} =
+        Credit.create_transaction(%{
+          transaction_uid: "accept_case",
+          credit_term_days: 60,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
+          transaction_state: "originated",
+          financed_sum: 3000,
+          invoice_date: Timex.now(),
+          second_installment_usd: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      {:ok, %{id: _o1_id}} =
+        Credit.create_offer(%{
+          transaction_id: transaction_id,
+          transaction_usd: 10000,
+          advance_percentage: 30,
+          advance_usd: 3000,
+          importer_fee: 550,
+          offer_accepted_declined: "A"
+        })
+
+      {:ok, %{transaction_uid: uid2, id: transaction_id2}} =
+        Credit.create_transaction(%{
+          transaction_uid: "decline_case",
+          credit_term_days: 60,
+          down_payment_usd: 3000,
+          factoring_fee_usd: 3000,
+          transaction_state: "originated",
+          financed_sum: 3000,
+          invoice_date: Timex.now(),
+          second_installment_usd: 3000,
+          importer_id: importer.id,
+          exporter_id: exporter.id
+        })
+
+      {:ok, %{id: _o2_id}} =
+        Credit.create_offer(%{
+          transaction_id: transaction_id2,
+          transaction_usd: 10000,
+          advance_percentage: 30,
+          advance_usd: 3000,
+          importer_fee: 550,
+          offer_accepted_declined: "D"
+        })
+
+      assert {:error, "offer already accepted or declined"} =
+               Credit.accept_decline_offer(uid, true)
+
+      assert {:error, "offer already accepted or declined"} =
+               Credit.accept_decline_offer(uid, false)
+
+      assert {:error, "offer already accepted or declined"} =
+               Credit.accept_decline_offer(uid2, true)
+
+      assert {:error, "offer already accepted or declined"} =
+               Credit.accept_decline_offer(uid2, false)
     end
   end
 end
