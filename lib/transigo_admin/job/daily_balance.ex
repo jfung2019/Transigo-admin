@@ -29,9 +29,9 @@ defmodule TransigoAdmin.Job.DailyBalance do
     load_all_acceptance_offer()
     |> Enum.map(&check_offer_transaction_state(&1, "down_payment_done"))
     |> Enum.filter(fn
-        %_{} = t -> t.hs_signing_status == "all_signed"
-        _ -> false
-        end)
+      %_{} = t -> t.hs_signing_status == "all_signed"
+      _ -> false
+    end)
     |> Enum.map(&HelperApi.move_transaction_to_state(&1, "moved_to_payment"))
     |> Enum.reject(&is_nil/1)
     |> format_webhook_result()

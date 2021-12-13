@@ -145,7 +145,7 @@ defmodule TransigoAdmin.Credit do
         {:error, "Offer declined"}
 
       offer.offer_accepted_declined == nil ->
-        {:error, "Offer not accepted"}    
+        {:error, "Offer not accepted"}
 
       transaction.down_payment_usd != sum_paid_usd ->
         Logger.error(
@@ -542,7 +542,7 @@ defmodule TransigoAdmin.Credit do
         {:error, "Offer declined"}
 
       offer.offer_accepted_declined == nil ->
-        {:error, "Offer not accepted"}  
+        {:error, "Offer not accepted"}
 
       true ->
         do_upload(invoice_date, invoice_ref, invoice, transaction_uid, :invoice)
@@ -559,7 +559,7 @@ defmodule TransigoAdmin.Credit do
     po_date = Map.get(params, "PODate")
     po_ref = Map.get(params, "PORef")
     po = Map.get(params, "po")
-    offer = get_offer_by_transaction_uid(transaction_uid)    
+    offer = get_offer_by_transaction_uid(transaction_uid)
 
     cond do
       is_nil(po_date) ->
@@ -572,7 +572,7 @@ defmodule TransigoAdmin.Credit do
         {:error, "Offer declined"}
 
       offer.offer_accepted_declined == nil ->
-        {:error, "Offer not accepted"}    
+        {:error, "Offer not accepted"}
 
       true ->
         do_upload(po_date, po_ref, po, transaction_uid, :po)
@@ -905,21 +905,45 @@ defmodule TransigoAdmin.Credit do
   @spec accept_decline_offer(String.t(), boolean) :: {:ok, Offer.t()} | {:error, any}
   def accept_decline_offer(_transaction_uid, nil), do: {:error, "acceptDecline missing"}
 
-  def accept_decline_offer(transaction_uid, true),
-    do: do_accept_decline_offer(get_offer_by_transaction_uid(transaction_uid), "A")
+  def accept_decline_offer(transaction_uid, true) do
+    case check_offer_accepted_or_declined(transaction_uid) do
+      {:ok, offer} ->
+        do_accept_decline_offer(offer, "A")
 
-  def accept_decline_offer(transaction_uid, false),
-    do: do_accept_decline_offer(get_offer_by_transaction_uid(transaction_uid), "D")
+      :error ->
+        {:error, "offer already accepted or declined"}
+    end
+  end
+
+  def accept_decline_offer(transaction_uid, false) do
+    case check_offer_accepted_or_declined(transaction_uid) do
+      {:ok, offer} ->
+        do_accept_decline_offer(offer, "D")
+
+      :error ->
+        {:error, "offer already accepted or declined"}
+    end
+  end
 
   defp do_accept_decline_offer(nil, _a_or_d), do: {:error, "Offer not found"}
 
   defp do_accept_decline_offer(%Offer{id: offer_id} = offer, accept_or_decline) do
     offer
     |> Offer.changeset(%{offer_accepted_declined: accept_or_decline})
-    # |> Offer.changeset(%{offer_accept_decline_datetime: Timex.now()})
+    |> Offer.changeset(%{offer_accept_decline_datetime: Timex.now()})
     |> Repo.update()
 
     {:ok, get_offer(offer_id, [:transaction])}
+  end
+
+  defp check_offer_accepted_or_declined(transaction_uid) do
+    case get_offer_by_transaction_uid(transaction_uid) do
+      %{offer_accepted_declined: nil} = offer ->
+        {:ok, offer}
+
+      _ ->
+        :error
+    end
   end
 
   @doc """

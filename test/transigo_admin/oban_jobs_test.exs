@@ -312,15 +312,15 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       result = Job.DailyBalance.do_daily_balance() |> List.flatten()
 
-      #check the transaction_state changes to "moved_to_payment" after daily_balane job
+      # check the transaction_state changes to "moved_to_payment" after daily_balane job
       assert [%{id: ^t1_id}] = Credit.list_transactions_by_state("moved_to_payment")
 
-      #check if the transaction with offer declined,
-      #it will not display inside the webhook result
+      # check if the transaction with offer declined,
+      # it will not display inside the webhook result
       assert "t2" not in result
 
-      #check if the transaction document is not signed by transigo, 
-      #it will not display inside the webhook result
+      # check if the transaction document is not signed by transigo, 
+      # it will not display inside the webhook result
       assert "t3" not in result
     end
   end
