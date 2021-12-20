@@ -33,14 +33,15 @@ defmodule TransigoAdmin.Credit do
   List transactions due today with transaction_state as ["assigned", "email_sent"]
   """
   @spec list_transactions_due_today :: [Transaction.t()]
-  def list_transactions_due_today() do
+  def list_transactions_due_today(preloads \\ []) do
     from(t in Transaction,
       where:
         fragment(
           "(? + make_interval(days => ?))::date <= NOW()::date",
           t.invoice_date,
           t.credit_term_days
-        ) and t.transaction_state in ["email_sent", "assigned"]
+        ) and t.transaction_state in ["email_sent", "assigned"],
+        preload: ^preloads
     )
     |> Repo.all()
   end
