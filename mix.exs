@@ -71,7 +71,8 @@ defmodule TransigoAdmin.MixProject do
       {:address_us, github: "smashedtoatoms/address_us"},
       {:ecto_commons, "~> 0.3.3"},
       {:tesla, "~> 1.4"},
-      {:mox, "~> 0.5.2", only: :test}
+      {:mox, "~> 0.5.2", only: :test},
+      {:csv, "~> 2.4"}
     ]
   end
 
