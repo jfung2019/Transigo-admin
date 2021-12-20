@@ -8,7 +8,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
   import Ecto.Query, warn: false
 
-  alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
+  alias TransigoAdmin.{Credit, Credit.Transaction, Credit.Quota, Job.Helper, Account.Importer}
   alias SendGrid.{Mail, Email}
 
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
@@ -25,6 +25,12 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     Credit.list_transactions_due_today()
     |> Enum.each(&create_dwolla_transfer(&1, access_token))
 
+    # create report for transactions due today
+    Credit.list_transactions_due_today(importer: :quota)
+    |> IO.inspect()
+    |> create_report()
+    |> send_report()
+
     # check transfer status
     Credit.list_transactions_by_state("pull_initiated")
     |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
@@ -33,6 +39,57 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Helper.notify_api_users("daily_repayment")
 
     :ok
+  end
+
+  defp send_report(csv_stream) do
+    {:ok, file} = Briefly.create(ext: ".csv")
+
+    csv_stream
+    |> Enum.each(fn line ->
+      File.write(file, line)
+    end)
+
+    {:ok, content} = File.read(file)
+
+    # send file in email to Nir
+    Email.build()
+    |> Email.add_to("Nir@transigo.io")
+    |> Email.put_from("tcaas@transigo.io", "Transigo")
+    |> Email.put_subject("Daily Repayment Report")
+    |> Email.put_text("Please find the Daily Repayment Report attached as a csv.")
+    |> Email.add_attachment(%{
+      content: Base.encode64(content),
+      filename: Path.basename(file),
+      type: "application/csv",
+      disposition: "attachement"
+    })
+    |> Mail.send()
+  end
+
+  defp create_report(transactions) do
+    transactions
+    |> Enum.map(&create_report_row/1)
+    |> CSV.encode(header: true)
+  end
+
+  defp create_report_row(%Transaction{
+         importer_id: importer_id,
+         exporter_id: exporter_id,
+         factoring_fee_usd: factoring_fee_usd,
+         hs_signing_status: hs_signing_status,
+         importer: %Importer{
+           quota: %Quota{
+             quota_usd: quota_usd
+           }
+         }
+       }) do
+    %{
+      importer_id: importer_id,
+      exporter_id: exporter_id,
+      factoring_price: factoring_fee_usd,
+      hs_signing_status: hs_signing_status,
+      quota_usd: quota_usd
+    }
   end
 
   defp send_transaction_due_email(%Transaction{} = transaction) do
