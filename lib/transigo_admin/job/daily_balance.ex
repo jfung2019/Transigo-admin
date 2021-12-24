@@ -15,7 +15,17 @@ defmodule TransigoAdmin.Job.DailyBalance do
 
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
-  alias TransigoAdmin.{Credit.Offer, Job.HelperApi}
+  alias TransigoAdmin.{
+    Credit.Offer,
+    Credit.Quota,
+    Credit.Transaction,
+    Job.HelperApi,
+    Credit,
+    Account.Importer,
+    Repo
+  }
+
+  alias SendGrid.{Mail, Email}
 
   alias TransigoAdmin.Repo
 
@@ -26,16 +36,37 @@ defmodule TransigoAdmin.Job.DailyBalance do
   end
 
   def do_daily_balance() do
+    transactions = get_daily_balance_transactions()
+
+    transactions
+    |> create_and_send_report()
+
+    transactions
+    |> notify_webhook()
+  end
+
+  def create_and_send_report(transactions) do
+    transactions
+    |> Repo.preload(importer: :quota)
+    |> create_report()
+    |> send_report()
+  end
+
+  def notify_webhook(transactions) do
+    transactions
+    |> Enum.map(&HelperApi.move_transaction_to_state(&1, "moved_to_payment"))
+    |> Enum.reject(&is_nil/1)
+    |> format_webhook_result()
+    |> HelperApi.notify_api_users("daily_balance")
+  end
+
+  def get_daily_balance_transactions() do
     load_all_acceptance_offer()
     |> Enum.map(&check_offer_transaction_state(&1, "down_payment_done"))
     |> Enum.filter(fn
       %_{} = t -> t.hs_signing_status == "all_signed"
       _ -> false
     end)
-    |> Enum.map(&HelperApi.move_transaction_to_state(&1, "moved_to_payment"))
-    |> Enum.reject(&is_nil/1)
-    |> format_webhook_result()
-    |> HelperApi.notify_api_users("daily_balance")
   end
 
   def format_webhook_result(transactions) do
@@ -70,4 +101,55 @@ defmodule TransigoAdmin.Job.DailyBalance do
       do: transaction
 
   def check_offer_transaction_state(_offer, _state), do: nil
+
+  def send_report(csv_stream) do
+    {:ok, file} = Briefly.create(ext: ".csv")
+
+    csv_stream
+    |> Enum.each(fn line ->
+      File.write(file, line)
+    end)
+
+    {:ok, content} = File.read(file)
+
+    # send file in email to Nir
+    Email.build()
+    |> Email.add_to("Nir@transigo.io")
+    |> Email.put_from("tcaas@transigo.io", "Transigo")
+    |> Email.put_subject("Daily Repayment Report")
+    |> Email.put_text("Please find the Daily Repayment Report attached as a csv.")
+    |> Email.add_attachment(%{
+      content: Base.encode64(content),
+      filename: Path.basename(file),
+      type: "application/csv",
+      disposition: "attachement"
+    })
+    |> Mail.send()
+  end
+
+  def create_report(transactions) do
+    transactions
+    |> Enum.map(&create_report_row/1)
+    |> CSV.encode(headers: true)
+  end
+
+  defp create_report_row(%Transaction{
+         importer_id: importer_id,
+         exporter_id: exporter_id,
+         financed_sum: financed_sum,
+         importer: %Importer{
+           quota: %Quota{
+             quota_usd: quota_usd
+           }
+         }
+       }) do
+    %{
+      importer_id: importer_id,
+      exporter_id: exporter_id,
+      factoring_price: financed_sum,
+      signed_docs: "yes",
+      quota_usd: quota_usd,
+      total_open_factoring_price: Credit.get_total_open_factoring_price(importer_id)
+    }
+  end
 end

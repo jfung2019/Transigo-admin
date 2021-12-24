@@ -221,7 +221,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o1_id}} =
+      {:ok, %{id: _o1_id}} =
         Credit.create_offer(%{
           transaction_id: t1_id,
           transaction_usd: 10000,
@@ -247,7 +247,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o2_id}} =
+      {:ok, %{id: _o2_id}} =
         Credit.create_offer(%{
           transaction_id: t2_id,
           transaction_usd: 10000,
@@ -273,7 +273,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o3_id}} =
+      {:ok, %{id: _o3_id}} =
         Credit.create_offer(%{
           transaction_id: t3_id,
           transaction_usd: 10000,
@@ -319,7 +319,7 @@ defmodule TransigoAdmin.ObanJobsTest do
       # it will not display inside the webhook result
       assert "t2" not in result
 
-      # check if the transaction document is not signed by transigo, 
+      # check if the transaction document is not signed by transigo,
       # it will not display inside the webhook result
       assert "t3" not in result
     end

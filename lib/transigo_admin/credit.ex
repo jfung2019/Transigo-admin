@@ -41,7 +41,7 @@ defmodule TransigoAdmin.Credit do
           t.invoice_date,
           t.credit_term_days
         ) and t.transaction_state in ["email_sent", "assigned"],
-        preload: ^preloads
+      preload: ^preloads
     )
     |> Repo.all()
   end
@@ -802,7 +802,9 @@ defmodule TransigoAdmin.Credit do
 
     total_financed_sum =
       from(t in Transaction,
-        where: t.importer_id == ^importer_id,
+        where:
+          t.importer_id == ^importer_id and
+            t.transaction_state not in ["repaid, rev_share_to_be_paid", "rev_share_paid"],
         select: coalesce(sum(t.financed_sum), 0)
       )
       |> Repo.one!()
@@ -1016,5 +1018,16 @@ defmodule TransigoAdmin.Credit do
     else
       {:error, "could not find exporter or transaction"}
     end
+  end
+
+  def get_total_open_factoring_price(importer_id) do
+    Transaction
+    |> where(importer_id: ^importer_id)
+    |> Repo.all()
+    |> Enum.reject(fn %Transaction{transaction_state: state} ->
+      state in ["repaid, rev_share_to_be_paid", "rev_share_paid"]
+    end)
+    |> Enum.map(fn %Transaction{financed_sum: sum} -> sum end)
+    |> Enum.sum()
   end
 end
