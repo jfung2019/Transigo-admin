@@ -91,7 +91,6 @@ defmodule TransigoAdmin.Job.DailyBalance do
     |> Repo.all()
   end
 
-
   @doc """
   List all the transaction with transaction_state == "down_payment_done"
   """
