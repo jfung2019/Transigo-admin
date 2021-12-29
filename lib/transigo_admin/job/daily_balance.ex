@@ -117,7 +117,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
     |> Email.add_to("Nir@transigo.io")
     |> Email.put_from("tcaas@transigo.io", "Transigo")
     |> Email.put_subject("Daily Balance Report")
-    |> Email.put_text("Please find the Daily Repayment Report attached as a csv.")
+    |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
     |> Email.add_attachment(%{
       content: Base.encode64(content),
       filename: Path.basename(file),
