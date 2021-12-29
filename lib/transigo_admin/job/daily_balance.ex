@@ -139,7 +139,8 @@ defmodule TransigoAdmin.Job.DailyBalance do
          financed_sum: financed_sum,
          importer: %Importer{
            quota: %Quota{
-             quota_usd: quota_usd
+             quota_usd: quota_usd,
+             eh_grade: eh_grade
            }
          }
        }) do
@@ -149,7 +150,13 @@ defmodule TransigoAdmin.Job.DailyBalance do
       factoring_price: financed_sum,
       signed_docs: "yes",
       quota_usd: quota_usd,
-      total_open_factoring_price: Credit.get_total_open_factoring_price(importer_id)
+      total_open_factoring_price: Credit.get_total_open_factoring_price(importer_id),
+      credit_insurance_number:
+        if not is_nil(eh_grade) do
+          eh_grade["policy"]["policyId"]
+        else
+          nil
+        end
     }
   end
 end
