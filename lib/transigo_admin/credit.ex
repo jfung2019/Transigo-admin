@@ -1018,7 +1018,7 @@ defmodule TransigoAdmin.Credit do
     |> join(:inner, [t], off in Offer, on: t.id == off.transaction_id)
     |> where(
       [t, off],
-      t.importer_id == ^importer_id and off.offer_accepted_declined == "A" and
+      t.importer_id == ^importer_id and off.offer_accepted_declined != "D" and
         t.transaction_state not in ["repaid, rev_share_to_be_paid", "rev_share_paid"]
     )
     |> select([t], coalesce(sum(t.financed_sum), 0))
