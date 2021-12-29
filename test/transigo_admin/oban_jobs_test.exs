@@ -65,7 +65,8 @@ defmodule TransigoAdmin.ObanJobsTest do
         business_address_country: "country",
         business_type: "soleProprietorship",
         business_classification_id: "9ed46ba1-7d6f-11e3-9d1b-5404a6144203",
-        contact_id: contact_id
+        contact_id: contact_id,
+        bank_account: "ABC bank account number"
       })
 
     Credit.create_quota(%{
@@ -81,7 +82,7 @@ defmodule TransigoAdmin.ObanJobsTest do
       marketplace_number_disputes: 10,
       marketplace_number_adverse_disputes: 2,
       credit_status: "granted",
-      funding_source_url: "http://dwolla.com/funding-sources/id",
+      funding_source_url: "http://google.com/funding-sources/id",
       importer_id: importer.id,
       eh_grade: %{
         "company" => %{
@@ -134,7 +135,7 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       {:ok, %{id: due_id}} =
         Credit.create_transaction(%{
-          transaction_uid: "t3",
+          transaction_uid: "t2",
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
@@ -189,7 +190,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         marketplace_number_disputes: 10,
         marketplace_number_adverse_disputes: 2,
         credit_status: "granted",
-        funding_source_url: "http://dwolla.com/funding-sources/id/repaid",
+        funding_source_url: "http://google.com/funding-sources/id/repaid",
         importer_id: importer2.id
       })
 

@@ -19,15 +19,17 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     Credit.list_transactions_due_in_3_days()
     |> Enum.each(&send_transaction_due_email(&1))
 
-    {:ok, access_token} = @dwolla_api.dwolla_auth()
+    # {:ok, access_token} = @dwolla_api.dwolla_auth()
 
     # create transfer from customer to Transigo
     Credit.list_transactions_due_today()
-    |> Enum.each(&create_dwolla_transfer(&1, access_token))
+    # |> Enum.each(&create_dwolla_transfer(&1, access_token))
+    |> Enum.each(&temp_create_transfer(&1))
 
     # check transfer status
     Credit.list_transactions_by_state("pull_initiated")
-    |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
+    # |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
+    |> Enum.map(&temp_check_transaction_status(&1))
     |> Enum.reject(&is_nil(&1))
     |> format_webhook_result()
     |> Helper.notify_api_users("daily_repayment")
@@ -42,6 +44,8 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     repaid_amount =
       transaction.second_installment_usd
       |> :erlang.float_to_binary(decimals: 2)
+     
+    due_date = Timex.now() |> Timex.shift(days: 3) |> Timex.format!("%m/%d/%Y", :strftime)
 
     Email.build()
     |> Email.put_from("tcaas@transigo.io", "Transigo")
@@ -50,7 +54,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Email.put_template("d-8a86d41005e64803951bf25f373bf5a9")
     |> Email.add_dynamic_template_data("name", importer.contact.first_name)
     |> Email.add_dynamic_template_data("amount", repaid_amount)
-    |> Email.add_dynamic_template_data("due_date", transaction.repaid_datetime)
+    |> Email.add_dynamic_template_data("due_date", due_date)
     |> Email.add_dynamic_template_data("bank_acc_num", importer.bank_account)
     |> Email.add_dynamic_template_data("market_name", marketplace.marketplace)
     |> Mail.send()
@@ -100,6 +104,18 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     end
   end
 
+  defp temp_create_transfer(%Transaction{} = transaction) do
+    transfer_url = get_funding_source_url(transaction.importer_id)
+
+    attrs = %{
+      transaction_state: "pull_initiated",
+      dwolla_repayment_transfer_url: transfer_url
+    }
+
+    Credit.update_transaction(transaction, attrs)
+
+  end
+
   defp check_transaction_dwolla_status(%Transaction{} = transaction, access_token) do
     case @dwolla_api.dwolla_get(transaction.dwolla_repayment_transfer_url, access_token) do
       {:ok, %{body: body}} ->
@@ -121,6 +137,20 @@ defmodule TransigoAdmin.Job.DailyRepayment do
       _ ->
         nil
     end
+  end
+
+  defp temp_check_transaction_status(%Transaction{} = transaction) do
+
+    if transaction.dwolla_repayment_transfer_url == "http://google.com/funding-sources/id/repaid" do
+          attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
+          {:ok, transaction} = Credit.update_transaction(transaction, attrs)
+
+          %{
+            transactionUID: transaction.transaction_uid,
+            sum: Float.round(transaction.second_installment_usd, 2),
+            transactionDatetime: transaction.repaid_datetime
+          }
+    end    
   end
 
   defp format_webhook_result(transactions) do
