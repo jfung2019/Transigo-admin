@@ -800,14 +800,7 @@ defmodule TransigoAdmin.Credit do
   defp check_quota_and_financed_sum(importer_id, financed_sum) do
     granted_quota = find_granted_quota(importer_id)
 
-    total_financed_sum =
-      from(t in Transaction,
-        where:
-          t.importer_id == ^importer_id and
-            t.transaction_state not in ["repaid, rev_share_to_be_paid", "rev_share_paid"],
-        select: coalesce(sum(t.financed_sum), 0)
-      )
-      |> Repo.one!()
+    total_financed_sum = get_total_open_factoring_price(importer_id)
 
     cond do
       is_nil(granted_quota) ->
@@ -1022,12 +1015,13 @@ defmodule TransigoAdmin.Credit do
 
   def get_total_open_factoring_price(importer_id) do
     Transaction
-    |> where(importer_id: ^importer_id)
-    |> Repo.all()
-    |> Enum.reject(fn %Transaction{transaction_state: state} ->
-      state in ["repaid, rev_share_to_be_paid", "rev_share_paid"]
-    end)
-    |> Enum.map(fn %Transaction{financed_sum: sum} -> sum end)
-    |> Enum.sum()
+    |> join(:inner, [t], off in Offer, on: t.id == off.transaction_id)
+    |> where(
+      [t, off],
+      t.importer_id == ^importer_id and off.offer_accepted_declined == "A" and
+        t.transaction_state not in ["repaid, rev_share_to_be_paid", "rev_share_paid"]
+    )
+    |> select([t], coalesce(sum(t.financed_sum), 0))
+    |> Repo.one!()
   end
 end
