@@ -800,6 +800,7 @@ defmodule TransigoAdmin.Credit do
   defp check_quota_and_financed_sum(importer_id, financed_sum) do
     Logger.info("financed_sum for importer -> #{importer_id} is -> #{financed_sum}")
     granted_quota = find_granted_quota(importer_id)
+    Logger.info("granted_quota for importer -> #{importer_id} is -> #{inspect(granted_quota)}")
 
     total_financed_sum = get_total_open_factoring_price(importer_id)
     Logger.info("total_financed_sum for importer -> #{importer_id} is -> #{total_financed_sum}")
@@ -1030,14 +1031,15 @@ defmodule TransigoAdmin.Credit do
           t.transaction_state not in ["repaid", "rev_share_to_be_paid", "rev_share_paid"]
       )
       |> Repo.all()
-      |> Enum.map(fn tx -> tx.financed_sum end)
+      |> Enum.map(fn tx -> %{id: tx.id, financed_sum: tx.financed_sum} end)
 
     total_open_factoring_price =
       total_open_transactions
+      |> Enum.map(fn tx -> tx.financed_sum end)
       |> Enum.sum()
 
     Logger.info(
-      "total open factoring price for importer -> #{importer_id} is -> #{total_open_factoring_price} for transaction ids -> #{inspect(total_open_transactions)}"
+      "total open factoring price for importer -> #{importer_id} is -> #{total_open_factoring_price} for transactions -> #{inspect(total_open_transactions)}"
     )
 
     total_open_factoring_price
