@@ -33,14 +33,15 @@ defmodule TransigoAdmin.Credit do
   List transactions due today with transaction_state as ["assigned", "email_sent"]
   """
   @spec list_transactions_due_today :: [Transaction.t()]
-  def list_transactions_due_today() do
+  def list_transactions_due_today(preloads \\ []) do
     from(t in Transaction,
       where:
         fragment(
           "(? + make_interval(days => ?))::date <= NOW()::date",
           t.invoice_date,
           t.credit_term_days
-        ) and t.transaction_state in ["email_sent", "assigned"]
+        ) and t.transaction_state in ["email_sent", "assigned"],
+      preload: ^preloads
     )
     |> Repo.all()
   end
@@ -799,12 +800,7 @@ defmodule TransigoAdmin.Credit do
   defp check_quota_and_financed_sum(importer_id, financed_sum) do
     granted_quota = find_granted_quota(importer_id)
 
-    total_financed_sum =
-      from(t in Transaction,
-        where: t.importer_id == ^importer_id,
-        select: coalesce(sum(t.financed_sum), 0)
-      )
-      |> Repo.one!()
+    total_financed_sum = get_total_open_factoring_price(importer_id)
 
     cond do
       is_nil(granted_quota) ->
@@ -1015,5 +1011,17 @@ defmodule TransigoAdmin.Credit do
     else
       {:error, "could not find exporter or transaction"}
     end
+  end
+
+  def get_total_open_factoring_price(importer_id) do
+    Transaction
+    |> join(:inner, [t], off in Offer, on: t.id == off.transaction_id)
+    |> where(
+      [t, off],
+      t.importer_id == ^importer_id and off.offer_accepted_declined != "D" and
+        t.transaction_state not in ["repaid", "rev_share_to_be_paid", "rev_share_paid"]
+    )
+    |> select([t], coalesce(sum(t.financed_sum), 0))
+    |> Repo.one!()
   end
 end

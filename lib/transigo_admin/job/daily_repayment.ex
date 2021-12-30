@@ -8,7 +8,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
   import Ecto.Query, warn: false
 
-  alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
+  alias TransigoAdmin.{Credit, Credit.Transaction, Credit.Quota, Job.Helper, Account.Importer}
   alias SendGrid.{Mail, Email}
 
   @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)

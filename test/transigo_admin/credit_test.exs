@@ -212,7 +212,7 @@ defmodule TransigoAdmin.CreditTest do
           exporter_id: exporter.id
         })
 
-      {:ok, %{id: o1_id}} =
+      {:ok, %{id: _o1_id}} =
         Credit.create_offer(%{
           transaction_id: transaction_id,
           transaction_usd: 10000,
