@@ -802,21 +802,27 @@ defmodule TransigoAdmin.Credit do
     granted_quota = find_granted_quota(importer_id)
 
     total_financed_sum = get_total_open_factoring_price(importer_id)
+    Logger.info("total_financed_sum for importer -> #{importer_id} is -> #{total_financed_sum}")
 
-    cond do
-      is_nil(granted_quota) ->
-        {:error, "No quota available"}
+    ret =
+      cond do
+        is_nil(granted_quota) ->
+          {:error, "No quota available"}
 
-      Timex.diff(granted_quota.credit_granted_date, Timex.now(), :years) >= 1 ->
-        {:error,
-         "Quota was generated more than 1 year ago. Please revoke and request the quota again."}
+        Timex.diff(granted_quota.credit_granted_date, Timex.now(), :years) >= 1 ->
+          {:error,
+           "Quota was generated more than 1 year ago. Please revoke and request the quota again."}
 
-      total_financed_sum + financed_sum > granted_quota.quota_usd ->
-        {:error, "Insufficient quota"}
+        total_financed_sum + financed_sum > granted_quota.quota_usd ->
+          {:error, "Insufficient quota"}
 
-      true ->
-        :ok
-    end
+        true ->
+          :ok
+      end
+
+    Logger.info("return value for importer -> #{importer_id} is -> #{inspect(ret)}")
+
+    ret
   end
 
   # calculate fields for transaction and offer
