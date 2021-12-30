@@ -8,10 +8,10 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
   import Ecto.Query, warn: false
 
-  alias TransigoAdmin.{Credit, Credit.Transaction, Credit.Quota, Job.Helper, Account.Importer}
+  alias TransigoAdmin.{Credit, Credit.Transaction, Job.Helper}
   alias SendGrid.{Mail, Email}
 
-  @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
+  # @dwolla_api Application.compile_env(:transigo_admin, :dwolla_api)
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
@@ -44,7 +44,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     repaid_amount =
       transaction.second_installment_usd
       |> :erlang.float_to_binary(decimals: 2)
-     
+
     due_date = Timex.now() |> Timex.shift(days: 3) |> Timex.format!("%m/%d/%Y", :strftime)
 
     Email.build()
@@ -63,46 +63,46 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Credit.update_transaction(%{transaction_state: "email_sent"})
   end
 
-  defp create_dwolla_transfer(%Transaction{} = transaction, access_token) do
-    repaid_value =
-      transaction.second_installment_usd
-      |> :erlang.float_to_binary(decimals: 2)
+  # defp create_dwolla_transfer(%Transaction{} = transaction, access_token) do
+  #   repaid_value =
+  #     transaction.second_installment_usd
+  #     |> :erlang.float_to_binary(decimals: 2)
 
-    request_body = %{
-      _links: %{
-        source: %{
-          href: get_funding_source_url(transaction.importer_id)
-        },
-        destination: %{
-          href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)
-        }
-      },
-      amount: %{
-        currency: "USD",
-        value: repaid_value
-      }
-    }
+  #   request_body = %{
+  #     _links: %{
+  #       source: %{
+  #         href: get_funding_source_url(transaction.importer_id)
+  #       },
+  #       destination: %{
+  #         href: Application.get_env(:transigo_admin, :dwolla_master_funding_source)
+  #       }
+  #     },
+  #     amount: %{
+  #       currency: "USD",
+  #       value: repaid_value
+  #     }
+  #   }
 
-    case @dwolla_api.dwolla_post("transfers", access_token, request_body) do
-      {:ok, %{headers: headers, body: body}} ->
-        case Enum.into(headers, %{}) do
-          %{"Location" => transfer_url} ->
-            attrs = %{
-              transaction_state: "pull_initiated",
-              dwolla_repayment_transfer_url: transfer_url
-            }
+  #   case @dwolla_api.dwolla_post("transfers", access_token, request_body) do
+  #     {:ok, %{headers: headers, body: body}} ->
+  #       case Enum.into(headers, %{}) do
+  #         %{"Location" => transfer_url} ->
+  #           attrs = %{
+  #             transaction_state: "pull_initiated",
+  #             dwolla_repayment_transfer_url: transfer_url
+  #           }
 
-            Credit.update_transaction(transaction, attrs)
+  #           Credit.update_transaction(transaction, attrs)
 
-          _ ->
-            # failed to create transfer
-            {:error, body}
-        end
+  #         _ ->
+  #           # failed to create transfer
+  #           {:error, body}
+  #       end
 
-      {:error, _} = error_tuple ->
-        error_tuple
-    end
-  end
+  #     {:error, _} = error_tuple ->
+  #       error_tuple
+  #   end
+  # end
 
   defp temp_create_transfer(%Transaction{} = transaction) do
     transfer_url = get_funding_source_url(transaction.importer_id)
@@ -116,28 +116,28 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
   end
 
-  defp check_transaction_dwolla_status(%Transaction{} = transaction, access_token) do
-    case @dwolla_api.dwolla_get(transaction.dwolla_repayment_transfer_url, access_token) do
-      {:ok, %{body: body}} ->
-        case Jason.decode(body) do
-          {:ok, %{"status" => "processed"}} ->
-            attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
-            {:ok, transaction} = Credit.update_transaction(transaction, attrs)
+  # defp check_transaction_dwolla_status(%Transaction{} = transaction, access_token) do
+  #   case @dwolla_api.dwolla_get(transaction.dwolla_repayment_transfer_url, access_token) do
+  #     {:ok, %{body: body}} ->
+  #       case Jason.decode(body) do
+  #         {:ok, %{"status" => "processed"}} ->
+  #           attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
+  #           {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
-            %{
-              transactionUID: transaction.transaction_uid,
-              sum: Float.round(transaction.second_installment_usd, 2),
-              transactionDatetime: transaction.repaid_datetime
-            }
+  #           %{
+  #             transactionUID: transaction.transaction_uid,
+  #             sum: Float.round(transaction.second_installment_usd, 2),
+  #             transactionDatetime: transaction.repaid_datetime
+  #           }
 
-          _ ->
-            nil
-        end
+  #         _ ->
+  #           nil
+  #       end
 
-      _ ->
-        nil
-    end
-  end
+  #     _ ->
+  #       nil
+  #   end
+  # end
 
   defp temp_check_transaction_status(%Transaction{} = transaction) do
 
@@ -150,7 +150,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
             sum: Float.round(transaction.second_installment_usd, 2),
             transactionDatetime: transaction.repaid_datetime
           }
-    end    
+    end
   end
 
   defp format_webhook_result(transactions) do

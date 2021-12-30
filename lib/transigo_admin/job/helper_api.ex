@@ -12,14 +12,14 @@ defmodule TransigoAdmin.Job.HelperApi do
 
   def notify_api_users(result, event), do: impl().notify_api_users(result, event)
 
-  def post_webhook_event(%User{webhook: nil}, _payload),
-    do: impl().post_webhook_event(%User{webhook: nil}, _payload)
+  def post_webhook_event(%User{webhook: nil}, payload),
+    do: impl().post_webhook_event(%User{webhook: nil}, payload)
 
   def post_webhook_event(%User{webhook: webhook}, payload),
     do: impl().post_webhook_event(%User{webhook: webhook}, payload)
 
-  def send_webhook_event(%User{id: user_id} = user, payload, %WebhookEvent{id: event_id}),
-    do: impl().send_webhook_event(%User{id: user_id} = user, payload, %WebhookEvent{id: event_id})
+  def send_webhook_event(%User{} = user, payload, %WebhookEvent{id: event_id}),
+    do: impl().send_webhook_event(user, payload, %WebhookEvent{id: event_id})
 
   def cal_total_sum(transactions), do: impl().cal_total_sum(transactions)
 
