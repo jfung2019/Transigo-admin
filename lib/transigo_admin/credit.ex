@@ -800,23 +800,30 @@ defmodule TransigoAdmin.Credit do
   defp check_quota_and_financed_sum(importer_id, financed_sum) do
     Logger.info("financed_sum for importer -> #{importer_id} is -> #{financed_sum}")
     granted_quota = find_granted_quota(importer_id)
+    Logger.info("granted_quota for importer -> #{importer_id} is -> #{inspect(granted_quota)}")
 
     total_financed_sum = get_total_open_factoring_price(importer_id)
+    Logger.info("total_financed_sum for importer -> #{importer_id} is -> #{total_financed_sum}")
 
-    cond do
-      is_nil(granted_quota) ->
-        {:error, "No quota available"}
+    ret =
+      cond do
+        is_nil(granted_quota) ->
+          {:error, "No quota available"}
 
-      Timex.diff(granted_quota.credit_granted_date, Timex.now(), :years) >= 1 ->
-        {:error,
-         "Quota was generated more than 1 year ago. Please revoke and request the quota again."}
+        Timex.diff(granted_quota.credit_granted_date, Timex.now(), :years) >= 1 ->
+          {:error,
+           "Quota was generated more than 1 year ago. Please revoke and request the quota again."}
 
-      total_financed_sum + financed_sum > granted_quota.quota_usd ->
-        {:error, "Insufficient quota"}
+        total_financed_sum + financed_sum > granted_quota.quota_usd ->
+          {:error, "Insufficient quota"}
 
-      true ->
-        :ok
-    end
+        true ->
+          :ok
+      end
+
+    Logger.info("return value for importer -> #{importer_id} is -> #{inspect(ret)}")
+
+    ret
   end
 
   # calculate fields for transaction and offer
@@ -1015,7 +1022,7 @@ defmodule TransigoAdmin.Credit do
   end
 
   def get_total_open_factoring_price(importer_id) do
-    total_open_factoring_price =
+    total_open_transactions =
       Transaction
       |> join(:inner, [t], off in Offer, on: t.id == off.transaction_id)
       |> where(
@@ -1023,11 +1030,16 @@ defmodule TransigoAdmin.Credit do
         t.importer_id == ^importer_id and off.offer_accepted_declined != "D" and
           t.transaction_state not in ["repaid", "rev_share_to_be_paid", "rev_share_paid"]
       )
-      |> select([t], coalesce(sum(t.financed_sum), 0))
-      |> Repo.one!()
+      |> Repo.all()
+      |> Enum.map(fn tx -> %{id: tx.id, financed_sum: tx.financed_sum} end)
+
+    total_open_factoring_price =
+      total_open_transactions
+      |> Enum.map(fn tx -> tx.financed_sum end)
+      |> Enum.sum()
 
     Logger.info(
-      "total open factoring price for importer -> #{importer_id} is -> #{total_open_factoring_price}"
+      "total open factoring price for importer -> #{importer_id} is -> #{total_open_factoring_price} for transactions -> #{inspect(total_open_transactions)}"
     )
 
     total_open_factoring_price
