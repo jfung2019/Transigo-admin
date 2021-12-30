@@ -1015,7 +1015,7 @@ defmodule TransigoAdmin.Credit do
   end
 
   def get_total_open_factoring_price(importer_id) do
-    total_open_factoring_price =
+    total_open_transactions =
       Transaction
       |> join(:inner, [t], off in Offer, on: t.id == off.transaction_id)
       |> where(
@@ -1023,11 +1023,15 @@ defmodule TransigoAdmin.Credit do
         t.importer_id == ^importer_id and off.offer_accepted_declined != "D" and
           t.transaction_state not in ["repaid", "rev_share_to_be_paid", "rev_share_paid"]
       )
-      |> select([t], coalesce(sum(t.financed_sum), 0))
-      |> Repo.one!()
+      |> Repo.all()
+      |> Enum.map(fn tx -> tx.financed_sum end)
+
+    total_open_factoring_price =
+      total_open_transactions
+      |> Enum.sum()
 
     Logger.info(
-      "total open factoring price for importer -> #{importer_id} is -> #{total_open_factoring_price}"
+      "total open factoring price for importer -> #{importer_id} is -> #{total_open_factoring_price} for transaction ids -> #{inspect(total_open_transactions)}"
     )
 
     total_open_factoring_price
