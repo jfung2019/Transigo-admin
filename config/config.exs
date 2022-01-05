@@ -56,7 +56,7 @@ config :transigo_admin, Oban,
     {Oban.Plugins.Cron,
      timezone: "Asia/Hong_Kong",
      crontab: [
-       {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},  
+       {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
        {"1 0 * * *", TransigoAdmin.Job.DailyBalance},
        {"*/2 * * * *", TransigoAdmin.Job.DailyAssignment},
        # {"2 0 * * *", TransigoAdmin.Job.DailyAssignment},

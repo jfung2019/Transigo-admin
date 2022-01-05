@@ -113,7 +113,6 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     }
 
     Credit.update_transaction(transaction, attrs)
-
   end
 
   # defp check_transaction_dwolla_status(%Transaction{} = transaction, access_token) do
@@ -140,16 +139,15 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   # end
 
   defp temp_check_transaction_status(%Transaction{} = transaction) do
-
     if transaction.dwolla_repayment_transfer_url == "http://google.com/funding-sources/id/repaid" do
-          attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
-          {:ok, transaction} = Credit.update_transaction(transaction, attrs)
+      attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
+      {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
-          %{
-            transactionUID: transaction.transaction_uid,
-            sum: Float.round(transaction.second_installment_usd, 2),
-            transactionDatetime: transaction.repaid_datetime
-          }
+      %{
+        transactionUID: transaction.transaction_uid,
+        sum: Float.round(transaction.second_installment_usd, 2),
+        transactionDatetime: transaction.repaid_datetime
+      }
     end
   end
 
