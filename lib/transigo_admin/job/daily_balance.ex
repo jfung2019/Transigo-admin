@@ -13,6 +13,8 @@ defmodule TransigoAdmin.Job.DailyBalance do
   """
   import Ecto.Query, warn: false
 
+  require Logger
+
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{
@@ -38,11 +40,24 @@ defmodule TransigoAdmin.Job.DailyBalance do
   def do_daily_balance() do
     transactions = get_daily_balance_transactions()
 
-    transactions
-    |> create_and_send_report()
+    # transactions 
+    # |> create_and_send_report()
 
-    transactions
-    |> notify_webhook()
+    # transactions 
+    # |> notify_webhook()
+
+    send_report_result = transactions |> create_and_send_report()
+
+    IO.puts("The send_report_result is:")
+    IO.inspect(send_report_result)
+
+    Logger.info("The send_report_result is: is -> #{send_report_result}")
+ 
+    #if email_state return :ok , do notify_webhook, else return :error, break  
+    case send_report_result do
+      :ok -> transactions |> notify_webhook()
+      {:error,_} -> []
+    end
   end
 
   def create_and_send_report(transactions) do
@@ -113,8 +128,9 @@ defmodule TransigoAdmin.Job.DailyBalance do
     {:ok, content} = File.read(file)
 
     # send file in email to Nir
-    Email.build()
-    |> Email.add_to("Nir@transigo.io")
+    email_state = Email.build()
+    # |> Email.add_to("Nir@transigo.io")
+    |> Email.add_to("test@transigo.io")
     |> Email.put_from("tcaas@transigo.io", "Transigo")
     |> Email.put_subject("Daily Balance Report")
     |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
@@ -125,6 +141,13 @@ defmodule TransigoAdmin.Job.DailyBalance do
       disposition: "attachement"
     })
     |> Mail.send()
+
+    IO.puts("email state is:")
+    IO.inspect(email_state)
+
+    Logger.info("The daily balance email state is -> #{email_state}")
+
+    email_state
   end
 
   def create_report(transactions) do
