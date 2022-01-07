@@ -13,6 +13,8 @@ defmodule TransigoAdmin.Job.DailyBalance do
   """
   import Ecto.Query, warn: false
 
+  require Logger
+
   use Oban.Worker, queue: :transaction, max_attempts: 1
 
   alias TransigoAdmin.{
@@ -38,18 +40,22 @@ defmodule TransigoAdmin.Job.DailyBalance do
   def do_daily_balance() do
     transactions = get_daily_balance_transactions()
 
-    transactions
-    |> create_and_send_report()
+    send_report_result = transactions |> create_and_send_report()
 
-    transactions
-    |> notify_webhook()
+    Logger.info("The send_report_result is: is -> #{send_report_result}")
+ 
+    #if email_state return :ok , do notify_webhook, else return :error, break  
+    case send_report_result do
+      :ok -> transactions |> notify_webhook()
+      {:error,_} -> send_report_result
+    end
   end
 
   def create_and_send_report(transactions) do
     transactions
     |> Repo.preload(importer: :quota)
     |> create_report()
-    |> send_report()
+    |> HelperApi.send_report()
   end
 
   def notify_webhook(transactions) do
@@ -101,31 +107,6 @@ defmodule TransigoAdmin.Job.DailyBalance do
       do: transaction
 
   def check_offer_transaction_state(_offer, _state), do: nil
-
-  def send_report(csv_stream) do
-    {:ok, file} = Briefly.create(ext: ".csv")
-
-    csv_stream
-    |> Enum.each(fn line ->
-      File.write(file, line)
-    end)
-
-    {:ok, content} = File.read(file)
-
-    # send file in email to Nir
-    Email.build()
-    |> Email.add_to("Nir@transigo.io")
-    |> Email.put_from("tcaas@transigo.io", "Transigo")
-    |> Email.put_subject("Daily Balance Report")
-    |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
-    |> Email.add_attachment(%{
-      content: Base.encode64(content),
-      filename: Path.basename(file),
-      type: "application/csv",
-      disposition: "attachement"
-    })
-    |> Mail.send()
-  end
 
   def create_report(transactions) do
     transactions

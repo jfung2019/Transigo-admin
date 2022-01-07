@@ -329,6 +329,8 @@ defmodule TransigoAdmin.ObanJobsTest do
         end)
       end)
 
+      expect(TransigoAdmin.Job.HelperMock, :send_report, fn _ -> :ok end)
+
       result = Job.DailyBalance.do_daily_balance() |> List.flatten()
 
       # check the transaction_state changes to "moved_to_payment" after daily_balane job

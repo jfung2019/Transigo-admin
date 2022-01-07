@@ -9,6 +9,7 @@ defmodule TransigoAdmin.Job.HelperApi do
   @callback move_transaction_to_state(Transaction.t(), String.t()) :: map | nil
   @callback put_datetime(map, Transaction.t()) :: map
   @callback get_transigo_doc_info :: String.t()
+  @callback send_report(Enumerable.t()) :: tuple
 
   def notify_api_users(result, event), do: impl().notify_api_users(result, event)
 
@@ -41,6 +42,8 @@ defmodule TransigoAdmin.Job.HelperApi do
       )
 
   def get_transigo_doc_info(), do: impl().get_transigo_doc_info()
+
+  def send_report(csv_stream), do: impl().send_report(csv_stream)
 
   defp impl, do: Application.get_env(:transigo_admin, __MODULE__)[:adapter]
 end
