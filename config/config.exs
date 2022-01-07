@@ -58,7 +58,7 @@ config :transigo_admin, Oban,
      crontab: [
        {"0 0 * * *", TransigoAdmin.Job.DailyRepayment},
       #  {"1 0 * * *", TransigoAdmin.Job.DailyBalance},
-       {"*/10 0 * * *", TransigoAdmin.Job.DailyBalance},
+       {"*/10 * * * *", TransigoAdmin.Job.DailyBalance},
        {"*/2 * * * *", TransigoAdmin.Job.DailyAssignment},
        # {"2 0 * * *", TransigoAdmin.Job.DailyAssignment},
        {"*/2 * * * *", TransigoAdmin.Job.HourlyAssignment},
