@@ -150,6 +150,8 @@ defmodule TransigoAdmin.Job.Helper do
     |> Mail.send()
 
     Logger.info("The daily balance email state is -> #{email_state}")
+    Logger.error("The daily balance email state is ->")
+    Logger.error(email_state)
 
     email_state
   end
