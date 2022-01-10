@@ -2,6 +2,7 @@ defmodule TransigoAdmin.Job.Helper do
   alias TransigoAdmin.{Account, DataLayer}
   alias TransigoAdmin.Account.{WebhookEvent, User}
   alias TransigoAdmin.{Credit, Credit.Transaction}
+  alias SendGrid.{Mail, Email}
 
   require Logger
 
