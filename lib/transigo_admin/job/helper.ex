@@ -2,6 +2,9 @@ defmodule TransigoAdmin.Job.Helper do
   alias TransigoAdmin.{Account, DataLayer}
   alias TransigoAdmin.Account.{WebhookEvent, User}
   alias TransigoAdmin.{Credit, Credit.Transaction}
+  alias SendGrid.{Mail, Email}
+
+  require Logger
 
   # use TransigoAdmin.Job.Helper_API.Behaviour
   @behaviour TransigoAdmin.Job.HelperApi
@@ -115,5 +118,42 @@ defmodule TransigoAdmin.Job.Helper do
         "Transigo Inc., 7400 Beaufont Springs Drive, Suite 300 PMB#40025 Richmond, VA 23225",
       support_email: "support@transigo.io"
     })
+  end
+
+  @doc """
+  Send daily balance csv report 
+  """
+  @spec send_report(Enumerable.t()) :: tuple
+  def send_report(csv_stream) do
+
+    {:ok, file} = Briefly.create(ext: ".csv")
+
+    csv_stream
+    |> Enum.each(fn line ->
+      File.write(file, line)
+    end)
+
+    {:ok, content} = File.read(file)
+
+    # send file in email to Nir
+    email_state = Email.build()
+    # |> Email.add_to("Nir@transigo.io")
+    |> Email.add_to("test@transigo.io")
+    |> Email.put_from("tcaas@transigo.io", "Transigo")
+    |> Email.put_subject("Daily Balance Report")
+    |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
+    |> Email.add_attachment(%{
+      content: Base.encode64(content),
+      filename: Path.basename(file),
+      type: "application/csv",
+      disposition: "attachment"
+    })
+    |> Mail.send()
+
+    Logger.info("The daily balance email state is -> #{email_state}")
+    Logger.error("The daily balance email state is ->")
+    Logger.error(email_state)
+
+    email_state
   end
 end
