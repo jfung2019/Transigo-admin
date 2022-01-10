@@ -49,7 +49,6 @@ defmodule TransigoAdmin.Credit do
   @doc """
   list transaction by state
   """
-  # @spec list_transactions_by_state(String.t(), [atom]) :: [Transaction.t()]
   @spec list_transactions_by_state(atom, [atom]) :: [Transaction.t()]
   def list_transactions_by_state(state, preloads \\ []) do
     from(t in Transaction, where: t.transaction_state == ^state, preload: ^preloads)
