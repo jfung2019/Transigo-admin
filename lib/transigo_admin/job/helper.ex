@@ -146,7 +146,7 @@ defmodule TransigoAdmin.Job.Helper do
       content: Base.encode64(content),
       filename: Path.basename(file),
       type: "application/csv",
-      disposition: "attachement"
+      disposition: "attachment"
     })
     |> Mail.send()
 
