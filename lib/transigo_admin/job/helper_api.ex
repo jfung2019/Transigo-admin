@@ -6,7 +6,7 @@ defmodule TransigoAdmin.Job.HelperApi do
   @callback post_webhook_event(User.t(), map) :: tuple
   @callback send_webhook_event(User.t(), String.t(), Webhook.t()) :: tuple
   @callback cal_total_sum(map) :: map
-  @callback move_transaction_to_state(Transaction.t(), String.t()) :: map | nil
+  @callback move_transaction_to_state(Transaction.t(), atom) :: map | nil
   @callback put_datetime(map, Transaction.t()) :: map
   @callback get_transigo_doc_info :: String.t()
 
@@ -26,18 +26,18 @@ defmodule TransigoAdmin.Job.HelperApi do
   def move_transaction_to_state(%Transaction{} = transaction, state),
     do: impl().move_transaction_to_state(%Transaction{} = transaction, state)
 
-  def put_datetime(result, %Transaction{transaction_state: "moved_to_payment"} = transaction),
+  def put_datetime(result, %Transaction{transaction_state: :moved_to_payment} = transaction),
     do:
       impl().put_datetime(
         result,
-        %Transaction{transaction_state: "moved_to_payment"} = transaction
+        %Transaction{transaction_state: :moved_to_payment} = transaction
       )
 
-  def put_datetime(result, %Transaction{transaction_state: "rev_share_to_be_paid"} = transaction),
+  def put_datetime(result, %Transaction{transaction_state: :rev_share_to_be_paid} = transaction),
     do:
       impl().put_datetime(
         result,
-        %Transaction{transaction_state: "rev_share_to_be_paid"} = transaction
+        %Transaction{transaction_state: :rev_share_to_be_paid} = transaction
       )
 
   def get_transigo_doc_info(), do: impl().get_transigo_doc_info()

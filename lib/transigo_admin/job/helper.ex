@@ -75,7 +75,7 @@ defmodule TransigoAdmin.Job.Helper do
   @doc """
   update transaction to the given state and return map
   """
-  @spec move_transaction_to_state(Transaction.t(), String.t()) :: map | nil
+  @spec move_transaction_to_state(Transaction.t(), atom) :: map | nil
   def move_transaction_to_state(%Transaction{} = transaction, state) do
     case Credit.update_transaction(transaction, %{transaction_state: state}) do
       {:ok, transaction} ->
@@ -94,10 +94,10 @@ defmodule TransigoAdmin.Job.Helper do
   put datetime to map base on the transaction's state
   """
   @spec put_datetime(map, Transaction.t()) :: map
-  def put_datetime(result, %Transaction{transaction_state: "moved_to_payment"} = transaction),
+  def put_datetime(result, %Transaction{transaction_state: :moved_to_payment} = transaction),
     do: Map.put(result, :transactionDateTime, transaction.down_payment_confirmed_datetime)
 
-  def put_datetime(result, %Transaction{transaction_state: "rev_share_to_be_paid"} = transaction),
+  def put_datetime(result, %Transaction{transaction_state: :rev_share_to_be_paid} = transaction),
     do: Map.put(result, :transactionDateTime, transaction.repaid_datetime)
 
   @doc """

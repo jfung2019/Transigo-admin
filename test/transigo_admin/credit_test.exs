@@ -62,7 +62,7 @@ defmodule TransigoAdmin.CreditTest do
         credit_term_days: 60,
         down_payment_usd: 3000,
         factoring_fee_usd: 3000,
-        transaction_state: "assigned",
+        transaction_state: :assigned,
         financed_sum: 3000,
         invoice_date: Timex.now(),
         second_installment_usd: 3000,
@@ -81,7 +81,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "assigned",
+          transaction_state: :assigned,
           financed_sum: 3000,
           invoice_date: due_date,
           second_installment_usd: 3000,
@@ -99,7 +99,7 @@ defmodule TransigoAdmin.CreditTest do
         credit_term_days: 60,
         down_payment_usd: 3000,
         factoring_fee_usd: 3000,
-        transaction_state: "assigned",
+        transaction_state: :assigned,
         financed_sum: 3000,
         invoice_date: due_past,
         second_installment_usd: 3000,
@@ -117,7 +117,7 @@ defmodule TransigoAdmin.CreditTest do
         credit_term_days: 60,
         down_payment_usd: 3000,
         factoring_fee_usd: 3000,
-        transaction_state: "originated",
+        transaction_state: :originated,
         financed_sum: 3000,
         invoice_date: Timex.now(),
         second_installment_usd: 3000,
@@ -136,7 +136,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "email_sent",
+          transaction_state: :email_sent,
           financed_sum: 3000,
           invoice_date: due_date,
           second_installment_usd: 3000,
@@ -154,7 +154,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "down_payment_done",
+          transaction_state: :down_payment_done,
           financed_sum: 3000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -168,7 +168,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "pull_initiated",
+          transaction_state: :pull_initiated,
           financed_sum: 3000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -182,7 +182,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "repaid",
+          transaction_state: :repaid,
           financed_sum: 3000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -191,10 +191,11 @@ defmodule TransigoAdmin.CreditTest do
         })
 
       assert [^down_payment_done_transaction] =
-               Credit.list_transactions_by_state("down_payment_done")
+               Credit.list_transactions_by_state(:down_payment_done)
 
-      assert [^pull_initiated_transaction] = Credit.list_transactions_by_state("pull_initiated")
-      assert [^repaid_transaction] = Credit.list_transactions_by_state("repaid")
+      assert [^pull_initiated_transaction] = Credit.list_transactions_by_state(:pull_initiated)
+
+      assert [^repaid_transaction] = Credit.list_transactions_by_state(:repaid)
     end
 
     test "can confirm downpayment", %{exporter: exporter, importer: importer} do
@@ -204,7 +205,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "originated",
+          transaction_state: :originated,
           financed_sum: 3000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -236,7 +237,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "originated",
+          transaction_state: :originated,
           financed_sum: 3000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -260,7 +261,7 @@ defmodule TransigoAdmin.CreditTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "originated",
+          transaction_state: :originated,
           financed_sum: 3000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -295,6 +296,7 @@ defmodule TransigoAdmin.CreditTest do
       exporter: exporter,
       importer: importer
     } do
+      assert Credit.get_total_open_factoring_price(importer.id) == 0
 
       transaction_uid_list =
         1..10
@@ -305,7 +307,7 @@ defmodule TransigoAdmin.CreditTest do
               credit_term_days: 60,
               down_payment_usd: 3000,
               factoring_fee_usd: 3000,
-              transaction_state: "created",
+              transaction_state: :created,
               financed_sum: 3000,
               invoice_date: Timex.now(),
               second_installment_usd: 3000,
@@ -332,34 +334,34 @@ defmodule TransigoAdmin.CreditTest do
 
       declined_transaction_id_list = [Enum.at(transaction_uid_list, 8)]
 
-      Enum.map(accept_transactoin_id_list, fn tra_uid ->
+      Enum.each(accept_transactoin_id_list, fn tra_uid ->
         Credit.accept_decline_offer(tra_uid, true)
       end)
 
-      Enum.map(declined_transaction_id_list, fn tra_uid ->
+      Enum.each(declined_transaction_id_list, fn tra_uid ->
         Credit.accept_decline_offer(tra_uid, false)
       end)
 
-      # case with transaction_state = "created","xxx","repaid","rev_share_paid","disputed","moved_to_payment","originated"
+      # case with transaction_state = :repaid,:rev_share_paid,:rev_share_to_be_paid,:disputed,:moved_to_payment,:originated,:down_payment_done,:assigned,:created,:created
 
       transaction_state_list = [
-        "repaid",
-        "rev_share_paid",
-        "rev_share_to_be_paid",
-        "disputed",
-        "moved_to_payment",
-        "originated",
-        "down_payment_done",
-        "assigned",
-        "xxx",
-        "created"
+        :repaid,
+        :rev_share_paid,
+        :rev_share_to_be_paid,
+        :disputed,
+        :moved_to_payment,
+        :originated,
+        :down_payment_done,
+        :assigned,
+        :created,
+        :created
       ]
 
       # map each uid in list_transaction_id into one state of transaction_state_list
 
       uid_state_pair_list = Enum.zip(transaction_uid_list, transaction_state_list)
 
-      Enum.map(uid_state_pair_list, fn x ->
+      Enum.each(uid_state_pair_list, fn x ->
         Credit.update_transaction(Credit.get_transaction_by_transaction_uid(elem(x, 0)), %{
           transaction_state: elem(x, 1)
         })

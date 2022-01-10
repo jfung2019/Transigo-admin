@@ -15,7 +15,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
-    Credit.list_transactions_by_state("originated", [:exporter, importer: [:contact]])
+    Credit.list_transactions_by_state(:originated, [:exporter, importer: [:contact]])
     |> Enum.each(&generate_sign_assignment/1)
 
     :ok
@@ -27,7 +27,7 @@ defmodule TransigoAdmin.Job.DailyAssignment do
          {:ok, %{"signature_request" => %{"signature_request_id" => req_id}} = _sign_req} <-
            @hs_api.create_signature_request(assignment_payload) do
       Credit.update_transaction(transaction, %{
-        transaction_state: "assignment_awaiting",
+        transaction_state: :assignment_awaiting,
         hellosign_assignment_signature_request_id: req_id
       })
     else

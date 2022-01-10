@@ -140,7 +140,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
         credit_term_days: 60,
         down_payment_usd: 3000,
         factoring_fee_usd: 3000,
-        transaction_state: "down_payment_done",
+        transaction_state: :down_payment_done,
         financed_sum: 3000,
         invoice_date: Timex.now(),
         second_installment_usd: 3000,
