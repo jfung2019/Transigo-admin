@@ -27,7 +27,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Enum.each(&temp_create_transfer(&1))
 
     # check transfer status
-    Credit.list_transactions_by_state("pull_initiated")
+    Credit.list_transactions_by_state(:pull_initiated)
     # |> Enum.map(&check_transaction_dwolla_status(&1, access_token))
     |> Enum.map(&temp_check_transaction_status(&1))
     |> Enum.reject(&is_nil(&1))
@@ -60,7 +60,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     |> Mail.send()
 
     transaction
-    |> Credit.update_transaction(%{transaction_state: "email_sent"})
+    |> Credit.update_transaction(%{transaction_state: :email_sent})
   end
 
   # defp create_dwolla_transfer(%Transaction{} = transaction, access_token) do
@@ -88,7 +88,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   #       case Enum.into(headers, %{}) do
   #         %{"Location" => transfer_url} ->
   #           attrs = %{
-  #             transaction_state: "pull_initiated",
+  #             transaction_state: :pull_initiated,
   #             dwolla_repayment_transfer_url: transfer_url
   #           }
 
@@ -108,7 +108,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
     transfer_url = get_funding_source_url(transaction.importer_id)
 
     attrs = %{
-      transaction_state: "pull_initiated",
+      transaction_state: :pull_initiated,
       dwolla_repayment_transfer_url: transfer_url
     }
 
@@ -120,7 +120,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
   #     {:ok, %{body: body}} ->
   #       case Jason.decode(body) do
   #         {:ok, %{"status" => "processed"}} ->
-  #           attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
+  #           attrs = %{transaction_state: :repaid, repaid_datetime: Timex.now()}
   #           {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
   #           %{
@@ -140,7 +140,7 @@ defmodule TransigoAdmin.Job.DailyRepayment do
 
   defp temp_check_transaction_status(%Transaction{} = transaction) do
     if transaction.dwolla_repayment_transfer_url == "http://google.com/funding-sources/id/repaid" do
-      attrs = %{transaction_state: "repaid", repaid_datetime: Timex.now()}
+      attrs = %{transaction_state: :repaid, repaid_datetime: Timex.now()}
       {:ok, transaction} = Credit.update_transaction(transaction, attrs)
 
       %{

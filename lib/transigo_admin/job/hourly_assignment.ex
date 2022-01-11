@@ -13,7 +13,7 @@ defmodule TransigoAdmin.Job.HourlyAssignment do
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
-    Credit.list_transactions_by_state("assignment_signed", [:exporter, importer: [:contact]])
+    Credit.list_transactions_by_state(:assignment_signed, [:exporter, importer: [:contact]])
     |> Enum.each(&send_assignment_notice/1)
 
     :ok
@@ -69,7 +69,7 @@ defmodule TransigoAdmin.Job.HourlyAssignment do
   end
 
   defp mark_transaction_as_assigned(:ok, %Transaction{} = transaction),
-    do: Credit.update_transaction(transaction, %{transaction_state: "assigned"})
+    do: Credit.update_transaction(transaction, %{transaction_state: :assigned})
 
   defp mark_transaction_as_assigned(error, _transaction), do: error
 end

@@ -120,7 +120,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "assigned",
+          transaction_state: :assigned,
           financed_sum: 8000,
           invoice_date: due_date,
           second_installment_usd: 3000,
@@ -139,7 +139,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "assigned",
+          transaction_state: :assigned,
           financed_sum: 8000,
           invoice_date: due_date,
           second_installment_usd: 3000,
@@ -200,7 +200,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "assigned",
+          transaction_state: :assigned,
           financed_sum: 8000,
           invoice_date: due_date,
           second_installment_usd: 3000,
@@ -212,13 +212,13 @@ defmodule TransigoAdmin.ObanJobsTest do
       assert :ok = Job.DailyRepayment.perform(%Oban.Job{})
 
       # check emails are sent for transactions that dues in 3 days
-      assert [%{id: ^email_id}] = Credit.list_transactions_by_state("email_sent")
+      assert [%{id: ^email_id}] = Credit.list_transactions_by_state(:email_sent)
 
       # check transfers are created for transactions that dues today
-      assert [%{id: ^due_id}] = Credit.list_transactions_by_state("pull_initiated")
+      assert [%{id: ^due_id}] = Credit.list_transactions_by_state(:pull_initiated)
 
       # check transfers are processed from dwolla
-      assert [%{id: ^repaid_id}] = Credit.list_transactions_by_state("repaid")
+      assert [%{id: ^repaid_id}] = Credit.list_transactions_by_state(:repaid)
     end
   end
 
@@ -231,7 +231,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "down_payment_done",
+          transaction_state: :down_payment_done,
           hs_signing_status: "all_signed",
           financed_sum: 8000,
           invoice_date: Timex.now(),
@@ -257,7 +257,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "down_payment_done",
+          transaction_state: :down_payment_done,
           hs_signing_status: "all_signed",
           financed_sum: 8000,
           invoice_date: Timex.now(),
@@ -283,7 +283,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "down_payment_done",
+          transaction_state: :down_payment_done,
           hs_signing_status: "missing_transigo",
           financed_sum: 8000,
           invoice_date: Timex.now(),
@@ -333,8 +333,8 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       result = Job.DailyBalance.do_daily_balance() |> List.flatten()
 
-      # check the transaction_state changes to "moved_to_payment" after daily_balane job
-      assert [%{id: ^t1_id}] = Credit.list_transactions_by_state("moved_to_payment")
+      # check the transaction_state changes to :moved_to_payment after daily_balane job
+      assert [%{id: ^t1_id}] = Credit.list_transactions_by_state(:moved_to_payment)
 
       # check if the transaction with offer declined,
       # it will not display inside the webhook result
@@ -354,7 +354,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         credit_term_days: 60,
         down_payment_usd: 3000,
         factoring_fee_usd: 3000,
-        transaction_state: "created",
+        transaction_state: :created,
         financed_sum: 3000,
         invoice_date: Timex.now(),
         second_installment_usd: 3000,
@@ -369,7 +369,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           credit_term_days: 60,
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
-          transaction_state: "repaid",
+          transaction_state: :repaid,
           financed_sum: 8000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -379,7 +379,7 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       assert :ok = Job.MonthlyRevShare.perform(%Oban.Job{})
 
-      assert [%{id: ^t1_id}] = Credit.list_transactions_by_state("rev_share_to_be_paid")
+      assert [%{id: ^t1_id}] = Credit.list_transactions_by_state(:rev_share_to_be_paid)
     end
   end
 end

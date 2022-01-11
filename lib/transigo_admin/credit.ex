@@ -24,13 +24,13 @@ defmodule TransigoAdmin.Credit do
           "(? + make_interval(days => ?))::date = (NOW() + make_interval(days => 3))::date",
           t.invoice_date,
           t.credit_term_days
-        ) and t.transaction_state == "assigned"
+        ) and t.transaction_state == :assigned
     )
     |> Repo.all()
   end
 
   @doc """
-  List transactions due today with transaction_state as ["assigned", "email_sent"]
+  List transactions due today with transaction_state as [:assigned, :email_sent]
   """
   @spec list_transactions_due_today :: [Transaction.t()]
   def list_transactions_due_today(preloads \\ []) do
@@ -40,7 +40,7 @@ defmodule TransigoAdmin.Credit do
           "(? + make_interval(days => ?))::date <= NOW()::date",
           t.invoice_date,
           t.credit_term_days
-        ) and t.transaction_state in ["email_sent", "assigned"],
+        ) and t.transaction_state in [:email_sent, :assigned],
       preload: ^preloads
     )
     |> Repo.all()
@@ -49,7 +49,7 @@ defmodule TransigoAdmin.Credit do
   @doc """
   list transaction by state
   """
-  @spec list_transactions_by_state(String.t(), [atom]) :: [Transaction.t()]
+  @spec list_transactions_by_state(atom, [atom]) :: [Transaction.t()]
   def list_transactions_by_state(state, preloads \\ []) do
     from(t in Transaction, where: t.transaction_state == ^state, preload: ^preloads)
     |> Repo.all()
@@ -158,7 +158,7 @@ defmodule TransigoAdmin.Credit do
       true ->
         transaction
         |> update_transaction(%{
-          transaction_state: "down_payment_done",
+          transaction_state: :down_payment_done,
           downpayment_confirm: downpayment_confirm,
           down_payment_confirmed_datetime: Timex.now()
         })
@@ -1029,7 +1029,7 @@ defmodule TransigoAdmin.Credit do
         [t, off],
         t.importer_id == ^importer_id and
           (off.offer_accepted_declined == "A" or is_nil(off.offer_accepted_declined)) and
-          t.transaction_state not in ["repaid", "rev_share_to_be_paid", "rev_share_paid"]
+          t.transaction_state not in [:repaid, :rev_share_to_be_paid, :rev_share_paid]
       )
       |> Repo.all()
       |> Enum.map(fn tx -> %{id: tx.id, financed_sum: tx.financed_sum} end)
