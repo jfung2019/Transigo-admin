@@ -121,12 +121,11 @@ defmodule TransigoAdmin.Job.Helper do
   end
 
   @doc """
-  Send daily balance csv report 
+  Send daily balance csv report
   """
   @spec send_report(Enumerable.t()) :: tuple
   def send_report(csv_stream) do
-
-    {:ok, file} = Briefly.create(ext: ".csv")
+    {:ok, file} = Briefly.create(extname: ".csv", prefix: "daily_balance_report")
 
     csv_stream
     |> Enum.each(fn line ->
@@ -136,19 +135,20 @@ defmodule TransigoAdmin.Job.Helper do
     {:ok, content} = File.read(file)
 
     # send file in email to Nir
-    email_state = Email.build()
-    # |> Email.add_to("Nir@transigo.io")
-    |> Email.add_to("test@transigo.io")
-    |> Email.put_from("tcaas@transigo.io", "Transigo")
-    |> Email.put_subject("Daily Balance Report")
-    |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
-    |> Email.add_attachment(%{
-      content: Base.encode64(content),
-      filename: Path.basename(file),
-      type: "application/csv",
-      disposition: "attachment"
-    })
-    |> Mail.send()
+    email_state =
+      Email.build()
+      # |> Email.add_to("Nir@transigo.io")
+      |> Email.add_to("test@transigo.io")
+      |> Email.put_from("tcaas@transigo.io", "Transigo")
+      |> Email.put_subject("Daily Balance Report")
+      |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
+      |> Email.add_attachment(%{
+        content: Base.encode64(content),
+        filename: Path.basename(file),
+        type: "application/csv",
+        disposition: "attachment"
+      })
+      |> Mail.send()
 
     Logger.info("The daily balance email state is -> #{email_state}")
     Logger.error("The daily balance email state is ->")
