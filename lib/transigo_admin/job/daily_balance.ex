@@ -46,10 +46,10 @@ defmodule TransigoAdmin.Job.DailyBalance do
     Logger.error("The send_report_result is: is ->")
     Logger.error(send_report_result)
 
-    #if email_state return :ok , do notify_webhook, else return :error, break
+    # if email_state return :ok , do notify_webhook, else return :error, break
     case send_report_result do
       :ok -> transactions |> notify_webhook()
-      {:error,_} -> send_report_result
+      {:error, _} -> send_report_result
     end
   end
 
@@ -117,6 +117,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
   end
 
   defp create_report_row(%Transaction{
+         id: id,
          importer_id: importer_id,
          exporter_id: exporter_id,
          financed_sum: financed_sum,
@@ -128,6 +129,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
          }
        }) do
     %{
+      transaction_id: id,
       importer_id: importer_id,
       exporter_id: exporter_id,
       factoring_price: financed_sum,
