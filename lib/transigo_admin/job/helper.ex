@@ -127,10 +127,11 @@ defmodule TransigoAdmin.Job.Helper do
   def send_report(csv_stream) do
     {:ok, file} = Briefly.create(extname: ".csv", prefix: "daily_balance_report")
 
-    csv_stream
-    |> Enum.each(fn line ->
-      File.write(file, line)
-    end)
+    csv_contents =
+      csv_stream
+      |> Enum.to_list()
+
+    File.write(file, csv_contents)
 
     {:ok, content} = File.read(file)
 
