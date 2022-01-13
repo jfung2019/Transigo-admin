@@ -43,8 +43,6 @@ defmodule TransigoAdmin.Job.DailyBalance do
     send_report_result = transactions |> create_and_send_report()
 
     Logger.info("The send_report_result is: is -> #{send_report_result}")
-    Logger.error("The send_report_result is: is ->")
-    Logger.error(send_report_result)
  
     #if email_state return :ok , do notify_webhook, else return :error, break  
     case send_report_result do
