@@ -343,6 +343,23 @@ defmodule TransigoAdmin.ObanJobsTest do
       # check if the transaction document is not signed by transigo,
       # it will not display inside the webhook result
       assert "t3" not in result
+
+      # Test if exporter and importer can be pre-loaded for transaction report
+      transaction_t1 =
+        Credit.get_transaction!(t1_id) |> Repo.preload([:exporter, importer: :quota])
+
+      exp_uid = exporter.exporter_transigo_uid
+
+      assert [
+               transaction_uid: "t1",
+               importer_uid: "test_importer",
+               exporter_uid: ^exp_uid,
+               factoring_price: "8000",
+               signed_docs: "yes",
+               quota_usd: "30000",
+               total_open_factoring_price: "16000",
+               credit_insurance_number: "5128232"
+             ] = Job.DailyBalance.create_report_row(transaction_t1)
     end
   end
 

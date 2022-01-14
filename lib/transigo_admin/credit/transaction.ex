@@ -12,6 +12,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :downpayment_confirm, :string
     field :down_payment_confirmed_datetime, :utc_datetime
     field :factoring_fee_usd, :float, source: :factoring_fee_USD
+
     field :transaction_state, Ecto.Enum,
       values: [
         :created,

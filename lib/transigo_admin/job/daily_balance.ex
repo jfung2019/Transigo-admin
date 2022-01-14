@@ -24,10 +24,11 @@ defmodule TransigoAdmin.Job.DailyBalance do
     Job.HelperApi,
     Credit,
     Account.Importer,
+    Account.Exporter,
     Repo
   }
 
-  alias SendGrid.{Mail, Email}
+  alias Decimal
 
   alias TransigoAdmin.Repo
 
@@ -43,8 +44,8 @@ defmodule TransigoAdmin.Job.DailyBalance do
     send_report_result = transactions |> create_and_send_report()
 
     Logger.info("The send_report_result is: is -> #{send_report_result}")
- 
-    #if email_state return :ok , do notify_webhook, else return :error, break  
+
+    # if email_state return :ok , do notify_webhook, else return :error, break  
     case send_report_result do
       :ok -> transactions |> notify_webhook()
       {:error, _} -> send_report_result
@@ -53,7 +54,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
 
   def create_and_send_report(transactions) do
     transactions
-    |> Repo.preload(importer: :quota)
+    |> Repo.preload([:exporter, importer: :quota])
     |> create_report()
     |> HelperApi.send_report()
   end
@@ -114,32 +115,34 @@ defmodule TransigoAdmin.Job.DailyBalance do
     |> CSV.encode(headers: true)
   end
 
-  defp create_report_row(%Transaction{
-         id: id,
-         importer_id: importer_id,
-         exporter_id: exporter_id,
-         financed_sum: financed_sum,
-         importer: %Importer{
-           quota: %Quota{
-             quota_usd: quota_usd,
-             eh_grade: eh_grade
-           }
-         }
-       }) do
-    %{
-      transaction_id: id,
-      importer_id: importer_id,
-      exporter_id: exporter_id,
-      factoring_price: financed_sum,
+  def create_report_row(%Transaction{
+        importer_id: importer_id,
+        transaction_uid: transaction_uid,
+        financed_sum: financed_sum,
+        importer: %Importer{
+          importer_transigo_uid: importer_transigo_uid,
+          quota: %Quota{
+            quota_usd: quota_usd,
+            eh_grade: eh_grade
+          }
+        },
+        exporter: %Exporter{
+          exporter_transigo_uid: exporter_transigo_uid
+        }
+      }) do
+    [
+      transaction_uid: transaction_uid,
+      importer_uid: importer_transigo_uid,
+      exporter_uid: exporter_transigo_uid,
+      factoring_price: financed_sum |> Decimal.from_float() |> Decimal.to_string(:normal),
       signed_docs: "yes",
-      quota_usd: quota_usd,
-      total_open_factoring_price: Credit.get_total_open_factoring_price(importer_id),
+      quota_usd: quota_usd |> Decimal.from_float() |> Decimal.to_string(:normal),
+      total_open_factoring_price:
+        Credit.get_total_open_factoring_price(importer_id)
+        |> Decimal.from_float()
+        |> Decimal.to_string(:normal),
       credit_insurance_number:
-        if not is_nil(eh_grade) do
-          eh_grade["policy"]["policyId"]
-        else
-          nil
-        end
-    }
+        unless(is_nil(eh_grade), do: eh_grade["policy"]["policyId"], else: nil)
+    ]
   end
 end
