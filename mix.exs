@@ -72,7 +72,8 @@ defmodule TransigoAdmin.MixProject do
       {:ecto_commons, "~> 0.3.3"},
       {:tesla, "~> 1.4"},
       {:mox, "~> 0.5.2", only: :test},
-      {:csv, "~> 2.4"}
+      {:csv, "~> 2.4"},
+      {:decimal, "~> 2.0"}
     ]
   end
 
