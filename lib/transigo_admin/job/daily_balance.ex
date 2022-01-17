@@ -110,8 +110,23 @@ defmodule TransigoAdmin.Job.DailyBalance do
   def check_offer_transaction_state(_offer, _state), do: nil
 
   def create_report(transactions) do
-    transactions
-    |> Enum.map(&create_report_row/1)
+    rows =
+      transactions
+      |> Enum.map(&create_report_row/1)
+
+    [
+      [
+        "transaction_uid",
+        "importer_uid",
+        "exporter_uid",
+        "factoring_price",
+        "total_open_factoring_price",
+        "quota_usd",
+        "signed_docs",
+        "credit_insurance_number"
+      ]
+      | rows
+    ]
     |> CSV.encode()
   end
 
@@ -132,28 +147,16 @@ defmodule TransigoAdmin.Job.DailyBalance do
         }
       }) do
     [
-      [
-        "transaction_uid",
-        "importer_uid",
-        "exporter_uid",
-        "factoring_price",
-        "total_open_factoring_price",
-        "quota_usd",
-        "signed_docs",
-        "credit_insurance_number"
-      ],
-      [
-        transaction_uid,
-        importer_transigo_uid,
-        exporter_transigo_uid,
-        financed_sum |> Decimal.from_float() |> Decimal.to_string(:normal),
-        Credit.get_total_open_factoring_price(importer_id)
-        |> Decimal.from_float()
-        |> Decimal.to_string(:normal),
-        quota_usd |> Decimal.from_float() |> Decimal.to_string(:normal),
-        hs_signing_status,
-        unless(is_nil(eh_grade), do: eh_grade["policy"]["policyId"], else: nil)
-      ]
+      transaction_uid,
+      importer_transigo_uid,
+      exporter_transigo_uid,
+      financed_sum |> Decimal.from_float() |> Decimal.to_string(:normal),
+      Credit.get_total_open_factoring_price(importer_id)
+      |> Decimal.from_float()
+      |> Decimal.to_string(:normal),
+      quota_usd |> Decimal.from_float() |> Decimal.to_string(:normal),
+      hs_signing_status,
+      unless(is_nil(eh_grade), do: eh_grade["policy"]["policyId"], else: nil)
     ]
   end
 end
