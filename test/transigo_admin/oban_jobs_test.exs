@@ -350,28 +350,8 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       exp_uid = exporter.exporter_transigo_uid
 
-      assert [
-               [
-                 "transaction_uid",
-                 "importer_uid",
-                 "exporter_uid",
-                 "factoring_price",
-                 "total_open_factoring_price",
-                 "quota_usd",
-                 "signed_docs",
-                 "credit_insurance_number"
-               ],
-               [
-                 "t1",
-                 "test_importer",
-                 ^exp_uid,
-                 "8000",
-                 "16000",
-                 "30000",
-                 "all_signed",
-                 "5128232"
-               ]
-             ] = Job.DailyBalance.create_report_row(transaction_t1)
+      assert ["t1", "test_importer", ^exp_uid, "8000", "16000", "30000", "all_signed", "5128232"] =
+               Job.DailyBalance.create_report_row(transaction_t1)
     end
   end
 
