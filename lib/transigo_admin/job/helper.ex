@@ -138,7 +138,7 @@ defmodule TransigoAdmin.Job.Helper do
     # send file in email to Nir
     email_state =
       Email.build()
-      |> Email.add_to("Nir@transigo.io")
+      |> Email.add_to("Nir@transigo.io")     
       |> Email.put_from("tcaas@transigo.io", "Transigo")
       |> Email.put_subject("Daily Balance Report")
       |> Email.put_text("Please find the Daily Balance Report attached as a csv.")
