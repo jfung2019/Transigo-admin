@@ -116,14 +116,15 @@ defmodule TransigoAdmin.Job.DailyBalance do
 
     [
       [
-        "transaction_uid",
-        "importer_uid",
-        "exporter_uid",
-        "factoring_price",
-        "total_open_factoring_price",
-        "quota_usd",
-        "signed_docs",
-        "credit_insurance_number"
+        "Date",
+        "Transaction_uid",
+        "Importer_uid",
+        "Exporter_uid",
+        "Factoring_price",
+        "Total_open_factoring_price",
+        "Quota_usd",
+        "Signed_docs",
+        "Credit_insurance_number"
       ]
       | rows
     ]
@@ -147,6 +148,7 @@ defmodule TransigoAdmin.Job.DailyBalance do
         }
       }) do
     [
+      Timex.today(),
       transaction_uid,
       importer_transigo_uid,
       exporter_transigo_uid,
