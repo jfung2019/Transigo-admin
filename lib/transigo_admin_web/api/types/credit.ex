@@ -7,25 +7,30 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
   alias TransigoAdmin.{Account, Credit}
 
   enum :hs_signing_status do
-    value :awaiting_signature
-    value :all_signed
-    value :exporter_signed
-    value :importer_signed
-    value :transigo_signed
-    value :missing_exporter
-    value :missing_importer
-    value :missing_transigo
+    value(:awaiting_signature)
+    value(:all_signed)
+    value(:exporter_signed)
+    value(:importer_signed)
+    value(:transigo_signed)
+    value(:missing_exporter)
+    value(:missing_importer)
+    value(:missing_transigo)
   end
 
   enum :transaction_state do
-    value :awaiting_signature
-    value :all_signed
-    value :exporter_signed
-    value :importer_signed
-    value :transigo_signed
-    value :missing_exporter
-    value :missing_importer
-    value :missing_transigo 
+    value(:created)
+    value(:down_payment_done)
+    value(:moved_to_payment)
+    value(:originated)
+    value(:assigned)
+    value(:email_sent)
+    value(:pull_initiated)
+    value(:repaid)
+    value(:rev_share_to_be_paid)
+    value(:rev_share_paid)
+    value(:disputed)
+    value(:assignment_awaiting)
+    value(:assignment_signed)
   end
 
   object :quota do
