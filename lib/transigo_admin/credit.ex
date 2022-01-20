@@ -778,7 +778,7 @@ defmodule TransigoAdmin.Credit do
   def check_transaction_sum(transaction_sum) do
     if String.match?(
          transaction_sum,
-         ~r"^[$]?[0-9]{1,3}(?:[0-9]*(?:[.,][0-9]{1})?|(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|(?:\.[0-9]{3})*(?:,[0-9]{1,2})?)[kK]?$"
+         ~r"^[$]?[0-9]{1,3}(?:[0-9]*(?:[.,][0-9]{1,2})?|(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|(?:\.[0-9]{3})*(?:,[0-9]{1,2})?)[kK]?$"
        ) do
       transaction_sum = String.downcase(transaction_sum)
       k_multiply = if String.last(transaction_sum) == "k", do: 1000, else: 1
