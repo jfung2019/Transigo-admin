@@ -40,10 +40,10 @@ defmodule TransigoAdminWeb.Api.Types.Account do
   connection(node_type: :exporter)
 
   enum :business_type do
-    value(:soleProprietorship)
-    value(:corporation)
-    value(:llc)
-    value(:partnership)
+    value :soleProprietorship
+    value :corporation
+    value :llc
+    value :partnership
   end
 
   object :importer do
