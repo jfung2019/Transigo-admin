@@ -71,7 +71,7 @@ defmodule TransigoAdmin.Job.DailySigningCheck do
       {:ok, %{"signature_request" => %{"signature_request_id" => req_id}}} ->
         Account.update_exporter_hs_request(exporter, %{
           hellosign_signature_request_id: req_id,
-          hs_signing_status: "awaiting_signature"
+          hs_signing_status: :awaiting_signature
         })
 
       _ ->

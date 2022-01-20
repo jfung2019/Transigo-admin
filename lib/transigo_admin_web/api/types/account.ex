@@ -33,7 +33,7 @@ defmodule TransigoAdminWeb.Api.Types.Account do
     field :signatory_email, non_null(:string)
     field :signatory_title, non_null(:string)
     field :hellosign_signature_request_id, :string
-    field :hs_signing_status, non_null(:string)
+    field :hs_signing_status, non_null(:hs_signing_status)
     field :contact, non_null(:contact), resolve: dataloader(Account)
   end
 

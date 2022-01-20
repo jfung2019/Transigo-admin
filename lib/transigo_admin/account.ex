@@ -110,7 +110,7 @@ defmodule TransigoAdmin.Account do
   """
   @spec list_awaiting_signature_exporter :: [Exporter.t()]
   def list_awaiting_signature_exporter() do
-    from(e in Exporter, where: e.hs_signing_status != "all_signed")
+    from(e in Exporter, where: e.hs_signing_status != :all_signed)
     |> Repo.all()
   end
 
@@ -120,7 +120,7 @@ defmodule TransigoAdmin.Account do
   @spec list_unsigned_exporters :: [Exporter.t()]
   def list_unsigned_exporters() do
     from(e in Exporter,
-      where: e.hs_signing_status != "all_signed" and not is_nil(e.hellosign_signature_request_id),
+      where: e.hs_signing_status != :all_signed and not is_nil(e.hellosign_signature_request_id),
       preload: [:marketplace, :contact]
     )
     |> Repo.all()

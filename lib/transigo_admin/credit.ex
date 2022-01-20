@@ -696,7 +696,7 @@ defmodule TransigoAdmin.Credit do
   """
   @spec generate_offer(map) :: {:ok, Offer.t()} | {:error, any}
   def generate_offer(param) do
-    with {:ok, %{hs_signing_status: "all_signed"} = exporter} <-
+    with {:ok, %{hs_signing_status: :all_signed} = exporter} <-
            check_exporter(Map.get(param, "exporterUID")),
          {:ok, importer} <-
            check_importer(Map.get(param, "importerUID")),
@@ -1010,7 +1010,7 @@ defmodule TransigoAdmin.Credit do
     transaction =
       Transaction
       |> where(transaction_uid: ^transaction_uid)
-      |> where([t], t.hs_signing_status != "all_signed")
+      |> where([t], t.hs_signing_status != :all_signed)
       |> preload(:exporter)
       |> Repo.one()
 
