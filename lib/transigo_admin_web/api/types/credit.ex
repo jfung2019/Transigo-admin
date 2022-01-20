@@ -6,6 +6,28 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
 
   alias TransigoAdmin.{Account, Credit}
 
+  enum :hs_signing_status do
+    value :awaiting_signature
+    value :all_signed
+    value :exporter_signed
+    value :importer_signed
+    value :transigo_signed
+    value :missing_exporter
+    value :missing_importer
+    value :missing_transigo
+  end
+
+  enum :transaction_state do
+    value :awaiting_signature
+    value :all_signed
+    value :exporter_signed
+    value :importer_signed
+    value :transigo_signed
+    value :missing_exporter
+    value :missing_importer
+    value :missing_transigo 
+  end
+
   object :quota do
     field :id, non_null(:id)
     field :quota_transigo_uid, non_null(:string)
@@ -49,14 +71,14 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
     field :down_payment_usd, non_null(:float)
     field :down_payment_confirmed_datetime, :date
     field :factoring_fee_usd, non_null(:float)
-    field :transaction_state, non_null(:string)
+    field :transaction_state, non_null(:transaction_state)
     field :financed_sum, non_null(:float)
     field :invoice_date, :date
     field :invoice_ref, :string
     field :po_date, :date
     field :po_ref, :string
     field :hellosign_signature_request_id, :string
-    field :hs_signing_status, :string
+    field :hs_signing_status, :hs_signing_status
     field :second_installment_usd, non_null(:float)
     field :repaid_datetime, :date
     field :dwolla_repayment_transfer_url, :string

@@ -21,7 +21,7 @@ defmodule TransigoAdminWeb.Api.Schema do
     @desc "list exporters paginated"
     connection field :list_exporters, node_type: :exporter do
       arg :keyword, :string
-      arg :hs_signing_status, :string
+      arg :hs_signing_status, :hs_signing_status
       middleware Middleware.Authenticate
       resolve &Resolvers.Account.list_exporters/3
     end
@@ -44,7 +44,7 @@ defmodule TransigoAdminWeb.Api.Schema do
     @desc "list transactions paginated"
     connection field :list_transactions, node_type: :transaction do
       arg :keyword, :string
-      arg :hs_signing_status, :string
+      arg :hs_signing_status, :hs_signing_status
       arg :transaction_status, :string
       middleware Middleware.Authenticate
       resolve &Resolvers.Credit.list_transactions/3

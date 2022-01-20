@@ -232,7 +232,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
           transaction_state: :down_payment_done,
-          hs_signing_status: "all_signed",
+          hs_signing_status: :all_signed,
           financed_sum: 8000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -258,7 +258,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
           transaction_state: :down_payment_done,
-          hs_signing_status: "all_signed",
+          hs_signing_status: :all_signed,
           financed_sum: 8000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -284,7 +284,7 @@ defmodule TransigoAdmin.ObanJobsTest do
           down_payment_usd: 3000,
           factoring_fee_usd: 3000,
           transaction_state: :down_payment_done,
-          hs_signing_status: "missing_transigo",
+          hs_signing_status: :missing_transigo,
           financed_sum: 8000,
           invoice_date: Timex.now(),
           second_installment_usd: 3000,
@@ -352,7 +352,7 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       today = Timex.today()
 
-      assert [^today, "t1", "test_importer", ^exp_uid, "8000", "16000", "30000", "all_signed", "5128232"] =
+      assert [^today, "t1", "test_importer", ^exp_uid, "8000", "16000", "30000", :all_signed, "5128232"] =
                Job.DailyBalance.create_report_row(transaction_t1)
     end
   end

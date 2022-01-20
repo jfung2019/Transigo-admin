@@ -37,7 +37,20 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :po_date, :date
     field :po_ref, :string
     field :hellosign_signature_request_id, :string
-    field :hs_signing_status, :string, default: "awaiting_signature"
+    
+    field :hs_signing_status, Ecto.Enum,
+      values: [
+        :awaiting_signature,
+        :all_signed,
+        :exporter_signed,
+        :importer_signed,
+        :transigo_signed,
+        :missing_exporter,
+        :missing_importer,
+        :missing_transigo
+      ],
+      default: :awaiting_signature
+
     field :second_installment_usd, :float, source: :second_installment_USD
     field :repaid_datetime, :utc_datetime
     field :dwolla_repayment_transfer_url, :string

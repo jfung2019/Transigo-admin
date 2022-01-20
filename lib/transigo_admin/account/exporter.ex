@@ -17,7 +17,19 @@ defmodule TransigoAdmin.Account.Exporter do
     field :signatory_email, :string
     field :signatory_title, :string
     field :hellosign_signature_request_id, :string
-    field :hs_signing_status, :string, default: "awaiting_signature"
+
+    field :hs_signing_status, Ecto.Enum,
+    values: [
+      :awaiting_signature,
+      :all_signed,
+      :exporter_signed,
+      :importer_signed,
+      :transigo_signed,
+      :missing_exporter,
+      :missing_importer,
+      :missing_transigo
+    ],
+    default: :awaiting_signature
     field :sign_msa_datetime, :date, source: :sign_MSA_datetime
     field :cn_msa, :boolean, default: false
 

@@ -144,15 +144,15 @@ defmodule TransigoAdmin.AccountTest do
     end
   end
 
-  describe "Google maps" do
-    test "valid address returns ok" do
-      assert {:ok, _res} = GoogleMaps.geocode("3503 Bennet Ave, Santa Clara CA, 95051")
-    end
+  # describe "Google maps" do
+  #   test "valid address returns ok" do
+  #     assert {:ok, _res} = GoogleMaps.geocode("3503 Bennet Ave, Santa Clara CA, 95051")
+  #   end
 
     # test "invalid address returns error" do
     #   assert {:error, _res} = GoogleMaps.geocode("asldkjflj;lkj")
     # end
-  end
+  # end
 
   describe "user token" do
     test "can get token with user from token's access_token" do
