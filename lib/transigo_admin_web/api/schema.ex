@@ -45,7 +45,7 @@ defmodule TransigoAdminWeb.Api.Schema do
     connection field :list_transactions, node_type: :transaction do
       arg :keyword, :string
       arg :hs_signing_status, :hs_signing_status
-      arg :transaction_status, :string
+      arg :transaction_status, :transaction_state
       middleware Middleware.Authenticate
       resolve &Resolvers.Credit.list_transactions/3
     end
