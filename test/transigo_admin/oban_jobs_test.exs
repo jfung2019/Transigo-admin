@@ -352,8 +352,17 @@ defmodule TransigoAdmin.ObanJobsTest do
 
       today = Timex.today()
 
-      assert [^today, "t1", "test_importer", ^exp_uid, "8000", "16000", "30000", :all_signed, "5128232"] =
-               Job.DailyBalance.create_report_row(transaction_t1)
+      assert [
+               ^today,
+               "t1",
+               "test_importer",
+               ^exp_uid,
+               "8000",
+               "16000",
+               "30000",
+               :all_signed,
+               "5128232"
+             ] = Job.DailyBalance.create_report_row(transaction_t1)
     end
   end
 

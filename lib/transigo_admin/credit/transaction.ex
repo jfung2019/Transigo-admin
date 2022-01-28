@@ -37,7 +37,7 @@ defmodule TransigoAdmin.Credit.Transaction do
     field :po_date, :date
     field :po_ref, :string
     field :hellosign_signature_request_id, :string
-    
+
     field :hs_signing_status, Ecto.Enum,
       values: [
         :awaiting_signature,

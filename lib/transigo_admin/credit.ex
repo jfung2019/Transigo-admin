@@ -68,7 +68,9 @@ defmodule TransigoAdmin.Credit do
       left_join: e in assoc(t, :exporter),
       left_join: i in assoc(t, :importer),
       where:
-        (ilike(i.business_name, ^keyword) or ilike(e.business_name, ^keyword)) and
+        (ilike(t.transaction_uid, ^keyword) or ilike(i.importer_transigo_uid, ^keyword) or
+           ilike(e.exporter_transigo_uid, ^keyword) or ilike(i.business_name, ^keyword) or
+           ilike(e.business_name, ^keyword)) and
           ilike(t.hs_signing_status, ^hs_status) and
           ilike(t.transaction_state, ^transaction_status)
     )
@@ -684,7 +686,9 @@ defmodule TransigoAdmin.Credit do
 
     from(q in Quota,
       left_join: i in assoc(q, :importer),
-      where: ilike(i.business_name, ^keyword) and ilike(q.credit_status, ^credit_status)
+      where:
+        (ilike(q.quota_transigo_uid, ^keyword) or ilike(i.importer_transigo_uid, ^keyword) or
+           ilike(i.business_name, ^keyword)) and ilike(q.credit_status, ^credit_status)
     )
     |> Relay.Connection.from_query(&Repo.all/1, pagination_args)
   end
@@ -962,7 +966,9 @@ defmodule TransigoAdmin.Credit do
         left_join: t in assoc(o, :transaction),
         left_join: e in assoc(t, :exporter),
         left_join: i in assoc(t, :importer),
-        where: ilike(i.business_name, ^keyword) or ilike(e.business_name, ^keyword)
+        where:
+          ilike(t.transaction_uid, ^keyword) or ilike(i.business_name, ^keyword) or
+            ilike(e.business_name, ^keyword)
       )
 
     case check_accept_decline(Map.get(pagination_args, :accepted)) do
