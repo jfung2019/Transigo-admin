@@ -363,7 +363,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
            } = json_response(quota_response, 200)
 
     # importer response
-    quota_response =
+    quota_importer_response =
       post(conn, "/api", %{
         query: @list_quota_paginated_with_importer_uid,
         variables: %{"first" => 1, "keyword" => quota_importer_uid}
@@ -377,7 +377,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
                  ]
                }
              }
-           } = json_response(quota_response, 200)
+           } = json_response(quota_importer_response, 200)
   end
 
   test "can list offer paginated with transaction_uid", %{
