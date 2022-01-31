@@ -629,7 +629,7 @@ defmodule TransigoAdmin.Credit do
     |> Repo.insert()
   end
 
-  def get_quota!(id), do: Repo.get!(Importer, id)
+  def get_quota!(id), do: Repo.get!(Quota, id)
 
   @doc """
   find granted quota of importer
