@@ -41,6 +41,85 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
   }
   """
 
+  @list_transactions_paginated_with_transaction_uid """
+  query($first: Integer!,$keyword: String!) {
+    ListTransactions(first: $first,keyword: $keyword) {
+      edges {
+        node {
+          transactionUid
+        }
+      }
+    }
+  }
+  """
+
+  @list_transactions_paginated_with_importer_uid """
+  query($first: Integer!,$keyword: String!) {
+    ListTransactions(first: $first,keyword: $keyword) {
+      edges {
+        node {
+          importer{
+            importerTransigoUid
+          }
+        }
+      }
+    }
+  }
+  """
+
+  @list_transactions_paginated_with_exporter_uid """
+  query($first: Integer!,$keyword: String!) {
+    ListTransactions(first: $first,keyword: $keyword) {
+      edges {
+        node {
+          exporter{
+            exporterTransigoUid
+          }
+        }
+      }
+    }
+  }
+  """
+
+  @list_quota_paginated_with_quota_uid """
+  query($first: Integer!,$keyword: String!) {
+    listQuotas(first: $first,keyword: $keyword) {
+      edges {
+        node {
+            quotaTransigoUid
+        }
+      }
+    }
+  }
+  """
+
+  @list_quota_paginated_with_importer_uid """
+  query($first: Integer!,$keyword: String!) {
+    listQuotas(first: $first,keyword: $keyword) {
+      edges {
+        node {
+          importer{
+            importerTransigoUid
+          }
+        }  
+      }
+    }
+  }
+  """
+  @list_offer_with_transaction_uid """
+  query($first: Integer!,$keyword: String!) {
+    listOffers(first: $first,keyword: $keyword) {
+      edges {
+        node {
+          transaction{
+            transactionUid
+          }
+        }
+      }
+    }
+  }
+  """
+
   setup %{conn: conn} do
     marketplace =
       Repo.insert!(%TransigoAdmin.Credit.Marketplace{
@@ -192,6 +271,136 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
     assert %{
              "data" => %{
                "listOffers" => %{"edges" => [%{"node" => %{"id" => ^offer_id}}]}
+             }
+           } = json_response(response, 200)
+  end
+
+  test "can list transaction paginated with transaction_uid", %{
+    conn: conn,
+    transaction: %{transaction_uid: transaction_uid}
+  } do
+    response =
+      post(conn, "/api", %{
+        query: @list_transactions_paginated_with_transaction_uid,
+        variables: %{"first" => 1, "keyword" => transaction_uid}
+      })
+
+    assert %{
+             "data" => %{
+               "ListTransactions" => %{
+                 "edges" => [%{"node" => %{"transactionUid" => ^transaction_uid}}]
+               }
+             }
+           } = json_response(response, 200)
+  end
+
+  test "can list transaction paginated with importer_uid or exporter_uid", %{
+    conn: conn,
+    transaction: %{id: transaction_id}
+  } do
+    transaction_t1 =
+      Credit.get_transaction!(transaction_id) |> Repo.preload([:importer, :exporter])
+
+    importeruid = transaction_t1.importer.importer_transigo_uid
+    exporteruid = transaction_t1.exporter.exporter_transigo_uid
+
+    # importer response
+    importer_response =
+      post(conn, "/api", %{
+        query: @list_transactions_paginated_with_importer_uid,
+        variables: %{"first" => 1, "keyword" => importeruid}
+      })
+
+    assert %{
+             "data" => %{
+               "ListTransactions" => %{
+                 "edges" => [
+                   %{"node" => %{"importer" => %{"importerTransigoUid" => ^importeruid}}}
+                 ]
+               }
+             }
+           } = json_response(importer_response, 200)
+
+    # exporter response
+    exporter_response =
+      post(conn, "/api", %{
+        query: @list_transactions_paginated_with_exporter_uid,
+        variables: %{"first" => 1, "keyword" => exporteruid}
+      })
+
+    assert %{
+             "data" => %{
+               "ListTransactions" => %{
+                 "edges" => [
+                   %{"node" => %{"exporter" => %{"exporterTransigoUid" => ^exporteruid}}}
+                 ]
+               }
+             }
+           } = json_response(exporter_response, 200)
+  end
+
+  test "can quota paginated with quota_uid or importer_uid", %{
+    conn: conn,
+    quota: %{id: quota_id, quota_transigo_uid: quota_transigo_uid}
+  } do
+    quota = Credit.get_quota!(quota_id) |> Repo.preload([:importer])
+
+    quota_importer_uid = quota.importer.importer_transigo_uid
+
+    # quota response
+    quota_response =
+      post(conn, "/api", %{
+        query: @list_quota_paginated_with_quota_uid,
+        variables: %{"first" => 1, "keyword" => quota_transigo_uid}
+      })
+
+    assert %{
+             "data" => %{
+               "listQuotas" => %{
+                 "edges" => [%{"node" => %{"quotaTransigoUid" => ^quota_transigo_uid}}]
+               }
+             }
+           } = json_response(quota_response, 200)
+
+    # importer response
+    quota_importer_response =
+      post(conn, "/api", %{
+        query: @list_quota_paginated_with_importer_uid,
+        variables: %{"first" => 1, "keyword" => quota_importer_uid}
+      })
+
+    assert %{
+             "data" => %{
+               "listQuotas" => %{
+                 "edges" => [
+                   %{"node" => %{"importer" => %{"importerTransigoUid" => ^quota_importer_uid}}}
+                 ]
+               }
+             }
+           } = json_response(quota_importer_response, 200)
+  end
+
+  test "can list offer paginated with transaction_uid", %{
+    conn: conn,
+    offer: %{id: offer_id}
+  } do
+    preloaded_offer = Credit.get_offer(offer_id, [:transaction])
+
+    offer_transaction_uid = preloaded_offer.transaction.transaction_uid
+
+    response =
+      post(conn, "/api", %{
+        query: @list_offer_with_transaction_uid,
+        variables: %{"first" => 1, "keyword" => offer_transaction_uid}
+      })
+
+    assert %{
+             "data" => %{
+               "listOffers" => %{
+                 "edges" => [
+                   %{"node" => %{"transaction" => %{"transactionUid" => ^offer_transaction_uid}}}
+                 ]
+               }
              }
            } = json_response(response, 200)
   end
