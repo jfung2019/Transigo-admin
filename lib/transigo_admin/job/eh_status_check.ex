@@ -150,23 +150,23 @@ defmodule TransigoAdmin.Job.EhStatusCheck do
         Credit.update_quota(quota, %{
           eh_cover: result,
           quota_USD: underwriting_amount,
-          creditStatus: "granted"
+          creditStatus: :granted
         })
 
       eh_amount < underwriting_amount and eh_amount >= 5000 ->
         Credit.update_quota(quota, %{
           eh_cover: result,
           quota_USD: eh_amount,
-          creditStatus: "granted"
+          creditStatus: :granted
         })
 
       true ->
-        Credit.update_quota(quota, %{eh_cover: result, creditStatus: "rejected"})
+        Credit.update_quota(quota, %{eh_cover: result, creditStatus: :rejected})
     end
   end
 
   defp update_job_result({:ok, %{"coverStatusCode" => "Rejected"} = result}, %Quota{} = quota),
-    do: Credit.update_quota(quota, %{eh_cover: result, creditStatus: "rejected"})
+    do: Credit.update_quota(quota, %{eh_cover: result, creditStatus: :rejected})
 
   defp update_job_result(_result, _schema), do: {:ok, :pass}
 

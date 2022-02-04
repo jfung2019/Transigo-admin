@@ -33,6 +33,14 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
     value :assignment_signed
   end
 
+  enum :credit_status do
+    value :requested
+    value :granted
+    value :partial    
+    value :rejected
+    value :revoked
+  end
+
   object :quota do
     field :id, non_null(:id)
     field :quota_transigo_uid, non_null(:string)
@@ -46,7 +54,7 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
     field :marketplace_total_transaction_sum_usd_last_year, non_null(:float)
     field :marketplace_number_disputes, non_null(:integer)
     field :marketplace_number_adverse_disputes, non_null(:integer)
-    field :credit_status, non_null(:string)
+    field :credit_status, non_null(:credit_status)
     field :funding_source_url, :string
     field :credit_terms, non_null(:string)
     field :plaid_underwriting_result, :float

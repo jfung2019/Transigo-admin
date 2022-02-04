@@ -36,7 +36,7 @@ defmodule TransigoAdminWeb.Api.Schema do
     @desc "list quotas paginated"
     connection field :list_quotas, node_type: :quota do
       arg :keyword, :string
-      arg :credit_status, :string
+      arg :credit_status, :credit_status
       middleware Middleware.Authenticate
       resolve &Resolvers.Credit.list_quotas/3
     end

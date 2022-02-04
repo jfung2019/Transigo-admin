@@ -71,7 +71,7 @@ defmodule TransigoAdmin.ServiceManager.MeridianlinkTest do
           marketplace_total_transaction_sum_usd_last_year: 412.43,
           marketplace_number_disputes: 1,
           marketplace_number_adverse_disputes: 0,
-          credit_status: "good",
+          credit_status: :granted,
           funding_source_url: "http://someurl",
           credit_terms: "open_account",
           importer_id: importer.id
