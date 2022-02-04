@@ -207,7 +207,7 @@ defmodule TransigoAdminWeb.Api.Query.CreditTest do
         marketplace_total_transaction_sum_usd_last_year: 1_000_000,
         marketplace_number_disputes: 10,
         marketplace_number_adverse_disputes: 2,
-        credit_status: "granted",
+        credit_status: :granted,
         funding_source_url:
           "https://api-sandbox.dwolla.com/funding-sources/239e3423-c7fa-4d24-b90c-ed50bb4ecd94",
         importer_id: importer.id

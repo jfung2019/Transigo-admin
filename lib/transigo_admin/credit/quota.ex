@@ -24,7 +24,15 @@ defmodule TransigoAdmin.Credit.Quota do
 
     field :marketplace_number_disputes, :integer
     field :marketplace_number_adverse_disputes, :integer
-    field :credit_status, :string, source: :creditStatus
+    field :credit_status, Ecto.Enum,
+    values: [
+      :requested,
+      :granted,
+      :partial,
+      :rejected,
+      :revoked
+    ],
+    source: :creditStatus
     field :funding_source_url, :string
     field :credit_terms, :string, default: "open_account"
     field :plaid_underwriting_result, :float

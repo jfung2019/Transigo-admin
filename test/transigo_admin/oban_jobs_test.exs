@@ -81,7 +81,7 @@ defmodule TransigoAdmin.ObanJobsTest do
       marketplace_total_transaction_sum_usd_last_year: 1_000_000,
       marketplace_number_disputes: 10,
       marketplace_number_adverse_disputes: 2,
-      credit_status: "granted",
+      credit_status: :granted,
       funding_source_url: "http://google.com/funding-sources/id",
       importer_id: importer.id,
       eh_grade: %{
@@ -189,7 +189,7 @@ defmodule TransigoAdmin.ObanJobsTest do
         marketplace_total_transaction_sum_usd_last_year: 1_000_000,
         marketplace_number_disputes: 10,
         marketplace_number_adverse_disputes: 2,
-        credit_status: "granted",
+        credit_status: :granted,
         funding_source_url: "http://google.com/funding-sources/id/repaid",
         importer_id: importer2.id
       })
