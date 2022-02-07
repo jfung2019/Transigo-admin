@@ -24,22 +24,24 @@ defmodule TransigoAdmin.Credit.Quota do
 
     field :marketplace_number_disputes, :integer
     field :marketplace_number_adverse_disputes, :integer
+
     field :credit_status, Ecto.Enum,
-    values: [
-      :requested,
-      :granted,
-      :partial,
-      :rejected,
-      :revoked
-    ],
-    source: :creditStatus
+      values: [
+        :requested,
+        :granted,
+        :partial,
+        :rejected,
+        :revoked
+      ],
+      source: :creditStatus
+
     field :funding_source_url, :string
     field :credit_terms, :string, default: "open_account"
     field :plaid_underwriting_result, :float
     field :eh_grade, :map
     field :eh_grade_job_url, :string
     field :plaid_form_result, :map
-    field :plaid_underwriting_signals, :map
+    field :plaid_underwriting_signals, {:array, :map}
 
     belongs_to :importer, TransigoAdmin.Account.Importer
 

@@ -36,7 +36,7 @@ defmodule TransigoAdminWeb.Api.Types.Credit do
   enum :credit_status do
     value :requested
     value :granted
-    value :partial    
+    value :partial
     value :rejected
     value :revoked
   end
