@@ -195,7 +195,7 @@ defmodule TransigoAdmin.Credit do
 
   defp sign_doc_validation(%{exporter: %{hs_signing_status: status}}) do
     case status do
-      "all_signed" ->
+      :all_signed ->
         true
 
       _ ->
