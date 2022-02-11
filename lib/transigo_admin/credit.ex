@@ -637,7 +637,7 @@ defmodule TransigoAdmin.Credit do
   @spec find_granted_quota(String.t()) :: Quota.t() | nil
   def find_granted_quota(importer_id) do
     from(q in Quota,
-      where: q.importer_id == ^importer_id and q.credit_status in [:granted, :partial]
+      where: q.importer_id == ^importer_id and q.credit_status == :granted
     )
     |> Repo.one()
   end

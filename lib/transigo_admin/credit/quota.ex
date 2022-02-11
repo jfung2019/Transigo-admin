@@ -29,7 +29,6 @@ defmodule TransigoAdmin.Credit.Quota do
       values: [
         :requested,
         :granted,
-        :partial,
         :rejected,
         :revoked
       ],
